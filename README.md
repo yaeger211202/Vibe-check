@@ -81,7 +81,7 @@ This information is used throughout the semester for communication, grading, and
 
 | Student | Full Name | SFSU Email | GitHub Username | Discord Username | Role(s) | Contract Signed |
 |:------:|:---------:|:----------:|:---------------:|:----------------:|:------:|:---------------:|
-| #1 | | | | | Team Lead | No |
+| #1 |Harry Kakadiya |hkakadiya@sfsu.edu |yaeger211202 |harry211202 | Team Lead | Yes |
 | #2 |Kaitlyn Ashby |kashby@sfsu.edu |kashby2004 |kaitlyn7911 |Github master, Technical writer |Yes |
 | #3 | | | | | | No |
 | #4 | | | | | | No |
