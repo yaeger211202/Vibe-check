@@ -85,7 +85,7 @@ This information is used throughout the semester for communication, grading, and
 | #2 | | | | | | No |
 | #3 | | | | | | No |
 | #4 | | | | | | No |
-| #5 | | | | | | No |
+| #5 | Aljhay Soriano | asoriano6@sfsu.edu | asori0113 | n1ce_guy | Scrum Master | Yes |
 | #6 | | | | | | No |
 | #7 | | | | | | No |
 
