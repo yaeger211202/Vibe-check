@@ -79,15 +79,15 @@ Every member of the team must complete and maintain the following table.
 
 This information is used throughout the semester for communication, grading, and project evaluation.
 
-| Student | Full Name | SFSU Email | GitHub Username | Discord Username | Role(s) | Contract Signed |
-|:------:|:---------:|:----------:|:---------------:|:----------------:|:------:|:---------------:|
-| #1 | | | | | Team Lead | No |
-| #2 | | | | | | No |
-| #3 | | | | | | No |
-| #4 | | | | | | No |
-| #5 | | | | | | No |
-| #6 | | | | | | No |
-| #7 | | | | | | No |
+| Student |   Full Name   |    SFSU Email     |    GitHub Username    |   Discord Username   |      Role(s)       | Contract Signed |
+|:------:|:-------------:|:-----------------:|:---------------------:|:--------------------:|:------------------:|:---------------:|
+| #1 |               |                   |                       |                      |     Team Lead      |       No        |
+| #2 |               |                   |                       |                      |                    |       No        |
+| #3 | Rahul Srinath | rsrinath@sfsu.edu | warrantyvoidifremoved | warrantyoidifremoved | Software Architect |       Yes       |
+| #4 |               |                   |                       |                      |                    |       No        |
+| #5 |               |                   |                       |                      |                    |       No        |
+| #6 |               |                   |                       |                      |                    |       No        |
+| #7 |               |                   |                       |                      |                    |       No        |
 
 ## 
 
