@@ -79,7 +79,7 @@ Every member of the team must complete and maintain the following table.
 
 This information is used throughout the semester for communication, grading, and project evaluation.
 
-<<<<<<< HEAD
+
 | Student | Full Name | SFSU Email | GitHub Username | Discord Username | Role(s) | Contract Signed |
 |:------:|:---------:|:----------:|:---------------:|:----------------:|:------:|:---------------:|
 | #1 |Harry Kakadiya |hkakadiya@sfsu.edu |yaeger211202 |harry211202 | Team Lead | Yes |
