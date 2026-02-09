@@ -85,8 +85,8 @@ This information is used throughout the semester for communication, grading, and
 | #1 |Harry Kakadiya |hkakadiya@sfsu.edu |yaeger211202 |harry211202 | Team Lead | Yes |
 | #2 |Kaitlyn Ashby |kashby@sfsu.edu |kashby2004 |kaitlyn7911 |Github master, Technical writer |Yes |
 | #3 |Rahul Srinath |rsrinath@sfsu.edu |warrantyvoidifremoved |warrantyvoidifremoved |Software Architect | Yes |
-| #4 | | | | | | No |
-| #5 | Aljhay Soriano | asoriano6@sfsu.edu | asori0113 | n1ce_guy | Scrum Master | Yes |
+| #4 |Amulya Sagi |asagi@sfsu.edu |amulyasagi-26 |amulya_21651 |Backend Lead| Yes |
+| #5 |Aljhay Soriano |asoriano6@sfsu.edu |asori0113 |n1ce_guy |Scrum Master | Yes |
 | #6 | | | | | | No |
 | #7 | | | | | | No |
 
