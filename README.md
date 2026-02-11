@@ -225,9 +225,9 @@ The work you produce should be something you can confidently discuss in intervie
 
 ## Copyright
 
-© 2026 **Team Alias**. All rights reserved.
+© 2026 **Team ARKHA**. All rights reserved.
 
-Each team must replace **Team Alias** with their approved team alias. Repositories that do not update this section will be considered incomplete.
+Each team must replace **Team ARKHA** with their approved team alias. Repositories that do not update this section will be considered incomplete.
 
 No part of this repository may be reproduced, distributed, or transmitted without prior written permission from the instructor or the owning team.
 
