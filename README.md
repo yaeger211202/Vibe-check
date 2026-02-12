@@ -125,7 +125,7 @@ If the URL does not work at the time of testing, the team will receive **no cred
 
 | Team Alias | Project Name | Project URL | Decision Making Policy |
 |:----------:|:------------:|:-----------:|:----------------------:|
-| | | | Consensus or Majority |
+|ARKHA |Vibe Check | | Consensus or Majority |
 
 ---
 
