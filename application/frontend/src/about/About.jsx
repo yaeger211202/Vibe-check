@@ -44,7 +44,7 @@ export default function About() {
                         <DbTest />
                     </div>
                     <div className="flex flex-col">
-                        <h3 className="font-semibold mb-2 flex items-center gap-2">Leaflet.js + OpenStreetMaps:</h3>
+                        <h3 className="font-semibold mb-2 flex items-center gap-2">Leaflet.js + OpenStreetMap:</h3>
                         <MapTest />
                     </div>
                 </div>
