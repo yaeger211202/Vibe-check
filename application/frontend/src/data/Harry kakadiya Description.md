@@ -1,1 +1,0 @@
-https://www.linkedin.com/in/harry-kakadiya-836768295/
