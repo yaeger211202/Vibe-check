@@ -82,7 +82,7 @@ This information is used throughout the semester for communication, grading, and
 
 | Student | Full Name | SFSU Email | GitHub Username | Discord Username | Role(s) | Contract Signed |
 |:------:|:---------:|:----------:|:---------------:|:----------------:|:------:|:---------------:|
-| #1 |Harry Kakadiya |hkakadiya@sfsu.edu |yaeger211202 |harry211202 | Team Lead | Yes |
+| #1 |Harry Kakadiya |hkakadiya@sfsu.edu |yaeger211202 |harry211202 | Team Lead, Database Admin | Yes |
 | #2 |Kaitlyn Ashby |kashby@sfsu.edu |kashby2004 |kaitlyn7911 |Github master, Technical writer |Yes |
 | #3 |Rahul Srinath |rsrinath@sfsu.edu |warrantyvoidifremoved |warrantyvoidifremoved |Software Architect | Yes |
 | #4 |Amulya Sagi |asagi@sfsu.edu |amulyasagi-26 |amulya_21651 |Backend Lead| Yes |
@@ -125,7 +125,7 @@ If the URL does not work at the time of testing, the team will receive **no cred
 
 | Team Alias | Project Name | Project URL | Decision Making Policy |
 |:----------:|:------------:|:-----------:|:----------------------:|
-|ARKHA |Vibe Check | | Consensus or Majority |
+|ARKHA |Vibe Check |http://vibecheck.stagbreaker.com/ | Consensus or Majority |
 
 ---
 
