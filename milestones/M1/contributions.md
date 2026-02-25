@@ -22,6 +22,10 @@ This document summarizes the contributions made by each team member across all p
 
 **Version 1 Contributions:**
 
+Revision table: v2
+
+Table of contents
+
 Main data entities:
 User
 Location
@@ -52,6 +56,8 @@ High level architecture and technologies
 ### 2. Kaitlyn Ashby — GitHub Master, Technical Writer
 
 **Version 1 Contributions:**
+
+Revision table: v1
 
 Main use cases:
 Notified of Nearby Trendy Location
