@@ -162,3 +162,11 @@ Managed SSH access and key pair configuration
 Configured security groups and networking (ports 22, 80, 443)
 
 ---
+
+| Member  | Score |
+| ------- | ----- |
+| Harry   | 5/5   |
+| Kaitlyn | 5/5   |
+| Rahul   | 5/5   |
+| Amulya  | 5/5   |
+| Aljhay  | 5/5   |
