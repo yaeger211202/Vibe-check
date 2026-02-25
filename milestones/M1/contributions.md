@@ -4,7 +4,7 @@
 **Team:** ARKHA (Team 6)  
 **Milestone:** 1  
 **Prepared by:** Harry Kakadiya (Team Lead)  
-**Date:** February 25 2026  
+**Date:** February 25, 2026  
 
 ---
 
@@ -21,6 +21,11 @@ This document summarizes the contributions made by each team member across all p
 ### 1. Harry Kakadiya — Team Lead
 
 **Version 1 Contributions:**
+
+Revision table: v2
+
+Table of contents
+
 Main data entities:
 User
 Location
@@ -28,10 +33,10 @@ Note
 Category Tag
 Reply
 Reaction
-Heatmap Activity 
-- 
+Heatmap Activity
 
 **Version 2 Contributions:**
+
 Designed and configured the project database
 
 Set up database credentials and schema
@@ -40,18 +45,20 @@ Logical Relationships: 1-7
 
 Non-functional Requirements: 7.1
 
-Competitive Analyis: Waitz
+Competitive Analysis: Waitz
 
 Project Readiness checklist
 
-High level architecture and technologies 
-
+High level architecture and technologies
 
 ---
 
 ### 2. Kaitlyn Ashby — GitHub Master, Technical Writer
 
 **Version 1 Contributions:**
+
+Revision table: v1
+
 Main use cases:
 Notified of Nearby Trendy Location
 
@@ -59,11 +66,12 @@ Main data entities:
 User Profile
 Notification
 
-- 
-
 **Version 2 Contributions:**
+
 Reviewed Github Repo Structure
+
 Reviewed final M1.pdf
+
 contributions.md
 
 Use cases:
@@ -77,7 +85,7 @@ Badge
 
 Logical Relationships: 8-20
 
-Functional requirments:
+Functional requirements:
 4.15-6.1
 7.1-7.2
 7.4-8.8
@@ -89,14 +97,12 @@ Nonfunctional requirements:
 4.2
 8.1-9.1
 
-
-- 
-
 ---
 
 ### 3. Rahul Srinath — Software Architect
 
 **Version 1 Contributions:**
+
 Executive summary
 
 Main use cases: Checking a Busy Restaurant Before Committing
@@ -116,43 +122,43 @@ Non-functional requirements:
 7.2-7.3
 9.2
 
-- 
-
 **Version 2 Contributions:**
+
 Implemented the About page
-- 
 
 ---
 
 ### 4. Amulya Sagi — Backend Lead
 
 **Version 1 Contributions:**
+
 Main use cases: Finding a Quiet Study Spot on Campus
 
-- 
-
 **Version 2 Contributions:**
+
 Competitive Analysis
+
 Configured and deployed the web server
-- 
 
 ---
 
 ### 5. Aljhay Soriano — Scrum Master
 
 **Version 1 Contributions:**
+
 Main use cases: 
 Reviewing Places by Popularity
-- 
 
 **Version 2 Contributions:**
+
 Main use cases:
 Reviewing Personal Store 
 Community Gatherings and Meetings
 
 Set up and configured AWS EC2 instances
+
 Managed SSH access and key pair configuration
+
 Configured security groups and networking (ports 22, 80, 443)
-- 
 
 ---
