@@ -1,11 +1,11 @@
 import MapTest from "./MapTest.jsx";
 import DbTest from "./DbTest.jsx";
 
-import harryImg from "../assets/team-members/default.png";
-import kaitlynImg from "../assets/team-members/default.png";
-import rahulImg from "../assets/team-members/default.png";
-import amulyaImg from "../assets/team-members/default.png";
-import aljhayImg from "../assets/team-members/default.png";
+import harryImg from "../assets/team-members/harry.png";
+import kaitlynImg from "../assets/team-members/kaitlin.jpg";
+import rahulImg from "../assets/team-members/rahul.png";
+import amulyaImg from "../assets/team-members/amulya.jpg";
+import aljhayImg from "../assets/team-members/aljhay.jpg";
 
 function TeamMemberCard({ name, role, email, image, description }) {
     return (
@@ -17,7 +17,7 @@ function TeamMemberCard({ name, role, email, image, description }) {
             />
             <h3 className="font-semibold">{name}</h3>
             <span className="italic text-sm text-gray-500">{role}</span>
-            <p className="text-sm text-gray-700 leading-relaxed">{description}</p>
+            <a href={description} className="text-blue-500 hover:underline">{description}</a>
             <a href={`mailto:${email}`} className="text-blue-500 hover:underline">{email}</a>
         </div>
     );
@@ -30,35 +30,35 @@ export default function About() {
             role: "Team Lead",
             email: "hkakadiya@sfsu.edu",
             image: harryImg,
-            description: "Person who hits keys on a keyboard."
+            description: "https://www.linkedin.com/in/harry-kakadiya-836768295/"
         },
         {
             name: "Kaitlyn Ashby",
             role: "Github Master and Technical Writer",
             email: "kashby@sfsu.edu",
             image: kaitlynImg,
-            description: "Person who hits keys on a keyboard."
+            description: "https://www.linkedin.com/in/kaitlyn-ashby-1250b8208/"
         },
         {
             name: "Rahul Srinath",
             role: "Software Architect",
             email: "rsrinath@sfsu.edu",
             image: rahulImg,
-            description: "Person who hits keys on a keyboard."
+            description: "https://www.linkedin.com/in/rahul-s-a1b328133/"
         },
         {
             name: "Amulya Sagi",
             role: "Backend Lead",
             email: "asagi@sfsu.edu",
             image: amulyaImg,
-            description: "Person who hits keys on a keyboard."
+            description: "https://www.linkedin.com/in/amulya-sagi/"
         },
         {
             name: "Aljhay Soriano",
             role: "Scrum Master",
             email: "asoriano6@sfsu.edu",
             image: aljhayImg,
-            description: "Person who hits keys on a keyboard."
+            description: "https://www.linkedin.com/in/aljhay-soriano-b5982b16b/"
         },
     ];
 
