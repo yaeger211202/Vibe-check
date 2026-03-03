@@ -1,0 +1,388 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36" version="29.6.0">
+  <diagram id="UF402hqVzgialptHJ0PV" name="Page-1">
+    <mxGraphModel dx="1712" dy="956" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="sb1-label" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;fontSize=16;fontStyle=1;" value="Storyboard 1 — John explores nearby restaurants" vertex="1">
+          <mxGeometry height="30" width="600" x="40" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-step1-label" parent="1" style="text;html=1;strokeColor=none;fillColor=#dae8fc;align=center;verticalAlign=middle;fontSize=11;fontStyle=1;rounded=1;" value="1. Get Current Location" vertex="1">
+          <mxGeometry height="24" width="180" x="40" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-p1-frame" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;arcSize=8;" value="" vertex="1">
+          <mxGeometry height="300" width="180" x="40" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-p1-titlebar" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1a1a1a;fontColor=#ffffff;strokeColor=none;fontSize=11;fontStyle=1;align=left;spacingLeft=10;" value="Vibe Check" vertex="1">
+          <mxGeometry height="28" width="180" x="40" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-p1-dialog" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#cccccc;fontSize=11;align=center;verticalAlign=middle;" value="📍&#xa;&#xa;Allow Vibe Check to&#xa;access your location?" vertex="1">
+          <mxGeometry height="110" width="150" x="55" y="148" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-p1-allow" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1a1a1a;fontColor=#ffffff;strokeColor=none;fontSize=11;" value="Allow" vertex="1">
+          <mxGeometry height="26" width="60" x="65" y="272" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-p1-deny" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=11;" value="Deny" vertex="1">
+          <mxGeometry height="26" width="60" x="135" y="272" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-p1-nav" parent="1" style="text;html=1;strokeColor=#cccccc;fillColor=#f9f9f9;align=center;verticalAlign=middle;fontSize=14;borderStyle=none;" value="🏠          🔔          👤" vertex="1">
+          <mxGeometry height="28" width="180" x="40" y="372" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-p1-caption" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=10;fontColor=#666666;fontStyle=2;" value="John allows location access" vertex="1">
+          <mxGeometry height="20" width="180" x="40" y="408" as="geometry" />
+        </mxCell>
+        <mxCell id="arr1" edge="1" parent="1" source="s1-p1-frame" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=2;endArrow=block;endFill=1;" target="s1-p2-frame" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-step2-label" parent="1" style="text;html=1;strokeColor=none;fillColor=#dae8fc;align=center;verticalAlign=middle;fontSize=11;fontStyle=1;rounded=1;" value="2. View Heatmap" vertex="1">
+          <mxGeometry height="24" width="180" x="260" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-p2-frame" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;arcSize=8;" value="" vertex="1">
+          <mxGeometry height="300" width="180" x="260" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-p2-titlebar" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1a1a1a;fontColor=#ffffff;strokeColor=none;fontSize=11;fontStyle=1;align=left;spacingLeft=10;" value="Vibe Check  ↓" vertex="1">
+          <mxGeometry height="28" width="180" x="260" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-p2-search" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#cccccc;fontSize=10;align=left;spacingLeft=8;" value="🔍 Search Locations…" vertex="1">
+          <mxGeometry height="24" width="160" x="270" y="136" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-p2-map" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8e4d9;strokeColor=#cccccc;fontSize=11;align=center;verticalAlign=middle;fontStyle=2;" value="(map / heatmap)&#xa;&#xa;🔴 🟡&#xa;&#xa;   🟢  🟢" vertex="1">
+          <mxGeometry height="175" width="160" x="270" y="167" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-p2-legend" parent="1" style="text;html=1;strokeColor=none;fillColor=#fff9c4;align=center;verticalAlign=middle;fontSize=8;rounded=1;" value="Red=Dead · Yellow=Mild · Green=Buzzing" vertex="1">
+          <mxGeometry height="20" width="160" x="270" y="347" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-p2-nav" parent="1" style="text;html=1;strokeColor=#cccccc;fillColor=#f9f9f9;align=center;verticalAlign=middle;fontSize=14;" value="🏠          🔔          👤" vertex="1">
+          <mxGeometry height="28" width="180" x="260" y="372" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-p2-caption" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=10;fontColor=#666666;fontStyle=2;" value="Heatmap loads showing activity levels nearby" vertex="1">
+          <mxGeometry height="20" width="180" x="260" y="408" as="geometry" />
+        </mxCell>
+        <mxCell id="arr2" edge="1" parent="1" source="s1-p2-frame" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=2;endArrow=block;endFill=1;" target="s1-p3-frame" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-step3-label" parent="1" style="text;html=1;strokeColor=none;fillColor=#dae8fc;align=center;verticalAlign=middle;fontSize=11;fontStyle=1;rounded=1;" value="3. Filter by Category" vertex="1">
+          <mxGeometry height="24" width="180" x="480" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-p3-frame" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;arcSize=8;" value="" vertex="1">
+          <mxGeometry height="300" width="180" x="480" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-p3-titlebar" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1a1a1a;fontColor=#ffffff;strokeColor=none;fontSize=11;fontStyle=1;align=left;spacingLeft=10;" value="Vibe Check" vertex="1">
+          <mxGeometry height="28" width="180" x="480" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-p3-filterlabel" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=10;fontStyle=1;spacingLeft=4;" value="Filter by:" vertex="1">
+          <mxGeometry height="20" width="160" x="490" y="135" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-p3-filters" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#cccccc;fontSize=11;align=left;spacingLeft=10;verticalAlign=top;spacingTop=6;" value="● 🍽 Restaurants&#xa;○ 📚 Study Spots&#xa;○ 🎪 Venues&#xa;○ 🅿️ Parking&#xa;○ 🌳 Outdoors" vertex="1">
+          <mxGeometry height="130" width="160" x="490" y="158" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-p3-apply" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1a1a1a;fontColor=#ffffff;strokeColor=none;fontSize=11;" value="Apply" vertex="1">
+          <mxGeometry height="26" width="80" x="540" y="300" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-p3-nav" parent="1" style="text;html=1;strokeColor=#cccccc;fillColor=#f9f9f9;align=center;verticalAlign=middle;fontSize=14;" value="🏠          🔔          👤" vertex="1">
+          <mxGeometry height="28" width="180" x="480" y="372" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-p3-caption" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=10;fontColor=#666666;fontStyle=2;" value="John taps filter, selects &quot;Restaurants&quot;,&lt;div&gt;&amp;nbsp;taps Apply&lt;/div&gt;" vertex="1">
+          <mxGeometry height="20" width="180" x="480" y="408" as="geometry" />
+        </mxCell>
+        <mxCell id="arr3" edge="1" parent="1" source="s1-p3-frame" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=2;endArrow=block;endFill=1;" target="s1-p4-frame" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-step4-label" parent="1" style="text;html=1;strokeColor=none;fillColor=#dae8fc;align=center;verticalAlign=middle;fontSize=11;fontStyle=1;rounded=1;" value="4. View Nearby Location Pins" vertex="1">
+          <mxGeometry height="24" width="180" x="700" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-p4-frame" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;arcSize=8;" value="" vertex="1">
+          <mxGeometry height="300" width="180" x="700" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-p4-titlebar" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1a1a1a;fontColor=#ffffff;strokeColor=none;fontSize=11;fontStyle=1;align=left;spacingLeft=10;" value="Vibe Check · Restaurants" vertex="1">
+          <mxGeometry height="28" width="180" x="700" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-p4-search" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#cccccc;fontSize=10;align=left;spacingLeft=8;" value="🔍 Search locations" vertex="1">
+          <mxGeometry height="24" width="160" x="710" y="136" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-p4-map" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8e4d9;strokeColor=#cccccc;fontSize=11;align=center;verticalAlign=middle;fontStyle=2;" value="(map / heatmap)&#xa;&#xa;📍  📍&#xa;&#xa;   📍&#xa;&#xa;📍  📍" vertex="1">
+          <mxGeometry height="175" width="160" x="710" y="167" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-p4-nav" parent="1" style="text;html=1;strokeColor=#cccccc;fillColor=#f9f9f9;align=center;verticalAlign=middle;fontSize=14;" value="🏠          🔔          👤" vertex="1">
+          <mxGeometry height="28" width="180" x="700" y="372" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-p4-caption" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=10;fontColor=#666666;fontStyle=2;" value="Map shows only restaurant pins.&amp;nbsp;&lt;div&gt;John browses nearby options&lt;/div&gt;" vertex="1">
+          <mxGeometry height="20" width="180" x="700" y="408" as="geometry" />
+        </mxCell>
+        <mxCell id="arr4" edge="1" parent="1" source="s1-p4-frame" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=2;endArrow=block;endFill=1;" target="s1-p5-frame" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-step5-label" parent="1" style="text;html=1;strokeColor=none;fillColor=#dae8fc;align=center;verticalAlign=middle;fontSize=11;fontStyle=1;rounded=1;" value="5. Select Location Pin" vertex="1">
+          <mxGeometry height="24" width="180" x="920" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-p5-frame" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;arcSize=8;" value="" vertex="1">
+          <mxGeometry height="300" width="180" x="920" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-p5-titlebar" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1a1a1a;fontColor=#ffffff;strokeColor=none;fontSize=11;fontStyle=1;align=left;spacingLeft=10;" value="Vibe Check · Restaurants" vertex="1">
+          <mxGeometry height="28" width="180" x="920" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-p5-map" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8e4d9;strokeColor=#cccccc;fontSize=11;align=center;verticalAlign=middle;fontStyle=2;" value="(map / heatmap)&#xa;📍" vertex="1">
+          <mxGeometry height="90" width="160" x="930" y="135" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-p5-card-title" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=12;fontStyle=1;" value="Mario&#39;s Bistro" vertex="1">
+          <mxGeometry height="20" width="150" x="935" y="235" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-p5-vibe" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fef3c7;strokeColor=#f59e0b;fontSize=10;fontColor=#b45309;" value="🟡 Buzzing" vertex="1">
+          <mxGeometry height="20" width="80" x="935" y="258" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-p5-meta" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=10;fontColor=#666;" value="🗒 8 notes  ·  0.2 mi away" vertex="1">
+          <mxGeometry height="18" width="150" x="935" y="282" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-p5-border" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#cccccc;" value="" vertex="1">
+          <mxGeometry height="80" width="160" x="930" y="230" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-p5-nav" parent="1" style="text;html=1;strokeColor=#cccccc;fillColor=#f9f9f9;align=center;verticalAlign=middle;fontSize=14;" value="🏠          🔔          👤" vertex="1">
+          <mxGeometry height="28" width="180" x="920" y="372" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-p5-caption" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=10;fontColor=#666666;fontStyle=2;" value="John taps a pin.&amp;nbsp;&lt;div&gt;Preview card shows name,&lt;/div&gt;&lt;div&gt;&amp;nbsp;vibe, note count, distance&lt;/div&gt;" vertex="1">
+          <mxGeometry height="20" width="180" x="930" y="408" as="geometry" />
+        </mxCell>
+        <mxCell id="arr5" edge="1" parent="1" source="s1-p5-frame" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=2;endArrow=block;endFill=1;" target="s1-p6-frame" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-step6-label" parent="1" style="text;html=1;strokeColor=none;fillColor=#dae8fc;align=center;verticalAlign=middle;fontSize=11;fontStyle=1;rounded=1;" value="6. View Note Thread" vertex="1">
+          <mxGeometry height="24" width="180" x="1140" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-p6-frame" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;arcSize=8;" value="" vertex="1">
+          <mxGeometry height="300" width="180" x="1140" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-p6-titlebar" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1a1a1a;fontColor=#ffffff;strokeColor=none;fontSize=11;fontStyle=1;align=left;spacingLeft=10;" value="Mario&#39;s Bistro  ● Buzzing" vertex="1">
+          <mxGeometry height="28" width="180" x="1140" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-p6-dist" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=10;fontColor=#666;" value="📍 0.2 miles away" vertex="1">
+          <mxGeometry height="18" width="160" x="1150" y="135" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-p6-note" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#cccccc;fontSize=10;align=left;spacingLeft=8;verticalAlign=top;spacingTop=6;" value="👤 mcc117  ● 5 min ago&#xa;&quot;Line around the block&quot;&#xa;👍 12   💬 3 replies" vertex="1">
+          <mxGeometry height="60" width="160" x="1150" y="158" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-p6-create" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#2563eb;fontColor=#2563eb;fontSize=10;" value="+ Create Note" vertex="1">
+          <mxGeometry height="24" width="160" x="1150" y="350" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-p6-caption" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=10;fontColor=#666666;fontStyle=2;" value="John reads notes confirming long wait.&amp;nbsp;&lt;div&gt;Goes back, selects different restaurant with positive notes&lt;/div&gt;" vertex="1">
+          <mxGeometry height="30" width="180" x="1140" y="408" as="geometry" />
+        </mxCell>
+        <mxCell id="arr6" edge="1" parent="1" source="s1-p6-frame" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=2;endArrow=block;endFill=1;" target="s1-p7-frame" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-step7-label" parent="1" style="text;html=1;strokeColor=none;fillColor=#dae8fc;align=center;verticalAlign=middle;fontSize=11;fontStyle=1;rounded=1;" value="7. Create New Note" vertex="1">
+          <mxGeometry height="24" width="180" x="1360" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-p7-frame" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;arcSize=8;" value="" vertex="1">
+          <mxGeometry height="300" width="180" x="1360" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-p7-titlebar" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1a1a1a;fontColor=#ffffff;strokeColor=none;fontSize=11;fontStyle=1;align=left;spacingLeft=10;" value="← Create Note" vertex="1">
+          <mxGeometry height="28" width="180" x="1360" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-p7-venuename" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=13;fontStyle=1;spacingLeft=10;" value="Tony&#39;s Diner" vertex="1">
+          <mxGeometry height="22" width="180" x="1360" y="133" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-p7-vibelabel" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=10;fontStyle=1;spacingLeft=10;" value="Vibe Level:" vertex="1">
+          <mxGeometry height="18" width="180" x="1360" y="158" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-p7-vibes" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#cccccc;fontSize=10;align=left;spacingLeft=8;verticalAlign=top;spacingTop=4;" value="○ Dead     ○ Quiet&#xa;○ Buzzing  ● Moderate" vertex="1">
+          <mxGeometry height="40" width="160" x="1370" y="178" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-p7-textbox" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#cccccc;fontSize=10;align=left;spacingLeft=6;verticalAlign=top;spacingTop=4;" value="quick service!" vertex="1">
+          <mxGeometry height="40" width="160" x="1370" y="225" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-p7-catlabel" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=10;fontStyle=1;spacingLeft=10;" value="Category:" vertex="1">
+          <mxGeometry height="18" width="80" x="1360" y="270" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-p7-catdrop" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#cccccc;fontSize=10;" value="Restaurants ▾" vertex="1">
+          <mxGeometry height="22" width="160" x="1370" y="290" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-p7-post" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1a1a1a;fontColor=#ffffff;strokeColor=none;fontSize=11;" value="Post" vertex="1">
+          <mxGeometry height="26" width="80" x="1420" y="322" as="geometry" />
+        </mxCell>
+        <mxCell id="s1-p7-caption" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=10;fontColor=#666666;fontStyle=2;" value="John selects vibe, writes note, taps&amp;nbsp;&lt;div&gt;Post.&amp;nbsp;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(102, 102, 102), rgb(149, 149, 149));&quot;&gt;Note is published for future users&lt;/span&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="30" width="180" x="1370" y="410" as="geometry" />
+        </mxCell>
+        <mxCell id="sb2-label" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;fontSize=16;fontStyle=1;" value="Storyboard 2 — Chris receives a push notification and navigates to a buzzing venue" vertex="1">
+          <mxGeometry height="30" width="700" x="40" y="480" as="geometry" />
+        </mxCell>
+        <mxCell id="s2-step1-label" parent="1" style="text;html=1;strokeColor=none;fillColor=#d5e8d4;align=center;verticalAlign=middle;fontSize=11;fontStyle=1;rounded=1;" value="1. Receive Push Notification" vertex="1">
+          <mxGeometry height="24" width="180" x="40" y="518" as="geometry" />
+        </mxCell>
+        <mxCell id="s2-p1-frame" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111111;strokeColor=#000000;strokeWidth=2;arcSize=8;" value="" vertex="1">
+          <mxGeometry height="300" width="180" x="40" y="548" as="geometry" />
+        </mxCell>
+        <mxCell id="s2-p1-time" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=28;fontStyle=0;fontColor=#ffffff;" value="6:45 PM" vertex="1">
+          <mxGeometry height="50" width="180" x="40" y="580" as="geometry" />
+        </mxCell>
+        <mxCell id="s2-p1-notif" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#333333;fontColor=#ffffff;strokeColor=none;fontSize=11;align=left;spacingLeft=8;verticalAlign=middle;" value="🎯 Vibe Check&#xa;Fish Bowl is buzzing tonight!" vertex="1">
+          <mxGeometry height="60" width="150" x="55" y="648" as="geometry" />
+        </mxCell>
+        <mxCell id="s2-p1-caption" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=10;fontColor=#666666;fontStyle=2;" value="Chris receives a push notification&lt;div&gt;&amp;nbsp;that a venue near him is buzzing tonight&lt;/div&gt;" vertex="1">
+          <mxGeometry height="30" width="180" x="40" y="858" as="geometry" />
+        </mxCell>
+        <mxCell id="arr-sb2-1" edge="1" parent="1" source="s2-p1-frame" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=2;endArrow=block;endFill=1;" target="s2-p2-frame" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s2-step2-label" parent="1" style="text;html=1;strokeColor=none;fillColor=#d5e8d4;align=center;verticalAlign=middle;fontSize=11;fontStyle=1;rounded=1;" value="2. Open App to Location Detail" vertex="1">
+          <mxGeometry height="24" width="180" x="260" y="518" as="geometry" />
+        </mxCell>
+        <mxCell id="s2-p2-frame" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;arcSize=8;" value="" vertex="1">
+          <mxGeometry height="300" width="180" x="260" y="548" as="geometry" />
+        </mxCell>
+        <mxCell id="s2-p2-titlebar" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1a1a1a;fontColor=#ffffff;strokeColor=none;fontSize=11;fontStyle=1;align=left;spacingLeft=10;" value="Fish Bowl" vertex="1">
+          <mxGeometry height="28" width="180" x="260" y="548" as="geometry" />
+        </mxCell>
+        <mxCell id="s2-p2-dist" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=10;fontColor=#666;spacingLeft=10;" value="📍 0.5 miles away" vertex="1">
+          <mxGeometry height="18" width="180" x="260" y="582" as="geometry" />
+        </mxCell>
+        <mxCell id="s2-p2-note" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#cccccc;fontSize=10;align=left;spacingLeft=8;verticalAlign=top;spacingTop=6;" value="👤 ahayg49  ● 21 min ago&#xa;&quot;Such a great crowd.&quot;&#xa;👍 8   💬 2 replies" vertex="1">
+          <mxGeometry height="60" width="160" x="270" y="605" as="geometry" />
+        </mxCell>
+        <mxCell id="s2-p2-caption" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=10;fontColor=#666666;fontStyle=2;" value="App opens to the note thread. Chris reads the notes" vertex="1">
+          <mxGeometry height="20" width="180" x="270" y="858" as="geometry" />
+        </mxCell>
+        <mxCell id="arr-sb2-2" edge="1" parent="1" source="s2-p2-frame" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=2;endArrow=block;endFill=1;" target="s2-p3-frame" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s2-step3-label" parent="1" style="text;html=1;strokeColor=none;fillColor=#d5e8d4;align=center;verticalAlign=middle;fontSize=11;fontStyle=1;rounded=1;" value="3. Navigate to Location" vertex="1">
+          <mxGeometry height="24" width="180" x="480" y="518" as="geometry" />
+        </mxCell>
+        <mxCell id="s2-p3-frame" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;arcSize=8;" value="" vertex="1">
+          <mxGeometry height="300" width="180" x="480" y="548" as="geometry" />
+        </mxCell>
+        <mxCell id="s2-p3-titlebar" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1a1a1a;fontColor=#ffffff;strokeColor=none;fontSize=11;fontStyle=1;align=left;spacingLeft=10;" value="Directions" vertex="1">
+          <mxGeometry height="28" width="180" x="480" y="548" as="geometry" />
+        </mxCell>
+        <mxCell id="s2-p3-route" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#cccccc;fontSize=10;align=left;spacingLeft=8;verticalAlign=top;spacingTop=6;" value="📍 Your Location&#xa;⋮&#xa;⋮&#xa;🎯 Fish Bowl&#xa;   Geary Blvd &amp; Fillmore" vertex="1">
+          <mxGeometry height="80" width="160" x="490" y="583" as="geometry" />
+        </mxCell>
+        <mxCell id="s2-p3-modes" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f0fe;strokeColor=#2563eb;fontSize=10;align=center;" value="🚗 12 min   [🚶 17 min]   🚌 6 min" vertex="1">
+          <mxGeometry height="24" width="160" x="490" y="668" as="geometry" />
+        </mxCell>
+        <mxCell id="s2-p3-info" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#cccccc;fontSize=9;align=left;spacingLeft=6;verticalAlign=top;spacingTop=4;" value="Leave at 7:00pm · From Fillmore&#xa;2.4mi · Bus 33 → 🚶 7" vertex="1">
+          <mxGeometry height="36" width="160" x="490" y="698" as="geometry" />
+        </mxCell>
+        <mxCell id="s2-p3-caption" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=10;fontColor=#666666;fontStyle=2;" value="Chris taps directions to the venue" vertex="1">
+          <mxGeometry height="20" width="180" x="480" y="858" as="geometry" />
+        </mxCell>
+        <mxCell id="sb3-label" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;fontSize=16;fontStyle=1;" value="Storyboard 3 — Sue sees a friend indicator on the map and reads their note" vertex="1">
+          <mxGeometry height="30" width="700" x="40" y="930" as="geometry" />
+        </mxCell>
+        <mxCell id="s3-step1-label" parent="1" style="text;html=1;strokeColor=none;fillColor=#ffe6cc;align=center;verticalAlign=middle;fontSize=11;fontStyle=1;rounded=1;" value="1. Friend Indicator on Pin" vertex="1">
+          <mxGeometry height="24" width="180" x="40" y="968" as="geometry" />
+        </mxCell>
+        <mxCell id="s3-p1-frame" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;arcSize=8;" value="" vertex="1">
+          <mxGeometry height="300" width="180" x="40" y="998" as="geometry" />
+        </mxCell>
+        <mxCell id="s3-p1-titlebar" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1a1a1a;fontColor=#ffffff;strokeColor=none;fontSize=11;fontStyle=1;align=left;spacingLeft=10;" value="Vibe Check" vertex="1">
+          <mxGeometry height="28" width="180" x="40" y="998" as="geometry" />
+        </mxCell>
+        <mxCell id="s3-p1-map" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8e4d9;strokeColor=#cccccc;fontSize=11;align=center;verticalAlign=middle;fontStyle=2;" value="(map / heatmap)&#xa;&#xa;&#xa;   📍👤&#xa;&#xa;(friend indicator on pin)" vertex="1">
+          <mxGeometry height="175" width="160" x="50" y="1033" as="geometry" />
+        </mxCell>
+        <mxCell id="s3-p1-nav" parent="1" style="text;html=1;strokeColor=#cccccc;fillColor=#f9f9f9;align=center;verticalAlign=middle;fontSize=14;" value="🏠          🔔          👤" vertex="1">
+          <mxGeometry height="28" width="180" x="40" y="1270" as="geometry" />
+        </mxCell>
+        <mxCell id="s3-p1-caption" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=10;fontColor=#666666;fontStyle=2;" value="Sue views the heatmap and&amp;nbsp;&lt;div&gt;notices a friend indicator on a pin&lt;/div&gt;" vertex="1">
+          <mxGeometry height="30" width="180" x="40" y="1306" as="geometry" />
+        </mxCell>
+        <mxCell id="arr-sb3-1" edge="1" parent="1" source="s3-p1-frame" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=2;endArrow=block;endFill=1;" target="s3-p2-frame" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s3-step2-label" parent="1" style="text;html=1;strokeColor=none;fillColor=#ffe6cc;align=center;verticalAlign=middle;fontSize=11;fontStyle=1;rounded=1;" value="2. Read Friend&#39;s Note" vertex="1">
+          <mxGeometry height="24" width="180" x="260" y="968" as="geometry" />
+        </mxCell>
+        <mxCell id="s3-p2-frame" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;arcSize=8;" value="" vertex="1">
+          <mxGeometry height="300" width="180" x="260" y="998" as="geometry" />
+        </mxCell>
+        <mxCell id="s3-p2-titlebar" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1a1a1a;fontColor=#ffffff;strokeColor=none;fontSize=11;fontStyle=1;align=left;spacingLeft=10;" value="Palm House" vertex="1">
+          <mxGeometry height="28" width="180" x="260" y="998" as="geometry" />
+        </mxCell>
+        <mxCell id="s3-p2-dist" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=10;fontColor=#666;spacingLeft=10;" value="📍 0.5 miles away" vertex="1">
+          <mxGeometry height="18" width="180" x="260" y="1032" as="geometry" />
+        </mxCell>
+        <mxCell id="s3-p2-note" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#2563eb;strokeWidth=2;fontSize=10;align=left;spacingLeft=8;verticalAlign=top;spacingTop=6;" value="👤 aligator  ● 1 hr ago&#xa;&quot;Mild, chill and good dj&quot;&#xa;👍 6   💬 1 reply" vertex="1">
+          <mxGeometry height="60" width="160" x="270" y="1055" as="geometry" />
+        </mxCell>
+        <mxCell id="s3-p2-friendlabel" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=9;fontColor=#2563eb;fontStyle=2;" value="← Friend&#39;s note" vertex="1">
+          <mxGeometry height="16" width="120" x="270" y="1118" as="geometry" />
+        </mxCell>
+        <mxCell id="s3-p2-caption" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=10;fontColor=#666666;fontStyle=2;" value="Sue taps the pin and reads a note left by her friend" vertex="1">
+          <mxGeometry height="20" width="180" x="260" y="1306" as="geometry" />
+        </mxCell>
+        <mxCell id="sb4-label" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;fontSize=16;fontStyle=1;" value="Storyboard 4 — Bruno posts his 5th note at a study spot and unlocks the &quot;Academic Weapon&quot; badge" vertex="1">
+          <mxGeometry height="30" width="800" x="40" y="1380" as="geometry" />
+        </mxCell>
+        <mxCell id="s4-step1-label" parent="1" style="text;html=1;strokeColor=none;fillColor=#e1d5e7;align=center;verticalAlign=middle;fontSize=11;fontStyle=1;rounded=1;" value="1. Post Note" vertex="1">
+          <mxGeometry height="24" width="180" x="40" y="1418" as="geometry" />
+        </mxCell>
+        <mxCell id="s4-p1-frame" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;arcSize=8;" value="" vertex="1">
+          <mxGeometry height="300" width="180" x="40" y="1448" as="geometry" />
+        </mxCell>
+        <mxCell id="s4-p1-titlebar" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1a1a1a;fontColor=#ffffff;strokeColor=none;fontSize=11;fontStyle=1;align=left;spacingLeft=10;" value="Vibe Check" vertex="1">
+          <mxGeometry height="28" width="180" x="40" y="1448" as="geometry" />
+        </mxCell>
+        <mxCell id="s4-p1-note" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#cccccc;fontSize=10;align=left;spacingLeft=8;verticalAlign=top;spacingTop=6;" value="👤 you&#xa;&quot;quiet, good coffee&quot;&#xa;👍 0   💬 0 replies" vertex="1">
+          <mxGeometry height="55" width="160" x="50" y="1483" as="geometry" />
+        </mxCell>
+        <mxCell id="s4-p1-confirm" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=11;fontColor=#22c55e;fontStyle=1;spacingLeft=10;" value="✅  Note posted!" vertex="1">
+          <mxGeometry height="22" width="180" x="40" y="1542" as="geometry" />
+        </mxCell>
+        <mxCell id="s4-p1-caption" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=10;fontColor=#666666;fontStyle=2;" value="Bruno posts his 5th note at a Study Spot" vertex="1">
+          <mxGeometry height="20" width="180" x="40" y="1756" as="geometry" />
+        </mxCell>
+        <mxCell id="arr-sb4-1" edge="1" parent="1" source="s4-p1-frame" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=2;endArrow=block;endFill=1;" target="s4-p2-frame" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s4-step2-label" parent="1" style="text;html=1;strokeColor=none;fillColor=#e1d5e7;align=center;verticalAlign=middle;fontSize=11;fontStyle=1;rounded=1;" value="2. Badge Unlock Notification" vertex="1">
+          <mxGeometry height="24" width="180" x="260" y="1418" as="geometry" />
+        </mxCell>
+        <mxCell id="s4-p2-frame" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;arcSize=8;" value="" vertex="1">
+          <mxGeometry height="300" width="180" x="260" y="1448" as="geometry" />
+        </mxCell>
+        <mxCell id="s4-p2-titlebar" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1a1a1a;fontColor=#ffffff;strokeColor=none;fontSize=11;fontStyle=1;align=left;spacingLeft=10;" value="Vibe Check" vertex="1">
+          <mxGeometry height="28" width="180" x="260" y="1448" as="geometry" />
+        </mxCell>
+        <mxCell id="s4-p2-badge" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f0ff;strokeColor=#8b5cf6;strokeWidth=2;fontSize=13;align=center;verticalAlign=middle;fontColor=#5b21b6;" value="🛡️&#xa;&#xa;New badge unlocked!&#xa;Academic Weapon!" vertex="1">
+          <mxGeometry height="140" width="160" x="270" y="1490" as="geometry" />
+        </mxCell>
+        <mxCell id="s4-p2-caption" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=10;fontColor=#666666;fontStyle=2;" value="System detects threshold met.&amp;nbsp;&lt;div&gt;Badge unlock notification shown&lt;/div&gt;" vertex="1">
+          <mxGeometry height="30" width="180" x="260" y="1756" as="geometry" />
+        </mxCell>
+        <mxCell id="arr-sb4-2" edge="1" parent="1" source="s4-p2-frame" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=2;endArrow=block;endFill=1;" target="s4-p3-frame" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s4-step3-label" parent="1" style="text;html=1;strokeColor=none;fillColor=#e1d5e7;align=center;verticalAlign=middle;fontSize=11;fontStyle=1;rounded=1;" value="3. View Badges on Profile" vertex="1">
+          <mxGeometry height="24" width="180" x="480" y="1418" as="geometry" />
+        </mxCell>
+        <mxCell id="s4-p3-frame" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;arcSize=8;" value="" vertex="1">
+          <mxGeometry height="300" width="180" x="480" y="1448" as="geometry" />
+        </mxCell>
+        <mxCell id="s4-p3-titlebar" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1a1a1a;fontColor=#ffffff;strokeColor=none;fontSize=11;fontStyle=1;align=left;spacingLeft=10;" value="👤 stucgator" vertex="1">
+          <mxGeometry height="28" width="180" x="480" y="1448" as="geometry" />
+        </mxCell>
+        <mxCell id="s4-p3-profilerow" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=12;fontStyle=1;spacingLeft=10;" value="🧑  stucgator" vertex="1">
+          <mxGeometry height="22" width="180" x="480" y="1483" as="geometry" />
+        </mxCell>
+        <mxCell id="s4-p3-badge1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f0ff;strokeColor=#8b5cf6;fontSize=9;align=center;fontColor=#5b21b6;" value="🛡️&#xa;Academic&#xa;Weapon" vertex="1">
+          <mxGeometry height="55" width="70" x="490" y="1510" as="geometry" />
+        </mxCell>
+        <mxCell id="s4-p3-badge2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f0ff;strokeColor=#8b5cf6;fontSize=9;align=center;fontColor=#5b21b6;" value="📝&#xa;First&#xa;Note" vertex="1">
+          <mxGeometry height="55" width="70" x="568" y="1510" as="geometry" />
+        </mxCell>
+        <mxCell id="s4-p3-divider" parent="1" style="line;strokeColor=#cccccc;" value="" vertex="1">
+          <mxGeometry height="10" width="160" x="490" y="1570" as="geometry" />
+        </mxCell>
+        <mxCell id="s4-p3-recentlabel" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=9;fontColor=#666;spacingLeft=10;" value="Recent notes" vertex="1">
+          <mxGeometry height="16" width="180" x="480" y="1582" as="geometry" />
+        </mxCell>
+        <mxCell id="s4-p3-note" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#cccccc;fontSize=10;align=left;spacingLeft=8;verticalAlign=top;spacingTop=4;" value="👤 stucgator&#xa;&quot;quiet, good coffee&quot;&#xa;👍 1   💬 0 replies" vertex="1">
+          <mxGeometry height="55" width="160" x="490" y="1600" as="geometry" />
+        </mxCell>
+        <mxCell id="s4-p3-caption" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=10;fontColor=#666666;fontStyle=2;" value="Bruno can see his new badge on his profile,&amp;nbsp;&lt;div&gt;along with other badges and recent notes&lt;/div&gt;" vertex="1">
+          <mxGeometry height="30" width="180" x="480" y="1756" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
