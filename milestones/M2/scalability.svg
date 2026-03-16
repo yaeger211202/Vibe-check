@@ -1,0 +1,192 @@
+<svg viewBox="0 0 900 1420" xmlns="http://www.w3.org/2000/svg" font-family="'Courier New', Courier, monospace">
+
+  <!-- Background -->
+  <rect width="900" height="1420" fill="#0d1117" rx="12"/>
+
+  <!-- Outer border -->
+  <rect x="10" y="10" width="880" height="1400" fill="none" stroke="#30363d" stroke-width="1.5" rx="8"/>
+
+  <!-- ═══ TITLE BAR ═══ -->
+  <rect x="10" y="10" width="880" height="48" fill="#161b22" rx="8"/>
+  <rect x="10" y="42" width="880" height="16" fill="#161b22"/>
+  <line x1="10" y1="58" x2="890" y2="58" stroke="#30363d" stroke-width="1.5"/>
+  <text x="450" y="39" text-anchor="middle" fill="#e6edf3" font-size="15" font-weight="bold" letter-spacing="2">VIBE CHECK — SCALABILITY DIAGRAM</text>
+
+  <!-- ═══ WEB BROWSER ═══ -->
+  <rect x="310" y="80" width="280" height="64" fill="#161b22" stroke="#388bfd" stroke-width="1.5" rx="6"/>
+  <text x="450" y="105" text-anchor="middle" fill="#79c0ff" font-size="13" font-weight="bold">Web Browser</text>
+  <text x="450" y="126" text-anchor="middle" fill="#8b949e" font-size="12">(React Client)</text>
+
+  <!-- HTTPS arrow -->
+  <line x1="450" y1="144" x2="450" y2="174" stroke="#58a6ff" stroke-width="1.5" marker-end="url(#arrow-blue)"/>
+  <text x="462" y="163" fill="#8b949e" font-size="11">HTTPS</text>
+
+  <!-- ═══ AWS ROUTE 53 ═══ -->
+  <rect x="290" y="175" width="320" height="64" fill="#161b22" stroke="#3fb950" stroke-width="1.5" rx="6"/>
+  <text x="450" y="200" text-anchor="middle" fill="#56d364" font-size="13" font-weight="bold">AWS Route 53</text>
+  <text x="450" y="221" text-anchor="middle" fill="#8b949e" font-size="12">DNS Routing</text>
+
+  <!-- Arrow Route53 → ALB -->
+  <line x1="450" y1="239" x2="450" y2="269" stroke="#58a6ff" stroke-width="1.5" marker-end="url(#arrow-blue)"/>
+
+  <!-- ═══ AWS ALB ═══ -->
+  <rect x="270" y="270" width="360" height="72" fill="#161b22" stroke="#3fb950" stroke-width="1.5" rx="6"/>
+  <text x="450" y="296" text-anchor="middle" fill="#56d364" font-size="13" font-weight="bold">AWS Elastic Load Balancer (ALB)</text>
+  <text x="450" y="316" text-anchor="middle" fill="#8b949e" font-size="12">Round-robin routing</text>
+  <text x="450" y="333" text-anchor="middle" fill="#8b949e" font-size="11">More users = add more App Servers</text>
+
+  <!-- ALB → App Server 1 -->
+  <line x1="360" y1="342" x2="210" y2="395" stroke="#58a6ff" stroke-width="1.5" marker-end="url(#arrow-blue)"/>
+  <!-- ALB → App Server 2 -->
+  <line x1="540" y1="342" x2="690" y2="395" stroke="#58a6ff" stroke-width="1.5" marker-end="url(#arrow-blue)"/>
+
+  <!-- ═══ APP SERVER 1 ═══ -->
+  <rect x="50" y="396" width="300" height="170" fill="#161b22" stroke="#d2a8ff" stroke-width="1.5" rx="6"/>
+  <rect x="50" y="396" width="300" height="30" fill="#1e1b2e" rx="6"/>
+  <rect x="50" y="412" width="300" height="14" fill="#1e1b2e"/>
+  <text x="200" y="416" text-anchor="middle" fill="#d2a8ff" font-size="13" font-weight="bold">App Server 1</text>
+  <text x="200" y="432" text-anchor="middle" fill="#8b949e" font-size="11">(EC2 / Node.js)</text>
+  <line x1="50" y1="438" x2="350" y2="438" stroke="#30363d" stroke-width="1"/>
+  <text x="70" y="458" fill="#79c0ff" font-size="11">POST  /api/notes</text>
+  <text x="70" y="476" fill="#79c0ff" font-size="11">GET   /api/heatmap</text>
+  <text x="70" y="494" fill="#79c0ff" font-size="11">POST  /api/users</text>
+  <text x="70" y="512" fill="#79c0ff" font-size="11">GET   /api/friends</text>
+  <text x="70" y="530" fill="#79c0ff" font-size="11">GET   /api/notifications</text>
+  <text x="70" y="554" fill="#8b949e" font-size="10">Cron job runs here (1 server only)</text>
+
+  <!-- ═══ APP SERVER 2 ═══ -->
+  <rect x="550" y="396" width="300" height="170" fill="#161b22" stroke="#d2a8ff" stroke-width="1.5" rx="6"/>
+  <rect x="550" y="396" width="300" height="30" fill="#1e1b2e" rx="6"/>
+  <rect x="550" y="412" width="300" height="14" fill="#1e1b2e"/>
+  <text x="700" y="416" text-anchor="middle" fill="#d2a8ff" font-size="13" font-weight="bold">App Server 2</text>
+  <text x="700" y="432" text-anchor="middle" fill="#8b949e" font-size="11">(EC2 / Node.js)</text>
+  <line x1="550" y1="438" x2="850" y2="438" stroke="#30363d" stroke-width="1"/>
+  <text x="570" y="458" fill="#79c0ff" font-size="11">POST  /api/notes</text>
+  <text x="570" y="476" fill="#79c0ff" font-size="11">GET   /api/heatmap</text>
+  <text x="570" y="494" fill="#79c0ff" font-size="11">POST  /api/users</text>
+  <text x="570" y="512" fill="#79c0ff" font-size="11">GET   /api/friends</text>
+  <text x="570" y="530" fill="#79c0ff" font-size="11">GET   /api/notifications</text>
+
+  <!-- Converge lines from both servers down to shared services -->
+  <!-- Server1 bottom → center -->
+  <line x1="200" y1="566" x2="200" y2="600" stroke="#58a6ff" stroke-width="1.5"/>
+  <line x1="200" y1="600" x2="450" y2="600" stroke="#58a6ff" stroke-width="1.5"/>
+  <!-- Server2 bottom → center -->
+  <line x1="700" y1="566" x2="700" y2="600" stroke="#58a6ff" stroke-width="1.5"/>
+  <line x1="700" y1="600" x2="450" y2="600" stroke="#58a6ff" stroke-width="1.5"/>
+
+  <!-- 3 branch lines down to shared services -->
+  <line x1="200" y1="600" x2="200" y2="630" stroke="#58a6ff" stroke-width="1.5" marker-end="url(#arrow-blue)"/>
+  <line x1="450" y1="600" x2="450" y2="630" stroke="#58a6ff" stroke-width="1.5" marker-end="url(#arrow-blue)"/>
+  <line x1="700" y1="600" x2="700" y2="630" stroke="#58a6ff" stroke-width="1.5" marker-end="url(#arrow-blue)"/>
+
+  <!-- ═══ SHARED LAYER LABEL ═══ -->
+  <text x="450" y="623" text-anchor="middle" fill="#8b949e" font-size="10">All servers share the same:</text>
+
+  <!-- ═══ POSTGRESQL PRIMARY ═══ -->
+  <rect x="30" y="632" width="240" height="160" fill="#161b22" stroke="#f78166" stroke-width="1.5" rx="6"/>
+  <rect x="30" y="632" width="240" height="28" fill="#2d1b1b" rx="6"/>
+  <rect x="30" y="648" width="240" height="12" fill="#2d1b1b"/>
+  <text x="150" y="650" text-anchor="middle" fill="#f78166" font-size="12" font-weight="bold">PostgreSQL Primary (RDS)</text>
+  <line x1="30" y1="660" x2="270" y2="660" stroke="#30363d" stroke-width="1"/>
+  <text x="50" y="678" fill="#e6edf3" font-size="11">All writes</text>
+  <text x="50" y="696" fill="#e6edf3" font-size="11">ACID compliant</text>
+  <text x="50" y="714" fill="#e6edf3" font-size="11">FK enforcement</text>
+  <text x="50" y="732" fill="#e6edf3" font-size="11">PostGIS ext.</text>
+  <text x="50" y="750" fill="#e6edf3" font-size="11">Radius queries</text>
+  <text x="50" y="778" fill="#8b949e" font-size="10">↓ WAL stream</text>
+
+  <!-- ═══ HEATMAP CACHE ═══ -->
+  <rect x="330" y="632" width="240" height="130" fill="#161b22" stroke="#e3b341" stroke-width="1.5" rx="6"/>
+  <rect x="330" y="632" width="240" height="28" fill="#2b2200" rx="6"/>
+  <rect x="330" y="648" width="240" height="12" fill="#2b2200"/>
+  <text x="450" y="650" text-anchor="middle" fill="#e3b341" font-size="12" font-weight="bold">Heatmap Cache</text>
+  <text x="450" y="666" text-anchor="middle" fill="#8b949e" font-size="11">(In-Memory)</text>
+  <line x1="330" y1="662" x2="570" y2="662" stroke="#30363d" stroke-width="1"/>
+  <text x="350" y="682" fill="#e6edf3" font-size="11">2 min TTL</text>
+  <text x="350" y="700" fill="#e6edf3" font-size="11">activity_score</text>
+  <text x="350" y="718" fill="#e6edf3" font-size="11">avg_vibe_score</text>
+
+  <!-- ═══ SESSION STORE ═══ -->
+  <rect x="630" y="632" width="240" height="130" fill="#161b22" stroke="#e3b341" stroke-width="1.5" rx="6"/>
+  <rect x="630" y="632" width="240" height="28" fill="#2b2200" rx="6"/>
+  <rect x="630" y="648" width="240" height="12" fill="#2b2200"/>
+  <text x="750" y="650" text-anchor="middle" fill="#e3b341" font-size="12" font-weight="bold">Session Store</text>
+  <text x="750" y="666" text-anchor="middle" fill="#8b949e" font-size="11">(In-Memory)</text>
+  <line x1="630" y1="662" x2="870" y2="662" stroke="#30363d" stroke-width="1"/>
+  <text x="650" y="682" fill="#e6edf3" font-size="11">Auth tokens</text>
+  <text x="650" y="700" fill="#e6edf3" font-size="11">Shared across</text>
+  <text x="650" y="718" fill="#e6edf3" font-size="11">all app servers</text>
+
+  <!-- WAL stream arrow PG Primary → Replica -->
+  <line x1="150" y1="792" x2="150" y2="870" stroke="#f78166" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arrow-red)"/>
+  <text x="158" y="836" fill="#8b949e" font-size="10">WAL stream</text>
+
+  <!-- ═══ POSTGRESQL REPLICA ═══ -->
+  <rect x="30" y="872" width="240" height="130" fill="#161b22" stroke="#f78166" stroke-width="1.5" rx="6"/>
+  <rect x="30" y="872" width="240" height="28" fill="#2d1b1b" rx="6"/>
+  <rect x="30" y="888" width="240" height="12" fill="#2d1b1b"/>
+  <text x="150" y="890" text-anchor="middle" fill="#f78166" font-size="12" font-weight="bold">PostgreSQL Replica (RDS)</text>
+  <line x1="30" y1="900" x2="270" y2="900" stroke="#30363d" stroke-width="1"/>
+  <text x="50" y="918" fill="#e6edf3" font-size="11">All reads</text>
+  <text x="50" y="936" fill="#e6edf3" font-size="11">Heatmap queries</text>
+  <text x="50" y="954" fill="#e6edf3" font-size="11">Analytics</text>
+
+  <!-- ═══ EXPIRY JOB ═══ -->
+  <rect x="630" y="772" width="240" height="110" fill="#161b22" stroke="#58a6ff" stroke-width="1.5" rx="6"/>
+  <rect x="630" y="772" width="240" height="28" fill="#0d1e35" rx="6"/>
+  <rect x="630" y="788" width="240" height="12" fill="#0d1e35"/>
+  <text x="750" y="790" text-anchor="middle" fill="#58a6ff" font-size="12" font-weight="bold">Expiry Job (Cron)</text>
+  <line x1="630" y1="800" x2="870" y2="800" stroke="#30363d" stroke-width="1"/>
+  <text x="650" y="820" fill="#e6edf3" font-size="11">DELETE expired notes</text>
+  <text x="650" y="838" fill="#e6edf3" font-size="11">Runs every 15 min</text>
+  <text x="650" y="856" fill="#e6edf3" font-size="11">Runs on 1 server</text>
+
+  <!-- Dotted line from App Server 1 → Expiry Job -->
+  <line x1="350" y1="490" x2="620" y2="820" stroke="#58a6ff" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- Arrow Replica → Backup -->
+  <line x1="150" y1="1002" x2="150" y2="1050" stroke="#3fb950" stroke-width="1.5" marker-end="url(#arrow-green)"/>
+
+  <!-- ═══ BACKUP AND RECOVERY ═══ -->
+  <rect x="30" y="1052" width="840" height="90" fill="#161b22" stroke="#3fb950" stroke-width="1.5" rx="6"/>
+  <rect x="30" y="1052" width="840" height="28" fill="#0d2010" rx="6"/>
+  <rect x="30" y="1068" width="840" height="12" fill="#0d2010"/>
+  <text x="450" y="1070" text-anchor="middle" fill="#56d364" font-size="13" font-weight="bold">Backup and Recovery</text>
+  <line x1="30" y1="1080" x2="870" y2="1080" stroke="#30363d" stroke-width="1"/>
+  <text x="450" y="1100" text-anchor="middle" fill="#e6edf3" font-size="12">Nightly pg_dump → Compressed → S3 upload</text>
+  <text x="450" y="1122" text-anchor="middle" fill="#8b949e" font-size="11">Failover: promote replica manually if primary fails</text>
+
+  <!-- ═══ HORIZONTAL SCALING EXPLAINER ═══ -->
+  <rect x="30" y="1162" width="840" height="220" fill="#0d1117" stroke="#388bfd" stroke-width="1.5" rx="6" stroke-dasharray="6,3"/>
+  <text x="450" y="1186" text-anchor="middle" fill="#388bfd" font-size="13" font-weight="bold">How Horizontal Scaling Works Here</text>
+  <line x1="30" y1="1194" x2="870" y2="1194" stroke="#30363d" stroke-width="1"/>
+
+  <!-- flow items -->
+  <text x="450" y="1218" text-anchor="middle" fill="#e6edf3" font-size="12">More users = add more App Servers</text>
+  <!-- arrow -->
+  <line x1="450" y1="1224" x2="450" y2="1242" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arrow-gray)"/>
+  <text x="450" y="1258" text-anchor="middle" fill="#e6edf3" font-size="12">Load Balancer automatically distributes requests across them</text>
+  <line x1="450" y1="1264" x2="450" y2="1282" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arrow-gray)"/>
+  <text x="450" y="1298" text-anchor="middle" fill="#e6edf3" font-size="12">All servers share the same:</text>
+  <text x="450" y="1318" text-anchor="middle" fill="#79c0ff" font-size="12">- PostgreSQL Primary (writes)   - PostgreSQL Replica (reads)</text>
+  <text x="450" y="1338" text-anchor="middle" fill="#79c0ff" font-size="12">- Heatmap Cache   - Session Store</text>
+  <text x="450" y="1368" text-anchor="middle" fill="#8b949e" font-size="10">* Stateless app servers = scale freely | Shared data layer = consistency guaranteed</text>
+
+  <!-- ═══ ARROW MARKERS ═══ -->
+  <defs>
+    <marker id="arrow-blue" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#58a6ff"/>
+    </marker>
+    <marker id="arrow-red" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#f78166"/>
+    </marker>
+    <marker id="arrow-green" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#3fb950"/>
+    </marker>
+    <marker id="arrow-gray" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#8b949e"/>
+    </marker>
+  </defs>
+
+</svg>
