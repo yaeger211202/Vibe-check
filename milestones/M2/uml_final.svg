@@ -1,0 +1,574 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 2600" width="1200" height="2600" font-family="'JetBrains Mono', 'Courier New', monospace">
+  <defs>
+    <style>
+      .layer-label { font-size: 11px; font-weight: 700; letter-spacing: 2px; }
+      .card-title  { font-size: 12px; font-weight: 700; }
+      .card-field  { font-size: 10.5px; fill: #8b949e; }
+      .route-path  { font-size: 11px; fill: #8b949e; }
+      .method-text { font-size: 10px; font-weight: 700; }
+      .api-label   { font-size: 11px; font-weight: 700; letter-spacing: 2px; fill: #bc8cff; }
+      .flow-from   { font-size: 11px; fill: #58a6ff; }
+      .flow-ep     { font-size: 11px; fill: #bc8cff; }
+      .flow-to     { font-size: 11px; fill: #3fb950; }
+      .flow-arr    { font-size: 12px; fill: #484f58; }
+      .flow-title  { font-size: 11px; font-weight: 700; letter-spacing: 2px; fill: #8b949e; }
+      .db-node     { font-size: 12px; font-weight: 700; fill: #f0883e; }
+      .db-dim      { font-size: 12px; fill: #484f58; }
+      .db-derived  { font-size: 11px; fill: #484f58; font-style: italic; }
+    </style>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="2600" fill="#0d1117"/>
+
+  <!-- Title -->
+  <circle cx="24" cy="24" r="5" fill="#3fb950" opacity="0.9"/>
+  <text x="38" y="29" font-size="12" font-weight="700" letter-spacing="2" fill="#8b949e" font-family="'JetBrains Mono','Courier New',monospace">SYSTEM ARCHITECTURE</text>
+
+  <!-- ═══════════════════════════════════
+       FRONTEND LAYER  (y=50 → ~530)
+  ════════════════════════════════════ -->
+  <rect x="16" y="50" width="1168" height="480" rx="10" fill="#0d1f3c" stroke="#1f4a8a" stroke-width="1"/>
+  <text x="32" y="74" class="layer-label" fill="#58a6ff" font-family="'JetBrains Mono','Courier New',monospace">FRONTEND</text>
+
+  <!-- MapView -->
+  <rect x="32" y="86" width="160" height="168" rx="7" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <rect x="32" y="86" width="160" height="28" rx="7" fill="rgba(88,166,255,0.07)"/>
+  <rect x="32" y="107" width="160" height="7" fill="rgba(88,166,255,0.07)"/>
+  <line x1="32" y1="114" x2="192" y2="114" stroke="#30363d" stroke-width="1"/>
+  <text x="42" y="105" class="card-title" fill="#58a6ff" font-family="'JetBrains Mono','Courier New',monospace">MapView</text>
+  <text x="50" y="129" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› heatmapData</text>
+  <text x="50" y="145" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› pins[]</text>
+  <text x="50" y="161" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› filterTag</text>
+  <text x="50" y="177" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› userLocation</text>
+  <text x="50" y="193" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› radius</text>
+  <text x="50" y="209" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› friendPins[]</text>
+
+  <!-- NoteCard -->
+  <rect x="208" y="86" width="166" height="264" rx="7" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <rect x="208" y="86" width="166" height="28" rx="7" fill="rgba(88,166,255,0.07)"/>
+  <rect x="208" y="107" width="166" height="7" fill="rgba(88,166,255,0.07)"/>
+  <line x1="208" y1="114" x2="374" y2="114" stroke="#30363d" stroke-width="1"/>
+  <text x="218" y="105" class="card-title" fill="#58a6ff" font-family="'JetBrains Mono','Courier New',monospace">NoteCard</text>
+  <text x="226" y="129" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› noteId</text>
+  <text x="226" y="145" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› content</text>
+  <text x="226" y="161" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› vibeScore</text>
+  <text x="226" y="177" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› createdAt</text>
+  <text x="226" y="193" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› expiresAt</text>
+  <text x="226" y="209" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› reactions[]</text>
+  <text x="226" y="225" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› replies[]</text>
+  <text x="226" y="241" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› isFriend</text>
+  <text x="226" y="257" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› isAnonymous</text>
+  <text x="226" y="273" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› reactionCount</text>
+  <text x="226" y="289" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› replyCount</text>
+  <text x="226" y="305" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› username</text>
+
+  <!-- UserProfile -->
+  <rect x="390" y="86" width="166" height="216" rx="7" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <rect x="390" y="86" width="166" height="28" rx="7" fill="rgba(88,166,255,0.07)"/>
+  <rect x="390" y="107" width="166" height="7" fill="rgba(88,166,255,0.07)"/>
+  <line x1="390" y1="114" x2="556" y2="114" stroke="#30363d" stroke-width="1"/>
+  <text x="400" y="105" class="card-title" fill="#58a6ff" font-family="'JetBrains Mono','Courier New',monospace">UserProfile</text>
+  <text x="408" y="129" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› userId</text>
+  <text x="408" y="145" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› username</text>
+  <text x="408" y="161" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› badges[]</text>
+  <text x="408" y="177" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› totalNotes</text>
+  <text x="408" y="193" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› profilePic</text>
+  <text x="408" y="209" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› visibility</text>
+  <text x="408" y="225" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› postingHistory[]</text>
+  <text x="408" y="241" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› totalReactions</text>
+
+  <!-- FriendsList -->
+  <rect x="572" y="86" width="158" height="136" rx="7" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <rect x="572" y="86" width="158" height="28" rx="7" fill="rgba(88,166,255,0.07)"/>
+  <rect x="572" y="107" width="158" height="7" fill="rgba(88,166,255,0.07)"/>
+  <line x1="572" y1="114" x2="730" y2="114" stroke="#30363d" stroke-width="1"/>
+  <text x="582" y="105" class="card-title" fill="#58a6ff" font-family="'JetBrains Mono','Courier New',monospace">FriendsList</text>
+  <text x="590" y="129" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› friends[]</text>
+  <text x="590" y="145" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› requests[]</text>
+  <text x="590" y="161" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› blockedUsers[]</text>
+  <text x="590" y="177" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› status</text>
+
+  <!-- NotifCenter -->
+  <rect x="746" y="86" width="158" height="120" rx="7" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <rect x="746" y="86" width="158" height="28" rx="7" fill="rgba(88,166,255,0.07)"/>
+  <rect x="746" y="107" width="158" height="7" fill="rgba(88,166,255,0.07)"/>
+  <line x1="746" y1="114" x2="904" y2="114" stroke="#30363d" stroke-width="1"/>
+  <text x="756" y="105" class="card-title" fill="#58a6ff" font-family="'JetBrains Mono','Courier New',monospace">NotifCenter</text>
+  <text x="764" y="129" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› notifs[]</text>
+  <text x="764" y="145" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› unreadCount</text>
+  <text x="764" y="161" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› wsConnection</text>
+
+  <!-- SearchFilter — NEW -->
+  <rect x="920" y="86" width="240" height="200" rx="7" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <rect x="920" y="86" width="240" height="28" rx="7" fill="rgba(88,166,255,0.07)"/>
+  <rect x="920" y="107" width="240" height="7" fill="rgba(88,166,255,0.07)"/>
+  <line x1="920" y1="114" x2="1160" y2="114" stroke="#30363d" stroke-width="1" opacity="0.4"/>
+  <text x="930" y="105" class="card-title" fill="#f0883e" font-family="'JetBrains Mono','Courier New',monospace">SearchFilter</text>
+  <text x="938" y="129" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› searchQuery</text>
+  <text x="938" y="145" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› selectedCategory</text>
+  <text x="938" y="161" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› radiusFilter</text>
+  <text x="938" y="177" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› vibeFilter</text>
+  <text x="938" y="193" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› results[]</text>
+  <text x="938" y="209" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› isLoading</text>
+  <text x="938" y="225" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› onFilterApply()</text>
+  <text x="938" y="241" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› onSearch()</text>
+  <text x="938" y="257" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› onReset()</text>
+
+  <!-- ── Arrow Frontend → API ── -->
+  <line x1="600" y1="532" x2="600" y2="554" stroke="#30363d" stroke-width="2"/>
+  <polygon points="600,560 595,550 605,550" fill="#30363d"/>
+
+  <!-- ═══════════════════════════════════
+       REALTIME LAYER (y=320 → ~490, right side)
+  ════════════════════════════════════ -->
+  <rect x="920" y="320" width="240" height="188" rx="7" fill="#1a0f2e" stroke="#30363d" stroke-width="1"/>
+  <rect x="920" y="320" width="240" height="28" rx="7" fill="rgba(88,166,255,0.07)"/>
+  <rect x="920" y="341" width="240" height="7" fill="rgba(88,166,255,0.07)"/>
+  <line x1="920" y1="348" x2="1160" y2="348" stroke="#bc8cff" stroke-width="1" opacity="0.3"/>
+  <text x="930" y="339" class="card-title" fill="#58a6ff" font-family="'JetBrains Mono','Courier New',monospace">Socket.io  (Real-Time)</text>
+  <text x="938" y="363" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">events emitted:</text>
+  <text x="938" y="379" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› heatmap:update</text>
+  <text x="938" y="395" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› note:new</text>
+  <text x="938" y="411" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› note:expired</text>
+  <text x="938" y="427" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› notif:push</text>
+  <text x="938" y="443" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› friend:note_nearby</text>
+  <text x="938" y="459" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› vibe:score_update</text>
+  <text x="938" y="475" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› badge:unlocked</text>
+  <!-- dashed line from Socket.io to NotifCenter -->
+  <line x1="920" y1="406" x2="904" y2="406" stroke="#bc8cff" stroke-width="1" stroke-dasharray="4,3" opacity="0.5"/>
+  <!-- dashed line from Socket.io to MapView -->
+  <line x1="920" y1="380" x2="880" y2="380" stroke="#bc8cff" stroke-width="1" stroke-dasharray="4,3" opacity="0.5"/>
+
+  <!-- ═══════════════════════════════════
+       API BLOCK  (y=562 → ~850)
+  ════════════════════════════════════ -->
+  <rect x="200" y="562" width="800" height="380" rx="10" fill="#1c2330" stroke="#30363d" stroke-width="1"/>
+  <text x="220" y="588" class="api-label" font-family="'JetBrains Mono','Courier New',monospace">⇅  HTTP / REST API</text>
+
+  <!-- Col 1 routes -->
+  <!-- POST /api/notes -->
+  <rect x="220" y="597" width="44" height="16" rx="3" fill="rgba(88,166,255,0.13)" stroke="rgba(88,166,255,0.3)" stroke-width="1"/>
+  <text x="242" y="609" text-anchor="middle" class="method-text" fill="#58a6ff" font-family="'JetBrains Mono','Courier New',monospace">POST</text>
+  <text x="272" y="609" class="route-path" font-family="'JetBrains Mono','Courier New',monospace">/api/notes</text>
+
+  <!-- GET /api/notes/:locationId -->
+  <rect x="220" y="618" width="36" height="16" rx="3" fill="rgba(63,185,80,0.15)" stroke="rgba(63,185,80,0.3)" stroke-width="1"/>
+  <text x="238" y="630" text-anchor="middle" class="method-text" fill="#3fb950" font-family="'JetBrains Mono','Courier New',monospace">GET</text>
+  <text x="264" y="630" class="route-path" font-family="'JetBrains Mono','Courier New',monospace">/api/notes/:locationId</text>
+
+  <!-- PATCH /api/notes/:id -->
+  <rect x="220" y="639" width="46" height="16" rx="3" fill="rgba(240,200,80,0.15)" stroke="rgba(240,200,80,0.3)" stroke-width="1"/>
+  <text x="243" y="651" text-anchor="middle" class="method-text" fill="#f0c850" font-family="'JetBrains Mono','Courier New',monospace">PATCH</text>
+  <text x="274" y="651" class="route-path" font-family="'JetBrains Mono','Courier New',monospace">/api/notes/:id</text>
+
+  <!-- DELETE /api/notes/:id -->
+  <rect x="220" y="660" width="52" height="16" rx="3" fill="rgba(240,80,80,0.13)" stroke="rgba(240,80,80,0.3)" stroke-width="1"/>
+  <text x="246" y="672" text-anchor="middle" class="method-text" fill="#f07070" font-family="'JetBrains Mono','Courier New',monospace">DELETE</text>
+  <text x="280" y="672" class="route-path" font-family="'JetBrains Mono','Courier New',monospace">/api/notes/:id</text>
+
+  <!-- GET /api/heatmap -->
+  <rect x="220" y="681" width="36" height="16" rx="3" fill="rgba(63,185,80,0.15)" stroke="rgba(63,185,80,0.3)" stroke-width="1"/>
+  <text x="238" y="693" text-anchor="middle" class="method-text" fill="#3fb950" font-family="'JetBrains Mono','Courier New',monospace">GET</text>
+  <text x="264" y="693" class="route-path" font-family="'JetBrains Mono','Courier New',monospace">/api/heatmap</text>
+
+  <!-- POST /api/users/register -->
+  <rect x="220" y="702" width="44" height="16" rx="3" fill="rgba(88,166,255,0.13)" stroke="rgba(88,166,255,0.3)" stroke-width="1"/>
+  <text x="242" y="714" text-anchor="middle" class="method-text" fill="#58a6ff" font-family="'JetBrains Mono','Courier New',monospace">POST</text>
+  <text x="272" y="714" class="route-path" font-family="'JetBrains Mono','Courier New',monospace">/api/users/register</text>
+
+  <!-- POST /api/users/login -->
+  <rect x="220" y="723" width="44" height="16" rx="3" fill="rgba(88,166,255,0.13)" stroke="rgba(88,166,255,0.3)" stroke-width="1"/>
+  <text x="242" y="735" text-anchor="middle" class="method-text" fill="#58a6ff" font-family="'JetBrains Mono','Courier New',monospace">POST</text>
+  <text x="272" y="735" class="route-path" font-family="'JetBrains Mono','Courier New',monospace">/api/users/login</text>
+
+  <!-- PATCH /api/users/:id -->
+  <rect x="220" y="744" width="46" height="16" rx="3" fill="rgba(240,200,80,0.15)" stroke="rgba(240,200,80,0.3)" stroke-width="1"/>
+  <text x="243" y="756" text-anchor="middle" class="method-text" fill="#f0c850" font-family="'JetBrains Mono','Courier New',monospace">PATCH</text>
+  <text x="274" y="756" class="route-path" font-family="'JetBrains Mono','Courier New',monospace">/api/users/:id</text>
+
+  <!-- DELETE /api/users/:id -->
+  <rect x="220" y="765" width="52" height="16" rx="3" fill="rgba(240,80,80,0.13)" stroke="rgba(240,80,80,0.3)" stroke-width="1"/>
+  <text x="246" y="777" text-anchor="middle" class="method-text" fill="#f07070" font-family="'JetBrains Mono','Courier New',monospace">DELETE</text>
+  <text x="280" y="777" class="route-path" font-family="'JetBrains Mono','Courier New',monospace">/api/users/:id</text>
+
+  <!-- Col 2 routes -->
+  <!-- POST /api/friends/request -->
+  <rect x="480" y="597" width="44" height="16" rx="3" fill="rgba(88,166,255,0.13)" stroke="rgba(88,166,255,0.3)" stroke-width="1"/>
+  <text x="502" y="609" text-anchor="middle" class="method-text" fill="#58a6ff" font-family="'JetBrains Mono','Courier New',monospace">POST</text>
+  <text x="532" y="609" class="route-path" font-family="'JetBrains Mono','Courier New',monospace">/api/friends/request</text>
+
+  <!-- POST /api/friends/accept/:id -->
+  <rect x="480" y="618" width="44" height="16" rx="3" fill="rgba(88,166,255,0.13)" stroke="rgba(88,166,255,0.3)" stroke-width="1"/>
+  <text x="502" y="630" text-anchor="middle" class="method-text" fill="#58a6ff" font-family="'JetBrains Mono','Courier New',monospace">POST</text>
+  <text x="532" y="630" class="route-path" font-family="'JetBrains Mono','Courier New',monospace">/api/friends/accept/:id</text>
+
+  <!-- DELETE /api/friends/:id -->
+  <rect x="480" y="639" width="52" height="16" rx="3" fill="rgba(240,80,80,0.13)" stroke="rgba(240,80,80,0.3)" stroke-width="1"/>
+  <text x="506" y="651" text-anchor="middle" class="method-text" fill="#f07070" font-family="'JetBrains Mono','Courier New',monospace">DELETE</text>
+  <text x="540" y="651" class="route-path" font-family="'JetBrains Mono','Courier New',monospace">/api/friends/:id</text>
+
+  <!-- POST /api/friends/block -->
+  <rect x="480" y="660" width="44" height="16" rx="3" fill="rgba(88,166,255,0.13)" stroke="rgba(88,166,255,0.3)" stroke-width="1"/>
+  <text x="502" y="672" text-anchor="middle" class="method-text" fill="#58a6ff" font-family="'JetBrains Mono','Courier New',monospace">POST</text>
+  <text x="532" y="672" class="route-path" font-family="'JetBrains Mono','Courier New',monospace">/api/friends/block</text>
+
+  <!-- GET /api/notifications -->
+  <rect x="480" y="681" width="36" height="16" rx="3" fill="rgba(63,185,80,0.15)" stroke="rgba(63,185,80,0.3)" stroke-width="1"/>
+  <text x="498" y="693" text-anchor="middle" class="method-text" fill="#3fb950" font-family="'JetBrains Mono','Courier New',monospace">GET</text>
+  <text x="524" y="693" class="route-path" font-family="'JetBrains Mono','Courier New',monospace">/api/notifications</text>
+
+  <!-- GET /api/badges -->
+  <rect x="480" y="702" width="36" height="16" rx="3" fill="rgba(63,185,80,0.15)" stroke="rgba(63,185,80,0.3)" stroke-width="1"/>
+  <text x="498" y="714" text-anchor="middle" class="method-text" fill="#3fb950" font-family="'JetBrains Mono','Courier New',monospace">GET</text>
+  <text x="524" y="714" class="route-path" font-family="'JetBrains Mono','Courier New',monospace">/api/badges</text>
+
+  <!-- POST /api/replies -->
+  <rect x="480" y="723" width="44" height="16" rx="3" fill="rgba(88,166,255,0.13)" stroke="rgba(88,166,255,0.3)" stroke-width="1"/>
+  <text x="502" y="735" text-anchor="middle" class="method-text" fill="#58a6ff" font-family="'JetBrains Mono','Courier New',monospace">POST</text>
+  <text x="532" y="735" class="route-path" font-family="'JetBrains Mono','Courier New',monospace">/api/replies</text>
+
+  <!-- DELETE /api/replies/:id -->
+  <rect x="480" y="744" width="52" height="16" rx="3" fill="rgba(240,80,80,0.13)" stroke="rgba(240,80,80,0.3)" stroke-width="1"/>
+  <text x="506" y="756" text-anchor="middle" class="method-text" fill="#f07070" font-family="'JetBrains Mono','Courier New',monospace">DELETE</text>
+  <text x="540" y="756" class="route-path" font-family="'JetBrains Mono','Courier New',monospace">/api/replies/:id</text>
+
+  <!-- POST /api/reactions -->
+  <rect x="480" y="765" width="44" height="16" rx="3" fill="rgba(88,166,255,0.13)" stroke="rgba(88,166,255,0.3)" stroke-width="1"/>
+  <text x="502" y="777" text-anchor="middle" class="method-text" fill="#58a6ff" font-family="'JetBrains Mono','Courier New',monospace">POST</text>
+  <text x="532" y="777" class="route-path" font-family="'JetBrains Mono','Courier New',monospace">/api/reactions</text>
+
+  <!-- Col 3 routes — NEW -->
+  <!-- DELETE /api/reactions/:id -->
+  <rect x="740" y="597" width="52" height="16" rx="3" fill="rgba(240,80,80,0.13)" stroke="rgba(240,80,80,0.3)" stroke-width="1"/>
+  <text x="766" y="609" text-anchor="middle" class="method-text" fill="#f07070" font-family="'JetBrains Mono','Courier New',monospace">DELETE</text>
+  <text x="800" y="609" class="route-path" font-family="'JetBrains Mono','Courier New',monospace">/api/reactions/:id</text>
+
+  <!-- GET /api/locations -->
+  <rect x="740" y="618" width="36" height="16" rx="3" fill="rgba(63,185,80,0.15)" stroke="rgba(63,185,80,0.3)" stroke-width="1"/>
+  <text x="758" y="630" text-anchor="middle" class="method-text" fill="#3fb950" font-family="'JetBrains Mono','Courier New',monospace">GET</text>
+  <text x="784" y="630" class="route-path" font-family="'JetBrains Mono','Courier New',monospace">/api/locations</text>
+
+  <!-- GET /api/locations/:id -->
+  <rect x="740" y="639" width="36" height="16" rx="3" fill="rgba(63,185,80,0.15)" stroke="rgba(63,185,80,0.3)" stroke-width="1"/>
+  <text x="758" y="651" text-anchor="middle" class="method-text" fill="#3fb950" font-family="'JetBrains Mono','Courier New',monospace">GET</text>
+  <text x="784" y="651" class="route-path" font-family="'JetBrains Mono','Courier New',monospace">/api/locations/:id</text>
+
+  <!-- GET /api/locations/search -->
+  <rect x="740" y="660" width="36" height="16" rx="3" fill="rgba(63,185,80,0.15)" stroke="rgba(63,185,80,0.3)" stroke-width="1"/>
+  <text x="758" y="672" text-anchor="middle" class="method-text" fill="#3fb950" font-family="'JetBrains Mono','Courier New',monospace">GET</text>
+  <text x="784" y="672" class="route-path" font-family="'JetBrains Mono','Courier New',monospace">/api/locations/search</text>
+
+  <!-- POST /api/reports/note -->
+  <rect x="740" y="681" width="44" height="16" rx="3" fill="rgba(88,166,255,0.13)" stroke="rgba(88,166,255,0.3)" stroke-width="1"/>
+  <text x="762" y="693" text-anchor="middle" class="method-text" fill="#58a6ff" font-family="'JetBrains Mono','Courier New',monospace">POST</text>
+  <text x="792" y="693" class="route-path" font-family="'JetBrains Mono','Courier New',monospace">/api/reports/note</text>
+
+  <!-- POST /api/reports/reply -->
+  <rect x="740" y="702" width="44" height="16" rx="3" fill="rgba(88,166,255,0.13)" stroke="rgba(88,166,255,0.3)" stroke-width="1"/>
+  <text x="762" y="714" text-anchor="middle" class="method-text" fill="#58a6ff" font-family="'JetBrains Mono','Courier New',monospace">POST</text>
+  <text x="792" y="714" class="route-path" font-family="'JetBrains Mono','Courier New',monospace">/api/reports/reply</text>
+
+  <!-- GET /api/users/:id/profile -->
+  <rect x="740" y="723" width="36" height="16" rx="3" fill="rgba(63,185,80,0.15)" stroke="rgba(63,185,80,0.3)" stroke-width="1"/>
+  <text x="758" y="735" text-anchor="middle" class="method-text" fill="#3fb950" font-family="'JetBrains Mono','Courier New',monospace">GET</text>
+  <text x="784" y="735" class="route-path" font-family="'JetBrains Mono','Courier New',monospace">/api/users/:id/profile</text>
+
+  <!-- POST /api/users/verify-email -->
+  <rect x="740" y="744" width="44" height="16" rx="3" fill="rgba(88,166,255,0.13)" stroke="rgba(88,166,255,0.3)" stroke-width="1"/>
+  <text x="762" y="756" text-anchor="middle" class="method-text" fill="#58a6ff" font-family="'JetBrains Mono','Courier New',monospace">POST</text>
+  <text x="792" y="756" class="route-path" font-family="'JetBrains Mono','Courier New',monospace">/api/users/verify-email</text>
+
+  <!-- ── Arrow API → Backend ── -->
+  <line x1="600" y1="944" x2="600" y2="966" stroke="#30363d" stroke-width="2"/>
+  <polygon points="600,972 595,962 605,962" fill="#30363d"/>
+
+  <!-- ═══════════════════════════════════
+       BACKEND LAYER  (y=974 → ~1430)
+  ════════════════════════════════════ -->
+  <rect x="16" y="974" width="1168" height="500" rx="10" fill="#0f1f14" stroke="#1a4d25" stroke-width="1"/>
+  <text x="32" y="998" class="layer-label" fill="#3fb950" font-family="'JetBrains Mono','Courier New',monospace">BACKEND</text>
+
+  <!-- NoteController -->
+  <rect x="32" y="1008" width="180" height="232" rx="7" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <rect x="32" y="1008" width="180" height="28" rx="7" fill="rgba(63,185,80,0.07)"/>
+  <rect x="32" y="1029" width="180" height="7" fill="rgba(63,185,80,0.07)"/>
+  <line x1="32" y1="1036" x2="212" y2="1036" stroke="#30363d" stroke-width="1"/>
+  <text x="42" y="1027" class="card-title" fill="#3fb950" font-family="'JetBrains Mono','Courier New',monospace">NoteController</text>
+  <text x="50" y="1051" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› createNote()</text>
+  <text x="50" y="1067" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› getNotesByLocation()</text>
+  <text x="50" y="1083" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› editNote()</text>
+  <text x="50" y="1099" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› deleteNote()</text>
+  <text x="50" y="1115" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› enforceRadiusCheck()</text>
+  <text x="50" y="1131" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› expireNotes()</text>
+  <text x="50" y="1147" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› validateContent()</text>
+  <text x="50" y="1163" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› getNoteById()</text>
+  <text x="50" y="1179" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› triggerVibeUpdate()</text>
+  <text x="50" y="1195" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› checkBadgeThreshold()</text>
+
+  <!-- UserController -->
+  <rect x="228" y="1008" width="180" height="200" rx="7" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <rect x="228" y="1008" width="180" height="28" rx="7" fill="rgba(63,185,80,0.07)"/>
+  <rect x="228" y="1029" width="180" height="7" fill="rgba(63,185,80,0.07)"/>
+  <line x1="228" y1="1036" x2="408" y2="1036" stroke="#30363d" stroke-width="1"/>
+  <text x="238" y="1027" class="card-title" fill="#3fb950" font-family="'JetBrains Mono','Courier New',monospace">UserController</text>
+  <text x="246" y="1051" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› register()</text>
+  <text x="246" y="1067" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› login()</text>
+  <text x="246" y="1083" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› logout()</text>
+  <text x="246" y="1099" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› verifyEmail()</text>
+  <text x="246" y="1115" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› updateProfile()</text>
+  <text x="246" y="1131" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› changePassword()</text>
+  <text x="246" y="1147" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› uploadProfilePic()</text>
+  <text x="246" y="1163" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› deleteAccount()</text>
+  <text x="246" y="1179" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› getPublicProfile()</text>
+
+  <!-- MapController -->
+  <rect x="424" y="1008" width="180" height="184" rx="7" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <rect x="424" y="1008" width="180" height="28" rx="7" fill="rgba(63,185,80,0.07)"/>
+  <rect x="424" y="1029" width="180" height="7" fill="rgba(63,185,80,0.07)"/>
+  <line x1="424" y1="1036" x2="604" y2="1036" stroke="#30363d" stroke-width="1"/>
+  <text x="434" y="1027" class="card-title" fill="#3fb950" font-family="'JetBrains Mono','Courier New',monospace">MapController</text>
+  <text x="442" y="1051" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› getHeatmap()</text>
+  <text x="442" y="1067" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› getNearbyPins()</text>
+  <text x="442" y="1083" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› filterByCategory()</text>
+  <text x="442" y="1099" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› filterByVibeLevel()</text>
+  <text x="442" y="1115" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› computeActivityScore()</text>
+  <text x="442" y="1131" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› broadcastHeatmap()</text>
+  <text x="442" y="1147" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› getCurrentUserLocation()</text>
+
+  <!-- LocationController — NEW -->
+  <rect x="620" y="1008" width="180" height="184" rx="7" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <rect x="620" y="1008" width="180" height="28" rx="7" fill="rgba(63,185,80,0.07)"/>
+  <rect x="620" y="1029" width="180" height="7" fill="rgba(63,185,80,0.07)"/>
+  <line x1="620" y1="1036" x2="800" y2="1036" stroke="#30363d" stroke-width="1" opacity="0.4"/>
+  <text x="630" y="1027" class="card-title" fill="#3fb950" font-family="'JetBrains Mono','Courier New',monospace">LocationController</text>
+  <text x="638" y="1051" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› getLocations()</text>
+  <text x="638" y="1067" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› getLocationById()</text>
+  <text x="638" y="1083" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› searchLocations()</text>
+  <text x="638" y="1099" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› filterByRadius()</text>
+  <text x="638" y="1115" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› getAvgVibeScore()</text>
+  <text x="638" y="1131" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› selectLocationPin()</text>
+  <text x="638" y="1147" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› validateRadius()</text>
+
+  <!-- FriendController -->
+  <rect x="816" y="1008" width="180" height="200" rx="7" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <rect x="816" y="1008" width="180" height="28" rx="7" fill="rgba(63,185,80,0.07)"/>
+  <rect x="816" y="1029" width="180" height="7" fill="rgba(63,185,80,0.07)"/>
+  <line x1="816" y1="1036" x2="996" y2="1036" stroke="#30363d" stroke-width="1"/>
+  <text x="826" y="1027" class="card-title" fill="#3fb950" font-family="'JetBrains Mono','Courier New',monospace">FriendController</text>
+  <text x="834" y="1051" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› sendRequest()</text>
+  <text x="834" y="1067" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› acceptRequest()</text>
+  <text x="834" y="1083" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› declineRequest()</text>
+  <text x="834" y="1099" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› removeFriend()</text>
+  <text x="834" y="1115" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› blockUser()</text>
+  <text x="834" y="1131" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› unblockUser()</text>
+  <text x="834" y="1147" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› getFriendsList()</text>
+  <text x="834" y="1163" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› getFriendNotes()</text>
+
+  <!-- Row 2 backend controllers -->
+  <!-- ReactController -->
+  <rect x="32" y="1260" width="180" height="152" rx="7" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <rect x="32" y="1260" width="180" height="28" rx="7" fill="rgba(63,185,80,0.07)"/>
+  <rect x="32" y="1281" width="180" height="7" fill="rgba(63,185,80,0.07)"/>
+  <line x1="32" y1="1288" x2="212" y2="1288" stroke="#30363d" stroke-width="1"/>
+  <text x="42" y="1279" class="card-title" fill="#3fb950" font-family="'JetBrains Mono','Courier New',monospace">ReactController</text>
+  <text x="50" y="1303" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› addReaction()</text>
+  <text x="50" y="1319" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› removeReaction()</text>
+  <text x="50" y="1335" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› enforceOnePerUser()</text>
+  <text x="50" y="1351" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› getReactionCount()</text>
+
+  <!-- ReplyController -->
+  <rect x="228" y="1260" width="180" height="168" rx="7" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <rect x="228" y="1260" width="180" height="28" rx="7" fill="rgba(63,185,80,0.07)"/>
+  <rect x="228" y="1281" width="180" height="7" fill="rgba(63,185,80,0.07)"/>
+  <line x1="228" y1="1288" x2="408" y2="1288" stroke="#30363d" stroke-width="1"/>
+  <text x="238" y="1279" class="card-title" fill="#3fb950" font-family="'JetBrains Mono','Courier New',monospace">ReplyController</text>
+  <text x="246" y="1303" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› createReply()</text>
+  <text x="246" y="1319" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› deleteReply()</text>
+  <text x="246" y="1335" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› getRepliesByNote()</text>
+  <text x="246" y="1351" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› filterBlocked()</text>
+  <text x="246" y="1367" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› validateContent()</text>
+
+  <!-- BadgeController -->
+  <rect x="424" y="1260" width="180" height="168" rx="7" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <rect x="424" y="1260" width="180" height="28" rx="7" fill="rgba(63,185,80,0.07)"/>
+  <rect x="424" y="1281" width="180" height="7" fill="rgba(63,185,80,0.07)"/>
+  <line x1="424" y1="1288" x2="604" y2="1288" stroke="#30363d" stroke-width="1"/>
+  <text x="434" y="1279" class="card-title" fill="#3fb950" font-family="'JetBrains Mono','Courier New',monospace">BadgeController</text>
+  <text x="442" y="1303" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› getUserBadges()</text>
+  <text x="442" y="1319" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› evaluateThresholds()</text>
+  <text x="442" y="1335" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› awardBadge()</text>
+  <text x="442" y="1351" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› getAllBadges()</text>
+  <text x="442" y="1367" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› trackProgress()</text>
+
+  <!-- NotifController -->
+  <rect x="620" y="1260" width="180" height="184" rx="7" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <rect x="620" y="1260" width="180" height="28" rx="7" fill="rgba(63,185,80,0.07)"/>
+  <rect x="620" y="1281" width="180" height="7" fill="rgba(63,185,80,0.07)"/>
+  <line x1="620" y1="1288" x2="800" y2="1288" stroke="#30363d" stroke-width="1"/>
+  <text x="630" y="1279" class="card-title" fill="#3fb950" font-family="'JetBrains Mono','Courier New',monospace">NotifController</text>
+  <text x="638" y="1303" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› getNotifs()</text>
+  <text x="638" y="1319" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› markAsRead()</text>
+  <text x="638" y="1335" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› detectTrendingNearby()</text>
+  <text x="638" y="1351" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› sendPushNotif()</text>
+  <text x="638" y="1367" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› checkFriendProximity()</text>
+  <text x="638" y="1383" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› toggleNotifSettings()</text>
+
+  <!-- ModerationController — NEW -->
+  <rect x="816" y="1260" width="180" height="184" rx="7" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <rect x="816" y="1260" width="180" height="28" rx="7" fill="rgba(63,185,80,0.07)"/>
+  <rect x="816" y="1281" width="180" height="7" fill="rgba(63,185,80,0.07)"/>
+  <line x1="816" y1="1288" x2="996" y2="1288" stroke="#30363d" stroke-width="1" opacity="0.4"/>
+  <text x="826" y="1279" class="card-title" fill="#3fb950" font-family="'JetBrains Mono','Courier New',monospace">ModerationController</text>
+  <text x="834" y="1303" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› reportNote()</text>
+  <text x="834" y="1319" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› reportReply()</text>
+  <text x="834" y="1335" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› logReportReason()</text>
+  <text x="834" y="1351" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› flagForReview()</text>
+  <text x="834" y="1367" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› hideReportedContent()</text>
+  <text x="834" y="1383" class="card-field" font-family="'JetBrains Mono','Courier New',monospace">› getReportQueue()</text>
+
+  <!-- ── Arrow Backend → DB ── -->
+  <line x1="600" y1="1476" x2="600" y2="1498" stroke="#30363d" stroke-width="2"/>
+  <polygon points="600,1504 595,1494 605,1494" fill="#30363d"/>
+
+  <!-- ═══════════════════════════════════
+       DATABASE LAYER  (y=1506 → ~1870)
+  ════════════════════════════════════ -->
+  <rect x="16" y="1506" width="1168" height="360" rx="10" fill="#1f160a" stroke="#5a3a10" stroke-width="1"/>
+  <text x="32" y="1530" class="layer-label" fill="#f0883e" font-family="'JetBrains Mono','Courier New',monospace">DATABASE  (PostgreSQL + PostGIS)</text>
+
+  <!-- Row 1 -->
+  <text x="40" y="1558" class="db-node" font-family="'JetBrains Mono','Courier New',monospace">users</text>
+  <text x="96" y="1558" class="db-dim" font-family="'JetBrains Mono','Courier New',monospace"> ── </text>
+  <text x="128" y="1558" class="db-node" font-family="'JetBrains Mono','Courier New',monospace">registered_users</text>
+  <text x="312" y="1558" class="db-dim" font-family="'JetBrains Mono','Courier New',monospace"> ── </text>
+  <text x="344" y="1558" class="db-node" font-family="'JetBrains Mono','Courier New',monospace">user_profiles</text>
+  <text x="464" y="1558" class="db-dim" font-family="'JetBrains Mono','Courier New',monospace"> ── </text>
+  <text x="496" y="1558" class="db-node" font-family="'JetBrains Mono','Courier New',monospace">user_badges</text>
+  <text x="606" y="1558" class="db-dim" font-family="'JetBrains Mono','Courier New',monospace"> ── </text>
+  <text x="638" y="1558" class="db-node" font-family="'JetBrains Mono','Courier New',monospace">badges</text>
+
+  <!-- Row 2: users child: locations — NEW -->
+  <text x="50" y="1580" class="db-dim" font-family="'JetBrains Mono','Courier New',monospace">│</text>
+  <text x="50" y="1602" class="db-dim" font-family="'JetBrains Mono','Courier New',monospace">├──</text>
+  <text x="86" y="1602" class="db-node" font-family="'JetBrains Mono','Courier New',monospace">locations</text>
+  <text x="198" y="1602" class="db-dim" font-family="'JetBrains Mono','Courier New',monospace"> ── </text>
+  <text x="230" y="1602" class="db-node" font-family="'JetBrains Mono','Courier New',monospace">category_tags</text>
+
+  <!-- Row 3: notes -->
+  <text x="50" y="1624" class="db-dim" font-family="'JetBrains Mono','Courier New',monospace">│</text>
+  <text x="50" y="1646" class="db-dim" font-family="'JetBrains Mono','Courier New',monospace">├──</text>
+  <text x="86" y="1646" class="db-node" font-family="'JetBrains Mono','Courier New',monospace">notes</text>
+  <text x="134" y="1646" class="db-dim" font-family="'JetBrains Mono','Courier New',monospace"> ── </text>
+  <text x="166" y="1646" class="db-node" font-family="'JetBrains Mono','Courier New',monospace">replies</text>
+
+  <!-- Row 4: notes → reactions -->
+  <text x="50" y="1668" class="db-dim" font-family="'JetBrains Mono','Courier New',monospace">│</text>
+  <text x="110" y="1668" class="db-dim" font-family="'JetBrains Mono','Courier New',monospace">└────</text>
+  <text x="162" y="1668" class="db-node" font-family="'JetBrains Mono','Courier New',monospace">reactions</text>
+
+  <!-- Row 5: notes → heatmap_activity (fixed parent) -->
+  <text x="50" y="1690" class="db-dim" font-family="'JetBrains Mono','Courier New',monospace">│</text>
+  <text x="110" y="1690" class="db-dim" font-family="'JetBrains Mono','Courier New',monospace">└────</text>
+  <text x="162" y="1690" class="db-derived" font-family="'JetBrains Mono','Courier New',monospace">heatmap_activity (derived from notes)</text>
+
+  <!-- Row 6: notifications -->
+  <text x="50" y="1712" class="db-dim" font-family="'JetBrains Mono','Courier New',monospace">│</text>
+  <text x="50" y="1734" class="db-dim" font-family="'JetBrains Mono','Courier New',monospace">├──</text>
+  <text x="86" y="1734" class="db-node" font-family="'JetBrains Mono','Courier New',monospace">notifications</text>
+
+  <!-- Row 7: friend_connections + reports -->
+  <text x="50" y="1756" class="db-dim" font-family="'JetBrains Mono','Courier New',monospace">├──</text>
+  <text x="86" y="1756" class="db-node" font-family="'JetBrains Mono','Courier New',monospace">friend_connections</text>
+
+  <text x="50" y="1778" class="db-dim" font-family="'JetBrains Mono','Courier New',monospace">└──</text>
+  <text x="86" y="1778" class="db-node" font-family="'JetBrains Mono','Courier New',monospace">reports</text>
+  <text x="200" y="1778" class="db-dim" font-family="'JetBrains Mono','Courier New',monospace"> (report_type, target_id, reason, reporter_id)</text>
+
+  <!-- Key -->
+  <text x="720" y="1602" font-size="10" fill="#58a6ff" font-family="'JetBrains Mono','Courier New',monospace" font-weight="700">PostGIS columns (geospatial):</text>
+  <text x="720" y="1618" class="db-dim" font-family="'JetBrains Mono','Courier New',monospace">notes.location_point  GEOGRAPHY(POINT)</text>
+  <text x="720" y="1634" class="db-dim" font-family="'JetBrains Mono','Courier New',monospace">locations.coords      GEOGRAPHY(POINT)</text>
+  <text x="720" y="1650" class="db-dim" font-family="'JetBrains Mono','Courier New',monospace">ST_DWithin() for radius enforcement</text>
+
+  <!-- ═══════════════════════════════════
+       DATA FLOW  (y=1900 → bottom)
+  ════════════════════════════════════ -->
+  <text x="16" y="1900" class="flow-title" font-family="'JetBrains Mono','Courier New',monospace">DATA FLOW</text>
+  <line x1="16" y1="1905" x2="1184" y2="1905" stroke="#30363d" stroke-width="1"/>
+
+  <!-- Row 1 -->
+  <text x="16"  y="1928" class="flow-from" font-family="'JetBrains Mono','Courier New',monospace">MapView</text>
+  <text x="148" y="1928" class="flow-arr"  font-family="'JetBrains Mono','Courier New',monospace">──▶</text>
+  <text x="192" y="1928" class="flow-ep"   font-family="'JetBrains Mono','Courier New',monospace">GET /api/heatmap</text>
+  <text x="440" y="1928" class="flow-arr"  font-family="'JetBrains Mono','Courier New',monospace">──▶</text>
+  <text x="484" y="1928" class="flow-to"   font-family="'JetBrains Mono','Courier New',monospace">MapController</text>
+
+  <!-- Row 2 -->
+  <text x="16"  y="1948" class="flow-from" font-family="'JetBrains Mono','Courier New',monospace">MapView</text>
+  <text x="148" y="1948" class="flow-arr"  font-family="'JetBrains Mono','Courier New',monospace">──▶</text>
+  <text x="192" y="1948" class="flow-ep"   font-family="'JetBrains Mono','Courier New',monospace">GET /api/notes/:locationId</text>
+  <text x="440" y="1948" class="flow-arr"  font-family="'JetBrains Mono','Courier New',monospace">──▶</text>
+  <text x="484" y="1948" class="flow-to"   font-family="'JetBrains Mono','Courier New',monospace">NoteController</text>
+
+  <!-- Row 3 -->
+  <text x="16"  y="1968" class="flow-from" font-family="'JetBrains Mono','Courier New',monospace">NoteCard</text>
+  <text x="148" y="1968" class="flow-arr"  font-family="'JetBrains Mono','Courier New',monospace">──▶</text>
+  <text x="192" y="1968" class="flow-ep"   font-family="'JetBrains Mono','Courier New',monospace">POST /api/notes</text>
+  <text x="440" y="1968" class="flow-arr"  font-family="'JetBrains Mono','Courier New',monospace">──▶</text>
+  <text x="484" y="1968" class="flow-to"   font-family="'JetBrains Mono','Courier New',monospace">NoteController → vibeUpdate → Socket.io broadcast</text>
+
+  <!-- Row 4 -->
+  <text x="16"  y="1988" class="flow-from" font-family="'JetBrains Mono','Courier New',monospace">NoteCard</text>
+  <text x="148" y="1988" class="flow-arr"  font-family="'JetBrains Mono','Courier New',monospace">──▶</text>
+  <text x="192" y="1988" class="flow-ep"   font-family="'JetBrains Mono','Courier New',monospace">POST /api/reactions</text>
+  <text x="440" y="1988" class="flow-arr"  font-family="'JetBrains Mono','Courier New',monospace">──▶</text>
+  <text x="484" y="1988" class="flow-to"   font-family="'JetBrains Mono','Courier New',monospace">ReactController</text>
+
+  <!-- Row 5 -->
+  <text x="16"  y="2008" class="flow-from" font-family="'JetBrains Mono','Courier New',monospace">NoteCard</text>
+  <text x="148" y="2008" class="flow-arr"  font-family="'JetBrains Mono','Courier New',monospace">──▶</text>
+  <text x="192" y="2008" class="flow-ep"   font-family="'JetBrains Mono','Courier New',monospace">POST /api/replies</text>
+  <text x="440" y="2008" class="flow-arr"  font-family="'JetBrains Mono','Courier New',monospace">──▶</text>
+  <text x="484" y="2008" class="flow-to"   font-family="'JetBrains Mono','Courier New',monospace">ReplyController</text>
+
+  <!-- Row 6 -->
+  <text x="16"  y="2028" class="flow-from" font-family="'JetBrains Mono','Courier New',monospace">UserProfile</text>
+  <text x="148" y="2028" class="flow-arr"  font-family="'JetBrains Mono','Courier New',monospace">──▶</text>
+  <text x="192" y="2028" class="flow-ep"   font-family="'JetBrains Mono','Courier New',monospace">GET /api/badges</text>
+  <text x="440" y="2028" class="flow-arr"  font-family="'JetBrains Mono','Courier New',monospace">──▶</text>
+  <text x="484" y="2028" class="flow-to"   font-family="'JetBrains Mono','Courier New',monospace">BadgeController</text>
+
+  <!-- Row 7 -->
+  <text x="16"  y="2048" class="flow-from" font-family="'JetBrains Mono','Courier New',monospace">FriendsList</text>
+  <text x="148" y="2048" class="flow-arr"  font-family="'JetBrains Mono','Courier New',monospace">──▶</text>
+  <text x="192" y="2048" class="flow-ep"   font-family="'JetBrains Mono','Courier New',monospace">POST /api/friends/request</text>
+  <text x="440" y="2048" class="flow-arr"  font-family="'JetBrains Mono','Courier New',monospace">──▶</text>
+  <text x="484" y="2048" class="flow-to"   font-family="'JetBrains Mono','Courier New',monospace">FriendController</text>
+
+  <!-- Row 8 -->
+  <text x="16"  y="2068" class="flow-from" font-family="'JetBrains Mono','Courier New',monospace">NotifCenter</text>
+  <text x="148" y="2068" class="flow-arr"  font-family="'JetBrains Mono','Courier New',monospace">──▶</text>
+  <text x="192" y="2068" class="flow-ep"   font-family="'JetBrains Mono','Courier New',monospace">GET /api/notifications</text>
+  <text x="440" y="2068" class="flow-arr"  font-family="'JetBrains Mono','Courier New',monospace">──▶</text>
+  <text x="484" y="2068" class="flow-to"   font-family="'JetBrains Mono','Courier New',monospace">NotifController</text>
+
+  <text x="16"  y="2088" class="flow-from" font-family="'JetBrains Mono','Courier New',monospace">SearchFilter</text>
+  <text x="148" y="2088" class="flow-arr"  font-family="'JetBrains Mono','Courier New',monospace">──▶</text>
+  <text x="192" y="2088" class="flow-ep"   font-family="'JetBrains Mono','Courier New',monospace">GET /api/locations/search</text>
+  <text x="440" y="2088" class="flow-arr"  font-family="'JetBrains Mono','Courier New',monospace">──▶</text>
+  <text x="484" y="2088" class="flow-to"   font-family="'JetBrains Mono','Courier New',monospace">LocationController</text>
+
+  <text x="16"  y="2108" class="flow-from" font-family="'JetBrains Mono','Courier New',monospace">NoteCard</text>
+  <text x="148" y="2108" class="flow-arr"  font-family="'JetBrains Mono','Courier New',monospace">──▶</text>
+  <text x="192" y="2108" class="flow-ep"   font-family="'JetBrains Mono','Courier New',monospace">POST /api/reports/note</text>
+  <text x="440" y="2108" class="flow-arr"  font-family="'JetBrains Mono','Courier New',monospace">──▶</text>
+  <text x="484" y="2108" class="flow-to"   font-family="'JetBrains Mono','Courier New',monospace">ModerationController</text>
+
+  <text x="16"  y="2128" class="flow-from" font-family="'JetBrains Mono','Courier New',monospace">Socket.io</text>
+  <text x="148" y="2128" class="flow-arr"  font-family="'JetBrains Mono','Courier New',monospace">──▶</text>
+  <text x="192" y="2128" class="flow-ep"   font-family="'JetBrains Mono','Courier New',monospace">heatmap:update / note:new</text>
+  <text x="440" y="2128" class="flow-arr"  font-family="'JetBrains Mono','Courier New',monospace">──▶</text>
+  <text x="484" y="2128" class="flow-to"   font-family="'JetBrains Mono','Courier New',monospace">MapView / NotifCenter (push)</text>
+
+</svg>
