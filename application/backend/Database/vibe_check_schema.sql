@@ -1,31 +1,50 @@
 -- Vibe Check Database Schema
 -- Generated from EER Diagram v2.1
+-- Updated to match M2 documentation
 
 -- Enable PostGIS for geolocation
 CREATE EXTENSION IF NOT EXISTS postgis;
+
+-- Drop tables in reverse dependency order
+DROP TABLE IF EXISTS heatmap_activity CASCADE;
+DROP TABLE IF EXISTS user_badges CASCADE;
+DROP TABLE IF EXISTS badges CASCADE;
+DROP TABLE IF EXISTS friend_connections CASCADE;
+DROP TABLE IF EXISTS notifications CASCADE;
+DROP TABLE IF EXISTS reactions CASCADE;
+DROP TABLE IF EXISTS replies CASCADE;
+DROP TABLE IF EXISTS notes CASCADE;
+DROP TABLE IF EXISTS locations CASCADE;
+DROP TABLE IF EXISTS user_profiles CASCADE;
+DROP TABLE IF EXISTS blocks CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
 
 -- ========================
 -- USERS
 -- ========================
 CREATE TABLE users (
-    user_id       SERIAL PRIMARY KEY,
-    username      VARCHAR(50) NOT NULL UNIQUE,
-    email         VARCHAR(255) NOT NULL UNIQUE,
-    password_hash VARCHAR(255) NOT NULL,
-    profile_picture_url TEXT,
-    account_status VARCHAR(20) NOT NULL DEFAULT 'active',
-    created_at    TIMESTAMP NOT NULL DEFAULT NOW()
+    user_id                 SERIAL PRIMARY KEY,
+    username                VARCHAR(50) NOT NULL UNIQUE,
+    email                   VARCHAR(255) NOT NULL UNIQUE,
+    password_hash           VARCHAR(255) NOT NULL,
+    profile_picture_url     TEXT,
+    account_status          VARCHAR(20) NOT NULL DEFAULT 'active',
+    email_verified          BOOLEAN NOT NULL DEFAULT FALSE,
+    verification_token      VARCHAR(255),
+    verification_sent_at    TIMESTAMP,
+    verified_at             TIMESTAMP,
+    created_at              TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
 -- ========================
 -- USER PROFILES
 -- ========================
 CREATE TABLE user_profiles (
-    profile_id            SERIAL PRIMARY KEY,
-    user_id               INT NOT NULL UNIQUE REFERENCES users(user_id) ON DELETE CASCADE,
-    default_radius_km     DECIMAL(6,2) DEFAULT 5.0,
-    visibility            VARCHAR(20) DEFAULT 'public',
-    notifications_enabled BOOLEAN DEFAULT TRUE
+    profile_id              SERIAL PRIMARY KEY,
+    user_id                 INT NOT NULL UNIQUE REFERENCES users(user_id) ON DELETE CASCADE,
+    default_radius_km       DECIMAL(6,2) DEFAULT 5.0,
+    visibility              VARCHAR(20) DEFAULT 'public',
+    notifications_enabled   BOOLEAN DEFAULT TRUE
 );
 
 -- ========================
@@ -38,44 +57,50 @@ CREATE TABLE locations (
     lat             DECIMAL(10,7) NOT NULL,
     lng             DECIMAL(10,7) NOT NULL,
     category_tags   TEXT[],
-    avg_vibe_score  DECIMAL(3,2) GENERATED ALWAYS AS (avg_vibe_score) STORED
-    -- avg_vibe_score is derived; compute via trigger or view
+    radius_meters   DECIMAL(10,2) DEFAULT 100.0
 );
 
--- Use a view instead for derived avg_vibe_score
-DROP TABLE IF EXISTS locations;
-CREATE TABLE locations (
-    location_id     SERIAL PRIMARY KEY,
-    name            VARCHAR(255) NOT NULL,
-    address         TEXT,
-    lat             DECIMAL(10,7) NOT NULL,
-    lng             DECIMAL(10,7) NOT NULL,
-    category_tags   TEXT[]
+-- ========================
+-- BLOCKS
+-- ========================
+CREATE TABLE blocks (
+    block_id    SERIAL PRIMARY KEY,
+    blocker_id  INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    blocked_id  INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    created_at  TIMESTAMP NOT NULL DEFAULT NOW(),
+    UNIQUE (blocker_id, blocked_id),
+    CHECK (blocker_id <> blocked_id)
 );
 
 -- ========================
 -- NOTES
 -- ========================
+CREATE TYPE vibe_level_enum AS ENUM ('dead', 'quiet', 'moderate', 'busy', 'buzzing');
+
 CREATE TABLE notes (
     note_id      SERIAL PRIMARY KEY,
     user_id      INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
     location_id  INT NOT NULL REFERENCES locations(location_id) ON DELETE CASCADE,
-    content      TEXT NOT NULL,
-    vibe_score   INT CHECK (vibe_score BETWEEN 1 AND 5),
+    content      TEXT NOT NULL CHECK (char_length(content) <= 280),
+    vibe_level   vibe_level_enum NOT NULL,
     is_anonymous BOOLEAN DEFAULT FALSE,
     expires_at   TIMESTAMP,
     created_at   TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
+-- Index for efficient vibe score aggregation and heatmap queries
+CREATE INDEX idx_notes_location_expires ON notes(location_id, expires_at);
+
 -- ========================
 -- REPLIES
 -- ========================
 CREATE TABLE replies (
-    reply_id   SERIAL PRIMARY KEY,
-    note_id    INT NOT NULL REFERENCES notes(note_id) ON DELETE CASCADE,
-    user_id    INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-    content    TEXT NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW()
+    reply_id     SERIAL PRIMARY KEY,
+    note_id      INT NOT NULL REFERENCES notes(note_id) ON DELETE CASCADE,
+    user_id      INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    content      TEXT NOT NULL,
+    is_anonymous BOOLEAN DEFAULT FALSE,
+    created_at   TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
 -- ========================
@@ -86,7 +111,7 @@ CREATE TABLE reactions (
     note_id     INT NOT NULL REFERENCES notes(note_id) ON DELETE CASCADE,
     user_id     INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
     created_at  TIMESTAMP NOT NULL DEFAULT NOW(),
-    UNIQUE (note_id, user_id)
+    UNIQUE (user_id, note_id)
 );
 
 -- ========================
@@ -152,8 +177,15 @@ CREATE OR REPLACE VIEW location_vibe_scores AS
 SELECT
     l.location_id,
     l.name,
-    ROUND(AVG(n.vibe_score)::NUMERIC, 2) AS avg_vibe_score,
-    COUNT(n.note_id) AS total_notes
+    COUNT(n.note_id) AS total_notes,
+    ROUND(AVG(CASE n.vibe_level
+        WHEN 'dead'     THEN 1
+        WHEN 'quiet'    THEN 2
+        WHEN 'moderate' THEN 3
+        WHEN 'busy'     THEN 4
+        WHEN 'buzzing'  THEN 5
+    END)::NUMERIC, 2) AS avg_vibe_score
 FROM locations l
 LEFT JOIN notes n ON n.location_id = l.location_id
+    AND (n.expires_at IS NULL OR n.expires_at > NOW())
 GROUP BY l.location_id, l.name;
