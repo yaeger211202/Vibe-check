@@ -1,8 +1,9 @@
 import { Link } from "react-router-dom";
-import footerBg from "./assets/footer/background.png";
 import {useEffect} from "react";
 
-export default function VibeCheckLandingPage() {
+import Footer from "./components/Footer.jsx";
+
+export default function Landing() {
     useEffect(() => {
         document.title = "Vibe Check";
     }, []);
@@ -26,7 +27,7 @@ export default function VibeCheckLandingPage() {
                         <div className="flex justify-center md:justify-start">
                             <div className="w-full max-w-sm flex flex-col gap-4">
                                 <Link
-                                    to="/app"
+                                    to="/map"
                                     className="block text-center bg-green-500 text-white font-semibold px-6 py-4 rounded-xl shadow-sm hover:bg-green-600 hover:underline transition"
                                 >
                                     Let's Go!
@@ -135,19 +136,7 @@ export default function VibeCheckLandingPage() {
                 </div>
             </section>
 
-            <footer className="mt-12 relative">
-                <div
-                    className="absolute inset-0 bg-cover bg-center opacity-80"
-                    style={{ backgroundImage: `url(${footerBg})` }}
-                />
-
-                <div className="relative max-w-6xl mx-auto flex justify-between items-center px-6 py-6 text-sm text-gray-700">
-                    <span className="text-white font-bold">© ARKHA</span>
-                    <Link to="/team" className="text-white font-bold hover:underline">
-                        Meet Our Team ❤️
-                    </Link>
-                </div>
-            </footer>
+            <Footer />
         </div>
     );
 }
