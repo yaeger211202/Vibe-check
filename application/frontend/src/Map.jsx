@@ -131,6 +131,20 @@ export default function Map() {
     const [results, setResults] = useState([]);
     const [selectedLocation, setSelectedLocation] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [user, setUser] = useState(null);
+
+    useEffect(() => {
+        const storedUser = localStorage.getItem("user");
+
+        if (!storedUser) return;
+
+        try {
+            setUser(JSON.parse(storedUser));
+        }
+        catch {
+            localStorage.removeItem("user");
+        }
+    }, []);
 
     useEffect(() => {
         document.title = "Vibe Check";
@@ -182,11 +196,9 @@ export default function Map() {
         };
     }, [query]);
 
-    const isLoggedIn = false;
-
     return (
         <div className="flex h-screen flex-col">
-            <Navbar isLoggedIn={isLoggedIn} />
+            <Navbar user={user} />
 
             <main className="flex flex-1 min-h-0">
                 <aside className="flex w-80 flex-col border-r border-gray-200 bg-gradient-to-br from-green-100 to-gray-400">
