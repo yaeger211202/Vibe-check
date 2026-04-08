@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 
-export default function Navbar({ isLoggedIn = false }) {
+export default function Navbar({ user }) {
+    const isLoggedIn = !!user;
+
     return (
         <nav className="sticky top-0 z-50 bg-white shadow-md">
             <div className="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
@@ -8,19 +10,25 @@ export default function Navbar({ isLoggedIn = false }) {
                     Vibe Check
                 </Link>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
                     {isLoggedIn ? (
-                        <Link
-                            to="/profile"
-                            className="bg-gray-100 text-black py-2 px-4 rounded-lg hover:bg-gray-200 transition"
-                        >
-                            Profile
-                        </Link>
+                        <>
+                            <span className="text-sm text-gray-700">
+                                Hello, <span>{user.username}</span>!
+                            </span>
+
+                            <Link
+                                to="/profile"
+                                className="bg-gray-100 text-black py-2 px-4 rounded-lg hover:bg-gray-200 transition"
+                            >
+                                Profile
+                            </Link>
+                        </>
                     ) : (
                         <>
                             <Link
-                                to="/login"
-                                className="bg-white text-black py-2 px-3 rounded-lg hover:underline transition cursor-pointer"
+                                to="/signin"
+                                className="bg-white text-black py-2 px-3 rounded-lg hover:underline transition"
                             >
                                 Sign In
                             </Link>
