@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import footerBg from "../assets/footer/background.png";
+import footerBg from "./assets/footer/background.png";
 
 export default function VibeCheckLandingPage() {
     return (

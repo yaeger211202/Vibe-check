@@ -1,12 +1,12 @@
 import { Link } from "react-router-dom";
 
-import harryImg from "../assets/team-members/harry.png";
-import kaitlynImg from "../assets/team-members/kaitlin.jpg";
-import rahulImg from "../assets/team-members/rahul.png";
-import amulyaImg from "../assets/team-members/amulya.jpg";
-import aljhayImg from "../assets/team-members/aljhay.jpg";
+import harryImg from "./assets/team-members/harry.png";
+import kaitlynImg from "./assets/team-members/kaitlin.jpg";
+import rahulImg from "./assets/team-members/rahul.png";
+import amulyaImg from "./assets/team-members/amulya.jpg";
+import aljhayImg from "./assets/team-members/aljhay.jpg";
 
-import footerBg from "../assets/footer/background.png";
+import footerBg from "./assets/footer/background.png";
 import { useEffect } from "react";
 
 function TeamMemberCard({ name, role, email, image, description }) {
@@ -114,7 +114,7 @@ export default function OurTeam() {
 
                 <div className="relative max-w-6xl mx-auto flex justify-between items-center px-6 py-6 text-sm text-gray-700">
                     <span className="text-white font-bold">© ARKHA</span>
-                    <Link to="/about" className="text-white font-bold hover:underline">
+                    <Link to="/team" className="text-white font-bold hover:underline">
                         Meet Our Team ❤️
                     </Link>
                 </div>

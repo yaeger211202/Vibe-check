@@ -1,6 +1,6 @@
 import { Routes, Route } from "react-router-dom";
-import OurTeam from "./our-team/OurTeam.jsx";
-import VibeCheckLandingPage from "./landing-page/LandingPage.jsx";
+import OurTeam from "./OurTeam.jsx";
+import VibeCheckLandingPage from "./LandingPage.jsx";
 
 export default function App() {
     return (
