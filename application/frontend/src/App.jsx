@@ -1,6 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import Landing from "./Landing.jsx";
 import Map from "./Map.jsx";
+import Signin from "./Signin.jsx";
 import Signup from "./Signup.jsx";
 import OurTeam from "./OurTeam.jsx";
 
@@ -11,6 +12,7 @@ export default function App() {
             <Route path="/map" element={<Map />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/team" element={<OurTeam />} />
+            <Route path="/signin" element={<Signin />} />
         </Routes>
     );
 }
