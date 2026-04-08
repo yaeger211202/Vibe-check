@@ -27,7 +27,7 @@ function TeamMemberCard({ name, role, email, image, description }) {
 
 export default function OurTeam() {
     useEffect(() => {
-        document.title = "Vibe Check | Our Team";
+        document.title = "Our Team | Vibe Check";
     }, []);
 
     const teamMembers = [
@@ -72,7 +72,7 @@ export default function OurTeam() {
         <div className="min-h-screen bg-gradient-to-br from-green-100 to-gray-400">
             <nav className="sticky top-0 z-50 bg-white shadow-md">
                 <div className="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
-                    <Link to="/" className="text-xl font-bold">
+                    <Link to="/" className="text-2xl font-black tracking-tight">
                         Vibe Check
                     </Link>
 
