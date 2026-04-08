@@ -1,7 +1,12 @@
 import { Link } from "react-router-dom";
 import footerBg from "./assets/footer/background.png";
+import {useEffect} from "react";
 
 export default function VibeCheckLandingPage() {
+    useEffect(() => {
+        document.title = "Vibe Check";
+    }, []);
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-green-100 to-gray-400 text-gray-800">
             <section className="min-h-screen flex flex-col">
@@ -13,7 +18,7 @@ export default function VibeCheckLandingPage() {
                                     Vibe Check
                                 </h1>
                                 <p className="mt-4 text-lg md:text-xl text-gray-600 max-w-md">
-                                    Know the vibe before you go.
+                                    Real-time, location-based bulletin board.
                                 </p>
                             </div>
                         </div>
