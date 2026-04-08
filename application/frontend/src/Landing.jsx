@@ -35,7 +35,7 @@ export default function Landing() {
 
                                 <div className="flex gap-4">
                                     <Link
-                                        to="/login"
+                                        to="/signin"
                                         className="w-1/2 text-center bg-white border border-gray-300 text-black font-semibold px-6 py-4 rounded-xl shadow-sm hover:bg-gray-50 hover:underline transition"
                                     >
                                         Sign In
