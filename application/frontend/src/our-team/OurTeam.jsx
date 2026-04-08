@@ -7,6 +7,7 @@ import amulyaImg from "../assets/team-members/amulya.jpg";
 import aljhayImg from "../assets/team-members/aljhay.jpg";
 
 import footerBg from "../assets/footer/background.png";
+import { useEffect } from "react";
 
 function TeamMemberCard({ name, role, email, image, description }) {
     return (
@@ -24,7 +25,11 @@ function TeamMemberCard({ name, role, email, image, description }) {
     );
 }
 
-export default function About() {
+export default function OurTeam() {
+    useEffect(() => {
+        document.title = "Vibe Check | Our Team";
+    }, []);
+
     const teamMembers = [
         {
             name: "Harry Kakadiya",
@@ -82,7 +87,7 @@ export default function About() {
                 </div>
             </nav>
 
-            <div className="flex justify-center p-6">
+            <div className="flex justify-center p-6 mt-5 mb-5">
                 <div className="bg-white shadow-2xl rounded-2xl p-8 w-full max-w-6xl">
                     <h1 className="text-3xl font-bold mb-6 text-center tracking-wide">Meet Our Team</h1>
 
@@ -101,7 +106,7 @@ export default function About() {
                 </div>
             </div>
 
-            <footer className="mt-12 relative">
+            <footer className=" relative">
                 <div
                     className="absolute inset-0 bg-cover bg-center opacity-80"
                     style={{ backgroundImage: `url(${footerBg})` }}
