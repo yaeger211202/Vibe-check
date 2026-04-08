@@ -85,7 +85,7 @@ export default function Signup() {
             });
 
             setTimeout(() => {
-                navigate("/");
+                navigate("/map");
             }, 1200);
         }
         catch {
