@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { useEffect } from "react";
 
 import harryImg from "./assets/team-members/harry.png";
 import kaitlynImg from "./assets/team-members/kaitlin.jpg";
@@ -6,8 +6,8 @@ import rahulImg from "./assets/team-members/rahul.png";
 import amulyaImg from "./assets/team-members/amulya.jpg";
 import aljhayImg from "./assets/team-members/aljhay.jpg";
 
-import footerBg from "./assets/footer/background.png";
-import { useEffect } from "react";
+import Navbar from "./components/Navbar.jsx";
+import Footer from "./components/Footer.jsx";
 
 function TeamMemberCard({ name, role, email, image, description }) {
     return (
@@ -70,29 +70,7 @@ export default function OurTeam() {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-green-100 to-gray-400">
-            <nav className="sticky top-0 z-50 bg-white shadow-md">
-                <div className="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
-                    <Link to="/" className="text-2xl font-black tracking-tight">
-                        Vibe Check
-                    </Link>
-
-                    <div className="flex items-center gap-2">
-                        <Link
-                            to="/login"
-                            className="bg-white text-black py-2 px-3 rounded-lg hover:underline transition cursor-pointer"
-                        >
-                            Sign In
-                        </Link>
-
-                        <Link
-                            to="/signup"
-                            className="bg-blue-500 text-white py-2 px-3 rounded-lg hover:bg-blue-600 hover:underline transition cursor-pointer shadow-sm"
-                        >
-                            Sign Up
-                        </Link>
-                    </div>
-                </div>
-            </nav>
+            <Navbar isLoggedIn={false}/>
 
             <div className="flex justify-center p-6 mt-5 mb-5">
                 <div className="bg-white shadow-2xl rounded-2xl p-8 w-full max-w-6xl">
@@ -113,19 +91,7 @@ export default function OurTeam() {
                 </div>
             </div>
 
-            <footer className=" relative">
-                <div
-                    className="absolute inset-0 bg-cover bg-center opacity-80"
-                    style={{ backgroundImage: `url(${footerBg})` }}
-                />
-
-                <div className="relative max-w-6xl mx-auto flex justify-between items-center px-6 py-6 text-sm text-gray-700">
-                    <span className="text-white font-bold">© ARKHA</span>
-                    <Link to="/team" className="text-white font-bold hover:underline">
-                        Meet Our Team ❤️
-                    </Link>
-                </div>
-            </footer>
+            <Footer />
         </div>
     );
 }
