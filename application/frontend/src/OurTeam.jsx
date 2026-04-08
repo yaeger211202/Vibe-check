@@ -77,12 +77,19 @@ export default function OurTeam() {
                     </Link>
 
                     <div className="flex items-center gap-2">
-                        <button className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">
-                            Log In
-                        </button>
-                        <button className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">
+                        <Link
+                            to="/login"
+                            className="bg-white text-black py-2 px-3 rounded-lg hover:underline transition cursor-pointer"
+                        >
+                            Sign In
+                        </Link>
+
+                        <Link
+                            to="/signup"
+                            className="bg-blue-500 text-white py-2 px-3 rounded-lg hover:bg-blue-600 hover:underline transition cursor-pointer shadow-sm"
+                        >
                             Sign Up
-                        </button>
+                        </Link>
                     </div>
                 </div>
             </nav>
