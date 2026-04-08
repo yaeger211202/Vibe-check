@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import loginImage from "./assets/signup/background.png";
+import loginImage from "../assets/signup/background.png";
 
 export default function Signin() {
     const navigate = useNavigate();
@@ -12,6 +12,14 @@ export default function Signin() {
 
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        const storedUser = localStorage.getItem("user");
+
+        if (storedUser) {
+            navigate("/map");
+        }
+    }, []);
 
     useEffect(() => {
         document.title = "Sign In | Vibe Check";
