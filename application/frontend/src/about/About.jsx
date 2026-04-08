@@ -1,11 +1,12 @@
-import MapTest from "./MapTest.jsx";
-import DbTest from "./DbTest.jsx";
+import { Link } from "react-router-dom";
 
 import harryImg from "../assets/team-members/harry.png";
 import kaitlynImg from "../assets/team-members/kaitlin.jpg";
 import rahulImg from "../assets/team-members/rahul.png";
 import amulyaImg from "../assets/team-members/amulya.jpg";
 import aljhayImg from "../assets/team-members/aljhay.jpg";
+
+import footerBg from "../assets/footer/background.png";
 
 function TeamMemberCard({ name, role, email, image, description }) {
     return (
@@ -63,36 +64,56 @@ export default function About() {
     ];
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-green-100 to-gray-400 flex items-center justify-center p-6">
-            <div className="bg-white shadow-2xl rounded-2xl p-8 w-full max-w-6xl">
-                <h1 className="text-4xl font-bold mb-2 text-center tracking-wide">Vibe Check</h1>
-                <h2 className="text-gray-600 mb-6 text-center tracking-wide">from Team ARKHA</h2>
+        <div className="min-h-screen bg-gradient-to-br from-green-100 to-gray-400">
+            <nav className="sticky top-0 z-50 bg-white shadow-md">
+                <div className="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
+                    <Link to="/" className="text-xl font-bold">
+                        Vibe Check
+                    </Link>
 
-                <div className="mb-6 grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-6">
-                    {teamMembers.map(({ name, role, email, image, description }) => (
-                        <TeamMemberCard
-                            key={email}
-                            name={name}
-                            role={role}
-                            email={email}
-                            image={image}
-                            description={description}
-                        />
-                    ))}
-                </div>
-
-                <div className="bg-gray-100 p-6 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition">
-                    <h3 className="font-semibold mb-4 text-center text-lg">System Checks</h3>
-                    <div className="flex flex-col mb-6">
-                        <h3 className="font-semibold mb-2 flex items-center gap-2">Database:</h3>
-                        <DbTest />
+                    <div className="flex items-center gap-2">
+                        <button className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">
+                            Log In
+                        </button>
+                        <button className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">
+                            Sign Up
+                        </button>
                     </div>
-                    <div className="flex flex-col">
-                        <h3 className="font-semibold mb-2 flex items-center gap-2">Leaflet.js + OpenStreetMap:</h3>
-                        <MapTest />
+                </div>
+            </nav>
+
+            <div className="flex justify-center p-6">
+                <div className="bg-white shadow-2xl rounded-2xl p-8 w-full max-w-6xl">
+                    <h1 className="text-3xl font-bold mb-6 text-center tracking-wide">Meet Our Team</h1>
+
+                    <div className="mb-6 grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-6">
+                        {teamMembers.map(({ name, role, email, image, description }) => (
+                            <TeamMemberCard
+                                key={email}
+                                name={name}
+                                role={role}
+                                email={email}
+                                image={image}
+                                description={description}
+                            />
+                        ))}
                     </div>
                 </div>
             </div>
+
+            <footer className="mt-12 relative">
+                <div
+                    className="absolute inset-0 bg-cover bg-center opacity-80"
+                    style={{ backgroundImage: `url(${footerBg})` }}
+                />
+
+                <div className="relative max-w-6xl mx-auto flex justify-between items-center px-6 py-6 text-sm text-gray-700">
+                    <span className="text-white font-bold">© ARKHA</span>
+                    <Link to="/about" className="text-white font-bold hover:underline">
+                        Meet Our Team ❤️
+                    </Link>
+                </div>
+            </footer>
         </div>
     );
 }
