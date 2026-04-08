@@ -9,7 +9,7 @@ export default function VibeCheckLandingPage() {
                     <div className="w-full max-w-6xl grid md:grid-cols-2 gap-10 md:gap-20 items-center">
                         <div className="flex justify-center md:justify-end">
                             <div className="text-center md:text-left">
-                                <h1 className="text-6xl md:text-8xl font-black tracking-tight text-gray-900 leading-none">
+                                <h1 className="text-6xl md:text-8xl font-black tracking-tight text-black leading-none">
                                     Vibe Check
                                 </h1>
                                 <p className="mt-4 text-lg md:text-xl text-gray-600 max-w-md">
@@ -22,17 +22,26 @@ export default function VibeCheckLandingPage() {
                             <div className="w-full max-w-sm flex flex-col gap-4">
                                 <Link
                                     to="/app"
-                                    className="block text-center bg-green-500 text-white font-semibold px-6 py-4 rounded-xl shadow-sm hover:bg-green-600 transition"
+                                    className="block text-center bg-green-500 text-white font-semibold px-6 py-4 rounded-xl shadow-sm hover:bg-green-600 hover:underline transition"
                                 >
                                     Let's Go!
                                 </Link>
 
-                                <Link
-                                    to="/signup"
-                                    className="block text-center bg-white border border-gray-300 text-blue-500 font-semibold px-6 py-4 rounded-xl shadow-sm hover:bg-gray-50 transition"
-                                >
-                                    Sign Up
-                                </Link>
+                                <div className="flex gap-4">
+                                    <Link
+                                        to="/login"
+                                        className="w-1/2 text-center bg-white border border-gray-300 text-black font-semibold px-6 py-4 rounded-xl shadow-sm hover:bg-gray-50 hover:underline transition"
+                                    >
+                                        Sign In
+                                    </Link>
+
+                                    <Link
+                                        to="/signup"
+                                        className="w-1/2 text-center bg-blue-500 text-white font-semibold px-6 py-4 rounded-xl shadow-sm hover:bg-blue-600 hover:underline transition"
+                                    >
+                                        Sign Up
+                                    </Link>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -79,7 +88,7 @@ export default function VibeCheckLandingPage() {
                     </div>
 
                     <div className="bg-gray-100 p-6 rounded-xl border border-gray-200 shadow-sm">
-                        <h3 className="font-semibold mb-4 text-center text-lg">How it works</h3>
+                        <h3 className="font-semibold mb-4 text-center text-lg">How It Works</h3>
                         <div className="grid md:grid-cols-3 gap-6 text-center">
                             {[
                                 "Search or explore nearby places",
