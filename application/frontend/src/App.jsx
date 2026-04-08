@@ -1,12 +1,12 @@
 import { Routes, Route } from "react-router-dom";
-import About from "./about/About.jsx";
-import VibeCheckLandingPage from "./landing_page/LandingPage.jsx";
+import OurTeam from "./our-team/OurTeam.jsx";
+import VibeCheckLandingPage from "./landing-page/LandingPage.jsx";
 
 export default function App() {
     return (
         <Routes>
             <Route path="/" element={<VibeCheckLandingPage />} />
-            <Route path="/about" element={<About />} />
+            <Route path="/team" element={<OurTeam />} />
         </Routes>
     );
 }
