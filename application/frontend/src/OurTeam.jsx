@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import harryImg from "./assets/team-members/harry.png";
 import kaitlynImg from "./assets/team-members/kaitlin.jpg";
@@ -26,8 +26,19 @@ function TeamMemberCard({ name, role, email, image, description }) {
 }
 
 export default function OurTeam() {
+    const [user, setUser] = useState(null);
+
     useEffect(() => {
         document.title = "Our Team | Vibe Check";
+
+        const storedUser = localStorage.getItem("user");
+        if (!storedUser) return;
+
+        try {
+            setUser(JSON.parse(storedUser));
+        } catch {
+            localStorage.removeItem("user");
+        }
     }, []);
 
     const teamMembers = [
@@ -70,7 +81,7 @@ export default function OurTeam() {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-green-100 to-gray-400">
-            <Navbar isLoggedIn={false}/>
+            <Navbar user={user} />
 
             <div className="flex justify-center p-6 mt-5 mb-5">
                 <div className="bg-white shadow-2xl rounded-2xl p-8 w-full max-w-6xl">
