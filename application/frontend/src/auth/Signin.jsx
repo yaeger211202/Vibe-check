@@ -130,7 +130,7 @@ export default function Signin() {
 
                     <div className="bg-white rounded-2xl shadow-2xl p-8">
                         <div className="mb-8 text-center">
-                            <h2 className="text-3xl font-bold text-gray-900">Log In</h2>
+                            <h2 className="text-3xl font-bold text-gray-900">Sign In</h2>
                         </div>
 
                         <form onSubmit={handleSubmit} className="space-y-5">

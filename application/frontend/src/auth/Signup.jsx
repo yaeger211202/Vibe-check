@@ -145,7 +145,7 @@ export default function Signup() {
                         </Link>
                         <div className="ml-auto">
                             Already have an account?{" "}
-                            <Link to="/login" className="font-semibold text-blue-600 hover:underline">
+                            <Link to="/signin" className="font-semibold text-blue-600 hover:underline">
                                 Sign in
                             </Link>
                         </div>
