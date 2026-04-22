@@ -11,6 +11,23 @@ export default function Navbar({ user }) {
                 </Link>
 
                 <div className="flex items-center gap-3">
+                    {isLoggedIn && (
+                        <>
+                            <Link
+                                to="/search"
+                                className="text-gray-700 py-2 px-4 rounded-lg hover:bg-purple-100 transition"
+                            >
+                                Search
+                            </Link>
+                            <Link
+                                to="/map"
+                                className="text-gray-700 py-2 px-4 rounded-lg hover:bg-green-100 transition"
+                            >
+                                Map
+                            </Link>
+                        </>
+                    )}
+
                     {isLoggedIn ? (
                         <>
                             <span className="text-sm text-gray-700">
