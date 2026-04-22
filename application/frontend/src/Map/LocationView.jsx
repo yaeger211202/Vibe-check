@@ -129,8 +129,8 @@ export default function LocationView({
                 </section>
 
                 <section className="mt-6">
-                    <div className="border-b border-gray-200 pb-3">
-                        <h3 className="text-center text-xl font-semibold text-gray-900">
+                    <div className="border-t border-gray-200 pt-3">
+                        <h3 className="text-xl font-semibold text-gray-900">
                             Notes
                         </h3>
                     </div>

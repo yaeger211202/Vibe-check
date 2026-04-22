@@ -6,11 +6,16 @@ import Heatmap from "./Heatmap.jsx";
 import LocationView from "./LocationView.jsx";
 
 export default function Map() {
-    const [query, setQuery] = useState("");
+    const [searchQuery, setSearchQuery] = useState("");
     const [results, setResults] = useState([]);
     const [selectedLocation, setSelectedLocation] = useState(null);
     const [loading, setLoading] = useState(false);
     const [user, setUser] = useState(null);
+    const [hasSearched, setHasSearched] = useState(false);
+
+    const [radius, setRadius] = useState(5);
+    const [vibeLevel, setVibeLevel] = useState("all");
+    const [category, setCategory] = useState("All Categories");
 
     useEffect(() => {
         const storedUser = localStorage.getItem("user");
@@ -29,65 +34,65 @@ export default function Map() {
         document.title = "Vibe Check";
     }, []);
 
-    useEffect(() => {
-        const trimmedQuery = query.trim();
-
-        if (!trimmedQuery) {
+    async function handleSearch() {
+        if (!searchQuery.trim()) {
             setResults([]);
+            setHasSearched(false);
             return;
         }
 
-        const controller = new AbortController();
+        try {
+            setLoading(true);
+            setHasSearched(true);
 
-        const timeoutId = setTimeout(async () => {
-            try {
-                setLoading(true);
+            const params = new URLSearchParams({
+                q: searchQuery.trim(),
+                radius: radius.toString(),
+                vibeLevel,
+                category: category === "All Categories" ? "" : category,
+            });
 
-                const response = await fetch(
-                    `/api/search/locations?q=${encodeURIComponent(trimmedQuery)}`,
-                    { signal: controller.signal }
-                );
+            const response = await fetch(`/api/search/locations?${params.toString()}`);
+            const data = await response.json();
 
-                const data = await response.json();
-
-                if (!response.ok) {
-                    console.error(data.error || "Search failed");
-                    setResults([]);
-                    return;
-                }
-
-                setResults(data);
+            if (!response.ok) {
+                console.error(data.error || "Search failed");
+                setResults([]);
+                return;
             }
-            catch (error) {
-                if (error.name !== "AbortError") {
-                    console.error("Search error:", error);
-                    setResults([]);
-                }
-            }
-            finally {
-                setLoading(false);
-            }
-        }, 500);
 
-        return () => {
-            clearTimeout(timeoutId);
-            controller.abort();
-        };
-    }, [query]);
+            setResults(data);
+        }
+        catch (error) {
+            console.error("Search error:", error);
+            setResults([]);
+        }
+        finally {
+            setLoading(false);
+        }
+    }
 
     return (
         <div className="flex h-screen flex-col">
             <Navbar user={user} />
 
             <main className="flex flex-1 min-h-0">
-                <aside className="flex w-80 flex-col border-r border-gray-200 bg-gradient-to-br from-green-100 to-gray-400">
+                <aside className="w-[420px] flex flex-col border-r border-gray-200 bg-gray-50 min-h-0">
                     <Search
-                        query={query}
-                        setQuery={setQuery}
+                        searchQuery={searchQuery}
+                        setSearchQuery={setSearchQuery}
+                        radius={radius}
+                        setRadius={setRadius}
+                        vibeLevel={vibeLevel}
+                        setVibeLevel={setVibeLevel}
+                        category={category}
+                        setCategory={setCategory}
                         results={results}
+                        loading={loading}
                         selectedLocation={selectedLocation}
                         onSelectLocation={setSelectedLocation}
-                        loading={loading}
+                        hasSearched={hasSearched}
+                        onSearch={handleSearch}
                     />
                 </aside>
 
@@ -112,7 +117,7 @@ export default function Map() {
                                             vibe: "busy",
                                             text: "Every seat is taken. Group study sessions going on everywhere.",
                                             reactionCount: 8,
-                                            commentCount: 3,
+                                            commentCount: 0,
                                         },
                                         {
                                             id: 2,
@@ -121,48 +126,48 @@ export default function Map() {
                                             distanceText: "0.2 mi away",
                                             vibe: "quiet",
                                             text: "Upstairs is super quiet right now",
-                                            reactionCount: 11,
+                                            reactionCount: 0,
                                             commentCount: 2,
                                         },
                                         {
                                             id: 3,
                                             username: "@rahul",
-                                            createdAtText: "1h ago",
-                                            distanceText: "0.2 mi away",
-                                            vibe: "quiet",
-                                            text: "Upstairs is super quiet right now",
-                                            reactionCount: 11,
-                                            commentCount: 2,
+                                            createdAtText: "2h ago",
+                                            distanceText: "0.3 mi away",
+                                            vibe: "moderate",
+                                            text: "Good amount of space available",
+                                            reactionCount: 1,
+                                            commentCount: 4,
                                         },
                                         {
                                             id: 4,
                                             username: "@aljhay",
-                                            createdAtText: "1h ago",
-                                            distanceText: "0.2 mi away",
-                                            vibe: "quiet",
-                                            text: "Upstairs is super quiet right now",
-                                            reactionCount: 11,
-                                            commentCount: 2,
+                                            createdAtText: "2h ago",
+                                            distanceText: "0.1 mi away",
+                                            vibe: "busy",
+                                            text: "Some free space, but noisy groups around!",
+                                            reactionCount: 5,
+                                            commentCount: 3,
                                         },
                                         {
                                             id: 5,
                                             username: "@kaitlyn",
-                                            createdAtText: "1h ago",
+                                            createdAtText: "3h ago",
                                             distanceText: "0.2 mi away",
-                                            vibe: "quiet",
-                                            text: "Upstairs is super quiet right now",
-                                            reactionCount: 11,
-                                            commentCount: 2,
+                                            vibe: "buzzing",
+                                            text: "I wouldn't come here right now if you want some quiet.",
+                                            reactionCount: 7,
+                                            commentCount: 3,
                                         },
                                         {
                                             id: 6,
                                             username: "@ortiz",
                                             createdAtText: "1h ago",
                                             distanceText: "0.2 mi away",
-                                            vibe: "quiet",
-                                            text: "Upstairs is super quiet right now",
-                                            reactionCount: 11,
-                                            commentCount: 2,
+                                            vibe: "dead",
+                                            text: "Very chill, I'm like the only person here",
+                                            reactionCount: 1,
+                                            commentCount: 0,
                                         },
                                     ],
                                 }}
