@@ -183,11 +183,11 @@ export default function Profile() {
     ];
 
     return (
-        <div className="min-h-screen bg-white">
+        <div className="min-h-screen flex flex-col bg-white">
             <Navbar user={authUser} />
 
             {/* ── Page wrapper: comfortable padding at every size ── */}
-            <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+            <div className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
 
                 {/* ── PROFILE HEADER ────────────────────────────────────────
                     Mobile:  avatar centred above text (column)
