@@ -1,7 +1,8 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function Navbar({ user }) {
     const isLoggedIn = !!user;
+    const navigate = useNavigate();
 
     return (
         <nav className="sticky top-0 z-50 bg-white shadow-md">
@@ -17,12 +18,14 @@ export default function Navbar({ user }) {
                                 Hello, <span>{user.username}</span>!
                             </span>
 
-                            <Link
-                                to="/profile"
-                                className="bg-gray-100 text-black py-2 px-4 rounded-lg hover:bg-gray-200 transition"
-                            >
-                                Profile
+                            <Link to="/profile" aria-label="Go to profile">
+                                <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center border border-gray-200 hover:ring-2 hover:ring-gray-300 transition cursor-pointer">
+                                    <span className="text-purple-700 font-semibold text-sm">
+                                        {user.username?.[0]?.toUpperCase() || "U"}
+                                    </span>
+                                </div>
                             </Link>
+
                             <Link
                                 to="/signin" // sign out route not implemented
                                 className="bg-gray-100 text-black py-2 px-4 rounded-lg hover:bg-gray-200 transition"
@@ -30,7 +33,7 @@ export default function Navbar({ user }) {
                                 Sign Out
                             </Link>
                         </>
-                    ) : (
+                        ) : (
                         <>
                             <Link
                                 to="/signin"
