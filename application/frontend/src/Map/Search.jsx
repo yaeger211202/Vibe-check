@@ -31,6 +31,10 @@ function SearchFilters({
         { value: "buzzing", label: "Buzzing", color: "bg-red-500 text-white" },
     ];
 
+    function handleKeyDown(e) {
+        if (e.key === "Enter") onSearch();
+    }
+
     return (
         <div className="space-y-4 rounded-lg bg-white p-4 shadow-sm border border-gray-200">
             <div>
@@ -42,8 +46,9 @@ function SearchFilters({
                         type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
+                        onKeyDown={handleKeyDown}
                         placeholder="Search for a place..."
-                        className="flex-1 min-w-0 rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        className="flex-1 min-w-0 rounded-lg border border-gray-300 px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
                     <button
                         type="button"
@@ -69,40 +74,44 @@ function SearchFilters({
                         onChange={(e) => setRadius(parseFloat(e.target.value))}
                         className="flex-1 h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer accent-purple-600"
                     />
-                    <span className="text-sm text-gray-600 font-medium min-w-fit">
+                    <span className="text-sm text-gray-600 font-medium min-w-[3rem] text-right">
                         {radius.toFixed(1)} km
                     </span>
                 </div>
             </div>
 
-            <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Category
-                </label>
-                <select
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"
-                >
-                    {categories.map((cat) => (
-                        <option key={cat} value={cat}>
-                            {cat}
-                        </option>
-                    ))}
-                </select>
+            {/* Category + Vibe on the same row for wider screens, stacked on mobile */}
+            <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Category
+                    </label>
+                    <select
+                        value={category}
+                        onChange={(e) => setCategory(e.target.value)}
+                        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"
+                    >
+                        {categories.map((cat) => (
+                            <option key={cat} value={cat}>
+                                {cat}
+                            </option>
+                        ))}
+                    </select>
+                </div>
             </div>
 
             <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                     Vibe Level
                 </label>
-                <div className="grid grid-cols-2 gap-2">
+                {/* 3 columns on mobile so buttons don't get too squished */}
+                <div className="grid grid-cols-3 sm:grid-cols-2 gap-2">
                     {vibeLevels.map((vibe) => (
                         <button
                             key={vibe.value}
                             type="button"
                             onClick={() => setVibeLevel(vibe.value)}
-                            className={`py-2 px-3 rounded-lg font-medium text-sm transition-all ${
+                            className={`py-2 px-2 rounded-lg font-medium text-sm transition-all truncate ${
                                 vibeLevel === vibe.value
                                     ? `${vibe.color} ring-2 ring-purple-600 text-gray-900`
                                     : `${vibe.color} text-gray-700 hover:shadow-sm`
@@ -115,11 +124,11 @@ function SearchFilters({
             </div>
 
             <div className="rounded-lg bg-purple-50 p-3 border border-purple-200">
-                <p className="text-xs text-gray-600">
-                    <span className="font-semibold">Active Filters:</span> Radius{" "}
-                    <span className="font-medium">{radius.toFixed(1)}km</span> •{" "}
-                    <span className="font-medium">{category}</span> •{" "}
-                    <span className="font-medium capitalize">{vibeLevel}</span>
+                <p className="text-xs text-gray-600 leading-relaxed">
+                    <span className="font-semibold">Active Filters:</span>{" "}
+                    Radius <span className="font-medium">{radius.toFixed(1)}km</span>{" "}
+                    • <span className="font-medium">{category}</span>{" "}
+                    • <span className="font-medium capitalize">{vibeLevel}</span>
                 </p>
             </div>
         </div>
@@ -141,7 +150,7 @@ function SearchResults({
 
             {loading && (
                 <div className="flex items-center justify-center py-8">
-                    <div className="animate-spin rounded-full h-6 w-6 border-2 border-purple-600 border-t-transparent"></div>
+                    <div className="animate-spin rounded-full h-6 w-6 border-2 border-purple-600 border-t-transparent" />
                     <span className="ml-2 text-sm text-gray-600">Searching...</span>
                 </div>
             )}
@@ -237,7 +246,7 @@ export default function Search({
                                    onSearch,
                                }) {
     return (
-        <div className="flex h-full flex-col gap-4 overflow-y-auto px-5 py-4">
+        <div className="flex h-full flex-col gap-4 overflow-y-auto px-4 sm:px-5 py-4">
             <SearchFilters
                 searchQuery={searchQuery}
                 setSearchQuery={setSearchQuery}

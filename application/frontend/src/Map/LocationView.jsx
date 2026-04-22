@@ -45,7 +45,6 @@ export default function LocationView({
 
     const notes = useMemo(() => {
         const rawNotes = Array.isArray(locationData?.notes) ? locationData.notes : [];
-
         return [...rawNotes].sort((a, b) => {
             const aTime = new Date(a.createdAt || a.createdAtText || 0).getTime();
             const bTime = new Date(b.createdAt || b.createdAtText || 0).getTime();
@@ -61,9 +60,7 @@ export default function LocationView({
     }, [selectedLocation?.id]);
 
     const canSubmit =
-        selectedVibe &&
-        noteText.trim().length > 0 &&
-        noteText.length <= 280;
+        selectedVibe && noteText.trim().length > 0 && noteText.length <= 280;
 
     function handleSubmit(e) {
         e.preventDefault();
@@ -85,10 +82,11 @@ export default function LocationView({
 
     return (
         <aside className="h-full overflow-y-auto bg-white">
-            <div className="border-b border-gray-200 px-5 py-4">
+            {/* Header */}
+            <div className="border-b border-gray-200 px-4 sm:px-5 py-4 sticky top-0 bg-white z-10">
                 <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0">
-                        <h2 className="text-xl font-semibold text-gray-900">
+                        <h2 className="text-lg sm:text-xl font-semibold text-gray-900 leading-tight">
                             {title}
                         </h2>
                     </div>
@@ -96,7 +94,7 @@ export default function LocationView({
                     <button
                         type="button"
                         onClick={onClose}
-                        className="text-2xl leading-none text-gray-400 transition hover:text-gray-700 hover:cursor-pointer"
+                        className="text-2xl leading-none text-gray-400 transition hover:text-gray-700 hover:cursor-pointer shrink-0"
                         aria-label="Close location panel"
                     >
                         ×
@@ -104,13 +102,14 @@ export default function LocationView({
                 </div>
             </div>
 
-            <div className="px-5 py-4">
-                <section className="rounded-2xl border border-gray-200 bg-gray-50 p-6">
-                    <h3 className="text-xl font-semibold text-gray-900">
+            <div className="px-4 sm:px-5 py-4 space-y-6">
+                {/* Vibe Score */}
+                <section className="rounded-2xl border border-gray-200 bg-gray-50 p-4 sm:p-6">
+                    <h3 className="text-lg sm:text-xl font-semibold text-gray-900">
                         Vibe Score
                     </h3>
 
-                    <div className="mt-4 flex items-center gap-5">
+                    <div className="mt-4 flex items-center gap-4">
                         <div className="flex-1">
                             <div className="h-4 overflow-hidden rounded-full bg-gray-200">
                                 <div
@@ -121,16 +120,17 @@ export default function LocationView({
                         </div>
 
                         <div
-                            className={`rounded-xl border px-5 py-2 text-lg font-semibold capitalize ${getNoteVibeClass(currentVibe)}`}
+                            className={`rounded-xl border px-3 sm:px-5 py-2 text-sm sm:text-lg font-semibold capitalize shrink-0 ${getNoteVibeClass(currentVibe)}`}
                         >
                             {currentVibe}
                         </div>
                     </div>
                 </section>
 
-                <section className="mt-6">
+                {/* Notes */}
+                <section>
                     <div className="border-t border-gray-200 pt-3">
-                        <h3 className="text-xl font-semibold text-gray-900">
+                        <h3 className="text-lg sm:text-xl font-semibold text-gray-900">
                             Notes
                         </h3>
                     </div>
@@ -147,24 +147,24 @@ export default function LocationView({
                             </div>
                         ) : (
                             <>
-                                <div className="space-y-4">
+                                <div className="space-y-3 sm:space-y-4">
                                     {visibleNotes.map((note) => (
                                         <article
                                             key={note.id}
-                                            className="rounded-2xl border border-gray-200 bg-white p-5"
+                                            className="rounded-2xl border border-gray-200 bg-white p-4 sm:p-5"
                                         >
-                                            <div className="flex items-start justify-between gap-4">
-                                                <div className="flex min-w-0 gap-4">
-                                                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gray-100 text-lg font-semibold text-gray-700">
+                                            <div className="flex items-start justify-between gap-3">
+                                                <div className="flex min-w-0 gap-3">
+                                                    {/* Avatar — smaller on mobile */}
+                                                    <div className="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-full bg-gray-100 text-base sm:text-lg font-semibold text-gray-700">
                                                         {getInitials(note.username || note.displayName)}
                                                     </div>
 
                                                     <div className="min-w-0">
-                                                        <div className="truncate text-lg font-semibold text-gray-900">
+                                                        <div className="truncate text-base sm:text-lg font-semibold text-gray-900">
                                                             {note.username || note.displayName || "Anonymous"}
                                                         </div>
-
-                                                        <p className="text-sm text-gray-500">
+                                                        <p className="text-xs text-gray-500">
                                                             {note.createdAtText || "Just now"}
                                                             {note.distanceText ? ` · ${note.distanceText}` : ""}
                                                         </p>
@@ -172,21 +172,21 @@ export default function LocationView({
                                                 </div>
 
                                                 <span
-                                                    className={`rounded-full border px-4 py-1.5 text-sm font-semibold capitalize ${getNoteVibeClass(note.vibe)}`}
+                                                    className={`rounded-full border px-3 py-1 text-xs font-semibold capitalize shrink-0 ${getNoteVibeClass(note.vibe)}`}
                                                 >
                                                     {note.vibe || "Unknown"}
                                                 </span>
                                             </div>
 
-                                            <p className="mt-4 text-base leading-relaxed text-gray-800">
+                                            <p className="mt-3 text-sm sm:text-base leading-relaxed text-gray-800">
                                                 {note.text || ""}
                                             </p>
 
-                                            <div className="mt-4 flex gap-3">
+                                            <div className="mt-3 flex gap-2">
                                                 <button
                                                     type="button"
                                                     onClick={() => onReactToNote?.(note.id)}
-                                                    className="rounded-full border border-gray-200 bg-gray-50 px-4 py-1 text-sm text-gray-600 transition hover:bg-gray-100"
+                                                    className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-sm text-gray-600 transition hover:bg-gray-100"
                                                     aria-label={`React to note by ${note.username || note.displayName || "anonymous user"}`}
                                                 >
                                                     👍 {note.reactionCount ?? 0}
@@ -195,7 +195,7 @@ export default function LocationView({
                                                 <button
                                                     type="button"
                                                     onClick={() => onOpenComments?.(note.id)}
-                                                    className="rounded-full border border-gray-200 bg-gray-50 px-4 py-1 text-sm text-gray-600 transition hover:bg-gray-100"
+                                                    className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-sm text-gray-600 transition hover:bg-gray-100"
                                                     aria-label={`View comments for note by ${note.username || note.displayName || "anonymous user"}`}
                                                 >
                                                     💬 {note.commentCount ?? 0}
@@ -212,7 +212,7 @@ export default function LocationView({
                                             onClick={() => setVisibleNoteCount((prev) => prev + 4)}
                                             className="text-sm font-medium text-blue-600 transition hover:text-blue-700 hover:underline hover:cursor-pointer"
                                         >
-                                            See more notes
+                                            See {remainingNotes} more {remainingNotes === 1 ? "note" : "notes"}
                                         </button>
                                     </div>
                                 )}
@@ -221,22 +221,23 @@ export default function LocationView({
                     </div>
                 </section>
 
-                <section className="mt-6 border-t border-gray-200 pt-5">
-                    <h3 className="text-xl font-semibold text-gray-900">
+                {/* Add your vibe */}
+                <section className="border-t border-gray-200 pt-5 pb-4">
+                    <h3 className="text-lg sm:text-xl font-semibold text-gray-900">
                         Add your vibe
                     </h3>
 
                     <form onSubmit={handleSubmit}>
-                        <div className="mt-4 flex flex-wrap items-center gap-3">
+                        {/* Vibe pill buttons — wrap naturally */}
+                        <div className="mt-4 flex flex-wrap gap-2">
                             {VIBE_OPTIONS.map((option) => {
                                 const isSelected = selectedVibe === option;
-
                                 return (
                                     <button
                                         key={option}
                                         type="button"
                                         onClick={() => setSelectedVibe(option)}
-                                        className={`rounded-full border px-5 py-2 text-sm font-medium capitalize transition hover:cursor-pointer ${
+                                        className={`rounded-full border px-4 py-2 text-sm font-medium capitalize transition hover:cursor-pointer ${
                                             isSelected
                                                 ? getNoteVibeClass(option)
                                                 : "border-gray-300 bg-gray-50 text-gray-600 hover:bg-gray-100"
@@ -248,7 +249,8 @@ export default function LocationView({
                             })}
                         </div>
 
-                        <div className="mt-4 flex gap-4">
+                        {/* Textarea + submit — stacks on mobile */}
+                        <div className="mt-4 flex flex-col sm:flex-row gap-3">
                             <div className="flex-1 rounded-2xl border border-gray-300 bg-white p-4">
                                 <textarea
                                     rows="4"
@@ -259,7 +261,7 @@ export default function LocationView({
                                 />
 
                                 <div className="mt-3 flex items-center justify-between gap-4 text-sm text-gray-500">
-                                    <span>{noteText.length} / 280 characters</span>
+                                    <span>{noteText.length} / 280</span>
 
                                     <button
                                         type="button"
@@ -275,7 +277,7 @@ export default function LocationView({
                                             }`}
                                         >
                                             <div
-                                                className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition ${
+                                                className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all ${
                                                     isAnonymous ? "left-5" : "left-0.5"
                                                 }`}
                                             />
@@ -284,10 +286,11 @@ export default function LocationView({
                                 </div>
                             </div>
 
+                            {/* Full-width on mobile, auto width on sm+ */}
                             <button
                                 type="submit"
                                 disabled={!canSubmit}
-                                className={`min-w-[120px] rounded-2xl px-6 py-5 text-lg font-semibold text-white transition ${
+                                className={`w-full sm:w-auto sm:min-w-[120px] rounded-2xl px-6 py-4 sm:py-5 text-lg font-semibold text-white transition ${
                                     canSubmit
                                         ? "bg-green-400 hover:bg-green-500 hover:cursor-pointer"
                                         : "cursor-not-allowed bg-green-200"
