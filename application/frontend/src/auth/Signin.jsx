@@ -75,7 +75,7 @@ export default function Signin() {
     }
 
     return (
-        <div className="min-h-screen grid lg:grid-cols-2">
+        <div className="min-h-screen grid lg:grid-cols-2 gap-y-8 overflow-x-hidden">
             <section className="hidden lg:flex relative bg-black text-white overflow-hidden">
                 <img
                     src={loginImage}
@@ -144,7 +144,8 @@ export default function Signin() {
                                     type="email"
                                     value={formData.email}
                                     onChange={handleChange}
-                                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                    placeholder="Email"
+                                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400 text-base placeholder:text-sm"
                                 />
                             </div>
 
@@ -158,7 +159,8 @@ export default function Signin() {
                                     type="password"
                                     value={formData.password}
                                     onChange={handleChange}
-                                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                    placeholder="Password"
+                                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400 text-base placeholder:text-sm"
                                 />
                             </div>
 
@@ -171,7 +173,7 @@ export default function Signin() {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full bg-green-500 text-white font-semibold px-6 py-3 rounded-xl shadow-sm hover:bg-green-600 transition disabled:opacity-60 disabled:cursor-not-allowed"
+                                className="w-full bg-green-500 text-white font-semibold px-6 py-3 rounded-xl shadow-sm hover:bg-green-600 transition disabled:opacity-60 disabled:cursor-not-allowed text-base"
                             >
                                 {loading ? "Logging In..." : "Log In"}
                             </button>

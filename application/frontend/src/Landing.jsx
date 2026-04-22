@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import {useEffect} from "react";
+import { useEffect } from "react";
 
 import Footer from "./components/Footer.jsx";
 
@@ -12,13 +12,13 @@ export default function Landing() {
         <div className="min-h-screen bg-gradient-to-br from-green-100 to-gray-400 text-gray-800">
             <section className="min-h-screen flex flex-col">
                 <div className="flex-1 flex items-center justify-center">
-                    <div className="w-full max-w-6xl grid md:grid-cols-2 gap-10 md:gap-20 items-center">
+                    <div className="w-full max-w-6xl grid md:grid-cols-2 gap-10 md:gap-20 items-center px-6">
                         <div className="flex justify-center md:justify-end">
                             <div className="text-center md:text-left">
-                                <h1 className="text-6xl md:text-8xl font-black tracking-tight text-black leading-none">
+                                <h1 className="text-4xl sm:text-6xl md:text-8xl font-black tracking-tight text-black leading-none">
                                     Vibe Check
                                 </h1>
-                                <p className="mt-4 text-lg md:text-xl text-gray-600 max-w-md">
+                                <p className="mt-4 text-base sm:text-lg md:text-xl text-gray-600 max-w-md">
                                     Real-time, location-based bulletin board.
                                 </p>
                             </div>
@@ -28,7 +28,7 @@ export default function Landing() {
                             <div className="w-full max-w-sm flex flex-col gap-4">
                                 <Link
                                     to="/map"
-                                    className="block text-center bg-green-500 text-white font-semibold px-6 py-4 rounded-xl shadow-sm hover:bg-green-600 hover:underline transition"
+                                    className="block w-full text-center bg-green-500 text-white font-semibold px-6 py-4 rounded-xl shadow-sm hover:bg-green-600 hover:underline transition text-base"
                                 >
                                     Let's Go!
                                 </Link>
@@ -36,14 +36,14 @@ export default function Landing() {
                                 <div className="flex gap-4">
                                     <Link
                                         to="/signin"
-                                        className="w-1/2 text-center bg-white border border-gray-300 text-black font-semibold px-6 py-4 rounded-xl shadow-sm hover:bg-gray-50 hover:underline transition"
+                                        className="w-1/2 text-center bg-white border border-gray-300 text-black font-semibold px-6 py-4 rounded-xl shadow-sm hover:bg-gray-50 hover:underline transition text-base"
                                     >
                                         Sign In
                                     </Link>
 
                                     <Link
                                         to="/signup"
-                                        className="w-1/2 text-center bg-blue-500 text-white font-semibold px-6 py-4 rounded-xl shadow-sm hover:bg-blue-600 hover:underline transition"
+                                        className="w-1/2 text-center bg-blue-500 text-white font-semibold px-6 py-4 rounded-xl shadow-sm hover:bg-blue-600 hover:underline transition text-base"
                                     >
                                         Sign Up
                                     </Link>
@@ -61,7 +61,7 @@ export default function Landing() {
             </section>
 
             <section id="more-info" className="px-6 pb-12">
-                <div className="bg-white shadow-2xl rounded-2xl p-10 w-full max-w-6xl mx-auto">
+                <div className="bg-white shadow-2xl rounded-2xl p-6 md:p-10 w-full max-w-6xl mx-auto">
                     <h2 className="text-2xl font-bold text-center mb-6">What Is Vibe Check?</h2>
 
                     <div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-6 mb-10">
@@ -113,26 +113,25 @@ export default function Landing() {
                         <div className="grid md:grid-cols-2 gap-6">
                             <div className="border border-gray-200 bg-gray-100 rounded-xl p-6 shadow-sm">
                                 <h3 className="font-semibold mb-3 text-lg">Without Vibe Check</h3>
-                                <ul className="space-y-2 text-gray-600">
-                                    <li>• Reviews are often outdated</li>
-                                    <li>• Busy-time estimates rely on historical trends</li>
-                                    <li>• You can arrive somewhere overcrowded, noisy, or closed</li>
-                                    <li>• Time and effort get wasted on bad choices</li>
+                                <ul className="space-y-2 text-gray-600 list-disc list-inside">
+                                    <li>Reviews are often outdated</li>
+                                    <li>Busy-time estimates rely on historical trends</li>
+                                    <li>You can arrive somewhere overcrowded, noisy, or closed</li>
+                                    <li>Time and effort get wasted on bad choices</li>
                                 </ul>
                             </div>
 
                             <div className="border border-gray-200 bg-gray-100 rounded-xl p-6 shadow-sm">
                                 <h3 className="font-semibold mb-3 text-lg">With Vibe Check</h3>
-                                <ul className="space-y-2 text-gray-600">
-                                    <li>• Live, crowd-sourced updates from nearby users</li>
-                                    <li>• Real-time vibe levels for places around you</li>
-                                    <li>• Fast decisions based on what is happening now</li>
-                                    <li>• Less guesswork, less frustration</li>
+                                <ul className="space-y-2 text-gray-600 list-disc list-inside">
+                                    <li>Live, crowd-sourced updates from nearby users</li>
+                                    <li>Real-time vibe levels for places around you</li>
+                                    <li>Fast decisions based on what is happening now</li>
+                                    <li>Less guesswork, less frustration</li>
                                 </ul>
                             </div>
                         </div>
                     </div>
-
                 </div>
             </section>
 
