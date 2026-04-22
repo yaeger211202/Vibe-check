@@ -3,8 +3,9 @@
  *
  * User profile page for Vibe Check.
  *
- * display registration / verification status on profile
- * view own public profile
+ *  display registration / verification status on profile
+ *  view own public profile
+ *
  */
 
 // import { useEffect, useState } from "react";
@@ -47,7 +48,7 @@ import Navbar from "./components/Navbar.jsx";
 import Footer from "./components/Footer.jsx";
 
 
-// MOCK DATA — TODO: replace with API responses 
+// MOCK DATA — replace with API responses in future milestones
 
 
 /**
@@ -72,8 +73,7 @@ const MOCK_USER_PROFILE = {
 };
 
 /**
- * Vibe score labels and pill styles.
- * Mirrors the Vibe Score Values table in M3V1 §Data Definitions.
+ * Vibe score labels 
  */
 const VIBE_STYLES = {
     1: { label: "Dead", style: "bg-gray-100 text-gray-500" },
@@ -86,7 +86,6 @@ const VIBE_STYLES = {
 /**
  * Mock posting history.
  * TODO : replace with GET /api/notes?userId=<id>
- * 
  */
 const MOCK_POSTS = [
     {
@@ -107,7 +106,7 @@ const MOCK_POSTS = [
         distance: "0.6 mi",
         content: "Perfect afternoon, not too crowded at all.",
         vibe_score: 2,
-        created_at: "Yesterday",
+        created_at: "Just now",
         reaction_count: 8,
         reply_count: 1,
     },
@@ -118,7 +117,7 @@ const MOCK_POSTS = [
         distance: "1.1 mi",
         content: "Line out the door, slow service today.",
         vibe_score: 4,
-        created_at: "3 days ago",
+        created_at: "3 hours ago",
         reaction_count: 22,
         reply_count: 4,
     },
@@ -129,7 +128,7 @@ const MOCK_POSTS = [
         distance: "0.8 mi",
         content: "Short wait, great vibe, go now!",
         vibe_score: 3,
-        created_at: "4 days ago",
+        created_at: "4 hours ago",
         reaction_count: 31,
         reply_count: 6,
     },
@@ -140,7 +139,7 @@ const MOCK_POSTS = [
         distance: "0.4 mi",
         content: "Surprisingly quiet tonight — no wait at all.",
         vibe_score: 2,
-        created_at: "5 days ago",
+        created_at: "15 min ago",
         reaction_count: 19,
         reply_count: 3,
     },
@@ -151,12 +150,11 @@ const MOCK_POSTS = [
         distance: "0.9 mi",
         content: "Crazy packed as usual. Worth it tho.",
         vibe_score: 4,
-        created_at: "6 days ago",
+        created_at: "6 min ago",
         reaction_count: 44,
         reply_count: 8,
     },
 ];
-
 
 // Sub-components
 
@@ -164,7 +162,7 @@ const MOCK_POSTS = [
  * PostCard
  *
  * Renders a single note from the user's posting history.
-
+ * location name + neighborhood · distance, content, vibe pill, like + reply counts.
  *
  * @param {Object} note - A note object matching the Note data definition.
  */
@@ -198,7 +196,6 @@ function PostCard({ note }) {
     );
 }
 
-
 // Main Profile component
 
 /**
@@ -211,15 +208,15 @@ function PostCard({ note }) {
  *   - Profile header: avatar, full name, @username, location, joined date
  *   - Stats strip: vibes posted, reactions received, bookmarks
  *   - Tab bar: My Posts | Bookmarks | Reactions | Settings
- *     - My Posts tab:  2-column grid of PostCards 
+ *     - My Posts tab:  2-column grid of PostCards
  *     - Settings tab:  account status, profile details 
  *   - Footer
  *
- * TODO:
+ * TODO :
  *   - Bookmarks tab
  *   - Reactions tab
  *   - Edit username / password / avatar 
- *   - Replace MOCK_* constants w/API calls
+ *   - Replace MOCK_* constants with API calls
  */
 export default function Profile() {
     const [authUser, setAuthUser] = useState(null);
@@ -242,8 +239,6 @@ export default function Profile() {
         }
     }, []);
 
-    // Merge real auth user with mock profile fields
-    // TODO : replace MOCK_USER_PROFILE with GET /api/profile/me
     const user = authUser ? { ...MOCK_USER_PROFILE, ...authUser } : null;
 
     if (!user) return null;
@@ -267,7 +262,7 @@ export default function Profile() {
                 <div className="flex items-start justify-between mb-6">
                     <div className="flex items-center gap-5">
 
-                        {/* Avatar */}
+                        {/* Avatar — shows profile_picture_url if set, else initials */}
                         {user.profile_picture_url ? (
                             <img
                                 src={user.profile_picture_url}
@@ -345,7 +340,7 @@ export default function Profile() {
                 </div>
 
                 {/* --------------------------------------------------------
-                    TAB CONTENT AREA
+                    TAB CONTENT AREA 
                 -------------------------------------------------------- */}
                 <div className="bg-[#b2c8cc] min-h-96 p-6 rounded-b-xl">
 
@@ -358,7 +353,7 @@ export default function Profile() {
                         </div>
                     )}
 
-                    {/* ── BOOKMARKS TAB  ─────────────────── */}
+                    {/* ── BOOKMARKS TAB ─────────────────── */}
                     {activeTab === "bookmarks" && (
                         <div className="flex flex-col items-center justify-center py-16 text-gray-500">
                             <p className="text-4xl mb-3">🔖</p>
@@ -378,12 +373,12 @@ export default function Profile() {
                     {activeTab === "settings" && (
                         <div className="space-y-4 max-w-xl">
 
-                            {/* Account status card — FR 1.6 */}
+                            {/* Account status card */}
                             <div className="bg-white rounded-xl shadow-sm p-5">
                                 <h2 className="text-sm font-bold text-gray-800 mb-3">Account Status</h2>
                                 <div className="space-y-3">
 
-                                    {/* Email verification — FR 1.6 */}
+                                    {/* Email verification */}
                                     <div className="flex items-center justify-between">
                                         <div>
                                             <p className="text-sm text-gray-700">Email Verification</p>
@@ -452,6 +447,7 @@ export default function Profile() {
                                 - Change username 
                                 - Change password 
                                 - Upload profile picture 
+                                - Notification toggles 
                                 - Delete account */}
                         </div>
                     )}
