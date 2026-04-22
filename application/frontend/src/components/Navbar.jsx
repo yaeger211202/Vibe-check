@@ -14,10 +14,6 @@ export default function Navbar({ user }) {
                 <div className="flex items-center gap-3">
                     {isLoggedIn ? (
                         <>
-                            <span className="text-sm text-gray-700">
-                                Hello, <span>{user.username}</span>!
-                            </span>
-
                             <Link to="/profile" aria-label="Go to profile">
                                 <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center border border-gray-200 hover:ring-2 hover:ring-gray-300 transition cursor-pointer">
                                     <span className="text-purple-700 font-semibold text-sm">
