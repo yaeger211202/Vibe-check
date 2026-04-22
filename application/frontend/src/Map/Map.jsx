@@ -192,7 +192,7 @@ export default function Map() {
     };
 
     return (
-        <div className="flex h-screen flex-col">
+        <div className="flex h-dvh flex-col">
             <Navbar user={user} />
 
             {isMobile ? (
