@@ -26,12 +26,16 @@ export default function Navbar({ user }) {
                                 </div>
                             </Link>
 
-                            <Link
-                                to="/signin" // sign out route not implemented
+                            <button
+                                onClick={() => {
+                                    localStorage.removeItem("user");
+                                    navigate("/");
+                                    window.location.reload(); // temp force reload state until sessions implemented
+                                }}
                                 className="bg-gray-100 text-black py-2 px-4 rounded-lg hover:bg-gray-200 transition"
                             >
                                 Sign Out
-                            </Link>
+                            </button>
                         </>
                         ) : (
                         <>
