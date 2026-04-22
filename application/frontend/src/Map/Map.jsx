@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
 
 import Navbar from "../components/Navbar.jsx";
-import Search from "./Search.jsx";
-import Heatmap from "./Heatmap.jsx";
-import LocationView from "./LocationView.jsx";
+import DesktopMapLayout from "./DesktopMapLayout.jsx";
+import MobileMapLayout from "./MobileMapLayout.jsx";
 
 export default function Map() {
     const [searchQuery, setSearchQuery] = useState("");
@@ -17,12 +16,90 @@ export default function Map() {
     const [vibeLevel, setVibeLevel] = useState("all");
     const [category, setCategory] = useState("All Categories");
 
-    // Mobile tab state: "search" | "map" | "location"
     const [mobileTab, setMobileTab] = useState("map");
+    const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
+
+    const mockHeatmapData = [
+        // SFSU / Stonestown / Parkmerced
+        { lat: 37.7241, lon: -122.4799, intensity: 0.95 },
+        { lat: 37.7252, lon: -122.4788, intensity: 0.88 },
+        { lat: 37.7260, lon: -122.4760, intensity: 0.82 },
+        { lat: 37.7235, lon: -122.4815, intensity: 0.78 },
+        { lat: 37.7218, lon: -122.4804, intensity: 0.74 },
+        { lat: 37.7229, lon: -122.4771, intensity: 0.69 },
+        { lat: 37.7209, lon: -122.4787, intensity: 0.63 },
+        { lat: 37.7270, lon: -122.4812, intensity: 0.58 },
+
+        // Ingleside / Ocean Ave
+        { lat: 37.7230, lon: -122.4585, intensity: 0.62 },
+        { lat: 37.7248, lon: -122.4568, intensity: 0.57 },
+        { lat: 37.7214, lon: -122.4539, intensity: 0.51 },
+
+        // Sunset
+        { lat: 37.7420, lon: -122.4940, intensity: 0.48 },
+        { lat: 37.7542, lon: -122.4935, intensity: 0.44 },
+        { lat: 37.7658, lon: -122.4912, intensity: 0.46 },
+
+        // Golden Gate Park / Inner Sunset
+        { lat: 37.7694, lon: -122.4862, intensity: 0.56 },
+        { lat: 37.7668, lon: -122.4718, intensity: 0.61 },
+        { lat: 37.7647, lon: -122.4661, intensity: 0.59 },
+
+        // Castro / Noe Valley
+        { lat: 37.7609, lon: -122.4350, intensity: 0.67 },
+        { lat: 37.7548, lon: -122.4336, intensity: 0.54 },
+
+        // Mission
+        { lat: 37.7599, lon: -122.4148, intensity: 0.83 },
+        { lat: 37.7571, lon: -122.4193, intensity: 0.79 },
+        { lat: 37.7526, lon: -122.4186, intensity: 0.73 },
+        { lat: 37.7641, lon: -122.4213, intensity: 0.71 },
+        { lat: 37.7652, lon: -122.4108, intensity: 0.66 },
+
+        // Hayes Valley / Civic Center
+        { lat: 37.7765, lon: -122.4241, intensity: 0.76 },
+        { lat: 37.7786, lon: -122.4179, intensity: 0.72 },
+        { lat: 37.7798, lon: -122.4147, intensity: 0.69 },
+
+        // SoMa
+        { lat: 37.7812, lon: -122.4058, intensity: 0.87 },
+        { lat: 37.7782, lon: -122.4014, intensity: 0.81 },
+        { lat: 37.7850, lon: -122.3997, intensity: 0.78 },
+        { lat: 37.7819, lon: -122.3969, intensity: 0.72 },
+
+        // Union Square / Downtown
+        { lat: 37.7879, lon: -122.4074, intensity: 0.84 },
+        { lat: 37.7898, lon: -122.4053, intensity: 0.77 },
+        { lat: 37.7912, lon: -122.4039, intensity: 0.71 },
+
+        // Chinatown / North Beach
+        { lat: 37.7941, lon: -122.4078, intensity: 0.68 },
+        { lat: 37.7983, lon: -122.4075, intensity: 0.64 },
+        { lat: 37.8007, lon: -122.4101, intensity: 0.61 },
+
+        // Embarcadero / Ferry Building / Waterfront
+        { lat: 37.7955, lon: -122.3937, intensity: 0.86 },
+        { lat: 37.7988, lon: -122.3981, intensity: 0.74 },
+        { lat: 37.8039, lon: -122.4022, intensity: 0.69 },
+
+        // Marina / Cow Hollow
+        { lat: 37.8034, lon: -122.4368, intensity: 0.58 },
+        { lat: 37.8009, lon: -122.4387, intensity: 0.52 },
+
+        // Presidio / Richmond
+        { lat: 37.7867, lon: -122.4664, intensity: 0.47 },
+        { lat: 37.7805, lon: -122.4728, intensity: 0.43 },
+
+        // Potrero / Dogpatch / Mission Bay
+        { lat: 37.7578, lon: -122.3996, intensity: 0.63 },
+        { lat: 37.7706, lon: -122.3910, intensity: 0.67 },
+        { lat: 37.7683, lon: -122.3877, intensity: 0.60 },
+    ];
 
     useEffect(() => {
         const storedUser = localStorage.getItem("user");
         if (!storedUser) return;
+
         try {
             setUser(JSON.parse(storedUser));
         } catch {
@@ -32,6 +109,15 @@ export default function Map() {
 
     useEffect(() => {
         document.title = "Vibe Check";
+    }, []);
+
+    useEffect(() => {
+        function handleResize() {
+            setIsMobile(window.innerWidth < 768);
+        }
+
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
     }, []);
 
     async function handleSearch() {
@@ -62,17 +148,18 @@ export default function Map() {
             }
 
             setResults(data);
-        } catch (error) {
+        }
+        catch (error) {
             console.error("Search error:", error);
             setResults([]);
-        } finally {
+        }
+        finally {
             setLoading(false);
         }
     }
 
     function handleSelectLocation(place) {
         setSelectedLocation(place);
-        // On mobile, switch to location tab when a place is selected
         setMobileTab("location");
     }
 
@@ -81,156 +168,42 @@ export default function Map() {
         setMobileTab("map");
     }
 
+    const sharedProps = {
+        searchQuery,
+        setSearchQuery,
+        results,
+        selectedLocation,
+        loading,
+        hasSearched,
+        radius,
+        setRadius,
+        vibeLevel,
+        setVibeLevel,
+        category,
+        setCategory,
+        mockHeatmapData,
+        handleSearch,
+        handleSelectLocation,
+        handleCloseLocation,
+        setSelectedLocation,
+        mobileTab,
+        setMobileTab,
+        getMockLocationData,
+    };
+
     return (
         <div className="flex h-screen flex-col">
             <Navbar user={user} />
 
-            {/* ── Desktop layout (md+) ── */}
-            <main className="hidden md:flex flex-1 min-h-0">
-                <aside className="w-[420px] flex flex-col border-r border-gray-200 bg-gray-50 min-h-0">
-                    <Search
-                        searchQuery={searchQuery}
-                        setSearchQuery={setSearchQuery}
-                        radius={radius}
-                        setRadius={setRadius}
-                        vibeLevel={vibeLevel}
-                        setVibeLevel={setVibeLevel}
-                        category={category}
-                        setCategory={setCategory}
-                        results={results}
-                        loading={loading}
-                        selectedLocation={selectedLocation}
-                        onSelectLocation={setSelectedLocation}
-                        hasSearched={hasSearched}
-                        onSearch={handleSearch}
-                    />
-                </aside>
-
-                <div className="flex flex-1 min-h-0">
-                    <div className="flex-1 min-h-0">
-                        <Heatmap selectedLocation={selectedLocation} />
-                    </div>
-
-                    {selectedLocation && (
-                        <div className="w-[54rem] max-w-[65%] min-h-0 border-l border-gray-200 bg-white shadow-xl">
-                            <LocationView
-                                selectedLocation={selectedLocation}
-                                locationData={getMockLocationData()}
-                                onClose={() => setSelectedLocation(null)}
-                                onSubmitNote={(payload) => console.log("submit note", payload)}
-                                onReactToNote={(noteId) => console.log("react to note", noteId)}
-                                onOpenComments={(noteId) => console.log("open comments for note", noteId)}
-                            />
-                        </div>
-                    )}
-                </div>
-            </main>
-
-            {/* ── Mobile layout (< md) ── */}
-            <main className="flex md:hidden flex-1 flex-col min-h-0">
-                {/* Tab panels */}
-                <div className="flex-1 min-h-0 overflow-hidden">
-                    {/* Search panel */}
-                    <div className={`h-full bg-gray-50 overflow-y-auto ${mobileTab === "search" ? "block" : "hidden"}`}>
-                        <Search
-                            searchQuery={searchQuery}
-                            setSearchQuery={setSearchQuery}
-                            radius={radius}
-                            setRadius={setRadius}
-                            vibeLevel={vibeLevel}
-                            setVibeLevel={setVibeLevel}
-                            category={category}
-                            setCategory={setCategory}
-                            results={results}
-                            loading={loading}
-                            selectedLocation={selectedLocation}
-                            onSelectLocation={handleSelectLocation}
-                            hasSearched={hasSearched}
-                            onSearch={handleSearch}
-                        />
-                    </div>
-
-                    {/* Map panel */}
-                    <div className={`h-full ${mobileTab === "map" ? "block" : "hidden"}`}>
-                        <Heatmap selectedLocation={selectedLocation} />
-                    </div>
-
-                    {/* Location panel */}
-                    {selectedLocation && (
-                        <div className={`h-full bg-white overflow-y-auto ${mobileTab === "location" ? "block" : "hidden"}`}>
-                            <LocationView
-                                selectedLocation={selectedLocation}
-                                locationData={getMockLocationData()}
-                                onClose={handleCloseLocation}
-                                onSubmitNote={(payload) => console.log("submit note", payload)}
-                                onReactToNote={(noteId) => console.log("react to note", noteId)}
-                                onOpenComments={(noteId) => console.log("open comments for note", noteId)}
-                            />
-                        </div>
-                    )}
-                </div>
-
-                {/* Bottom tab bar */}
-                <nav className="flex border-t border-gray-200 bg-white shrink-0">
-                    <button
-                        type="button"
-                        onClick={() => setMobileTab("search")}
-                        className={`flex flex-1 flex-col items-center gap-0.5 py-2 text-xs font-medium transition-colors ${
-                            mobileTab === "search"
-                                ? "text-purple-600"
-                                : "text-gray-500 hover:text-gray-700"
-                        }`}
-                    >
-                        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
-                        </svg>
-                        Search
-                        {results.length > 0 && (
-                            <span className="absolute top-1 ml-6 flex h-4 w-4 items-center justify-center rounded-full bg-purple-600 text-[10px] text-white">
-                                {results.length}
-                            </span>
-                        )}
-                    </button>
-
-                    <button
-                        type="button"
-                        onClick={() => setMobileTab("map")}
-                        className={`flex flex-1 flex-col items-center gap-0.5 py-2 text-xs font-medium transition-colors ${
-                            mobileTab === "map"
-                                ? "text-purple-600"
-                                : "text-gray-500 hover:text-gray-700"
-                        }`}
-                    >
-                        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 0 1 3 16.382V5.618a1 1 0 0 1 1.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0 0 21 18.382V7.618a1 1 0 0 0-1.447-.894L15 9m0 8V9m0 0L9 7" />
-                        </svg>
-                        Map
-                    </button>
-
-                    {selectedLocation && (
-                        <button
-                            type="button"
-                            onClick={() => setMobileTab("location")}
-                            className={`flex flex-1 flex-col items-center gap-0.5 py-2 text-xs font-medium transition-colors ${
-                                mobileTab === "location"
-                                    ? "text-purple-600"
-                                    : "text-gray-500 hover:text-gray-700"
-                            }`}
-                        >
-                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a2 2 0 0 1-2.827 0l-4.244-4.243a8 8 0 1 1 11.314 0z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" />
-                            </svg>
-                            Details
-                        </button>
-                    )}
-                </nav>
-            </main>
+            {isMobile ? (
+                <MobileMapLayout {...sharedProps} />
+            ) : (
+                <DesktopMapLayout {...sharedProps} />
+            )}
         </div>
     );
 }
 
-// Extracted so both desktop and mobile share the same mock data
 function getMockLocationData() {
     return {
         currentVibe: "moderate",

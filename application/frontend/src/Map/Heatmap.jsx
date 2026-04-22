@@ -1,10 +1,12 @@
 import { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import "leaflet.heat";
 
-export default function Heatmap({ selectedLocation }) {
+export default function Heatmap({ selectedLocation, heatmapData = [] }) {
     const mapRef = useRef(null);
     const markerRef = useRef(null);
+    const heatLayerRef = useRef(null);
     const mapContainerRef = useRef(null);
 
     useEffect(() => {
@@ -37,7 +39,47 @@ export default function Heatmap({ selectedLocation }) {
     }, [selectedLocation]);
 
     useEffect(() => {
-        if (!mapRef.current || !selectedLocation) return;
+        if (!mapRef.current) return;
+
+        const points = heatmapData
+            .map((point) => {
+                const lat = Number(point.lat);
+                const lon = Number(point.lon);
+                const intensity = Number(point.intensity ?? 0.5);
+
+                if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+                    return null;
+                }
+
+                return [lat, lon, intensity];
+            })
+            .filter(Boolean);
+
+        if (heatLayerRef.current) {
+            heatLayerRef.current.remove();
+            heatLayerRef.current = null;
+        }
+
+        if (points.length === 0) return;
+
+        heatLayerRef.current = L.heatLayer(points, {
+            radius: 25,
+            blur: 18,
+            maxZoom: 17,
+            minOpacity: 0.25,
+        }).addTo(mapRef.current);
+    }, [heatmapData]);
+
+    useEffect(() => {
+        if (!mapRef.current) return;
+
+        if (!selectedLocation) {
+            if (markerRef.current) {
+                markerRef.current.remove();
+                markerRef.current = null;
+            }
+            return;
+        }
 
         const lat = Number(selectedLocation.lat);
         const lon = Number(selectedLocation.lon);
