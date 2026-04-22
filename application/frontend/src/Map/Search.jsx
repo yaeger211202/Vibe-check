@@ -1,19 +1,14 @@
-import { useEffect, useRef, useState } from "react";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
-import Navbar from "./components/Navbar.jsx";
-
 function SearchFilters({
-    searchQuery,
-    setSearchQuery,
-    radius,
-    setRadius,
-    vibeLevel,
-    setVibeLevel,
-    category,
-    setCategory,
-    onSearch,
-}) {
+                           searchQuery,
+                           setSearchQuery,
+                           radius,
+                           setRadius,
+                           vibeLevel,
+                           setVibeLevel,
+                           category,
+                           setCategory,
+                           onSearch,
+                       }) {
     const categories = [
         "All Categories",
         "Restaurant",
@@ -38,29 +33,28 @@ function SearchFilters({
 
     return (
         <div className="space-y-4 rounded-lg bg-white p-4 shadow-sm border border-gray-200">
-            {/* Search Bar */}
             <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                     Search Place Name
                 </label>
-                <div className="flex gap-2">
+                <div className="flex items-center gap-2">
                     <input
                         type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder="Search for a place..."
-                        className="flex-1 rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        className="flex-1 min-w-0 rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
                     <button
+                        type="button"
                         onClick={onSearch}
-                        className="rounded-lg bg-purple-600 px-4 py-2 text-white font-medium hover:bg-purple-700 transition-colors"
+                        className="shrink-0 rounded-lg bg-purple-600 px-4 py-2 text-white font-medium hover:bg-purple-700 transition-colors"
                     >
                         Search
                     </button>
                 </div>
             </div>
 
-            {/* Radius Filter */}
             <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                     Search Radius: {radius} km
@@ -81,7 +75,6 @@ function SearchFilters({
                 </div>
             </div>
 
-            {/* Category Filter */}
             <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                     Category
@@ -99,7 +92,6 @@ function SearchFilters({
                 </select>
             </div>
 
-            {/* Vibe Level Filter */}
             <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                     Vibe Level
@@ -108,6 +100,7 @@ function SearchFilters({
                     {vibeLevels.map((vibe) => (
                         <button
                             key={vibe.value}
+                            type="button"
                             onClick={() => setVibeLevel(vibe.value)}
                             className={`py-2 px-3 rounded-lg font-medium text-sm transition-all ${
                                 vibeLevel === vibe.value
@@ -121,7 +114,6 @@ function SearchFilters({
                 </div>
             </div>
 
-            {/* Filter Summary */}
             <div className="rounded-lg bg-purple-50 p-3 border border-purple-200">
                 <p className="text-xs text-gray-600">
                     <span className="font-semibold">Active Filters:</span> Radius{" "}
@@ -135,12 +127,12 @@ function SearchFilters({
 }
 
 function SearchResults({
-    results,
-    loading,
-    selectedLocation,
-    onSelectLocation,
-    hasSearched,
-}) {
+                           results,
+                           loading,
+                           selectedLocation,
+                           onSelectLocation,
+                           hasSearched,
+                       }) {
     return (
         <div className="rounded-lg bg-white shadow-sm border border-gray-200 p-4">
             <h3 className="text-lg font-semibold text-gray-900 mb-3">
@@ -175,6 +167,7 @@ function SearchResults({
                     {results.map((place) => (
                         <button
                             key={place.id}
+                            type="button"
                             onClick={() => onSelectLocation(place)}
                             className={`w-full text-left p-3 rounded-lg border transition-all ${
                                 selectedLocation?.id === place.id
@@ -196,6 +189,7 @@ function SearchResults({
                                         </p>
                                     )}
                                 </div>
+
                                 {place.vibeLevel && (
                                     <div className="flex-shrink-0">
                                         <span
@@ -203,14 +197,14 @@ function SearchResults({
                                                 place.vibeLevel === "dead"
                                                     ? "bg-slate-100 text-slate-800"
                                                     : place.vibeLevel === "quiet"
-                                                    ? "bg-green-400 text-white"
-                                                    : place.vibeLevel === "moderate"
-                                                    ? "bg-yellow-300 text-black"
-                                                    : place.vibeLevel === "busy"
-                                                    ? "bg-pink-400 text-white"
-                                                    : place.vibeLevel === "buzzing"
-                                                    ? "bg-red-500 text-white"
-                                                    : "bg-gray-100 text-gray-800"
+                                                        ? "bg-green-400 text-white"
+                                                        : place.vibeLevel === "moderate"
+                                                            ? "bg-yellow-300 text-black"
+                                                            : place.vibeLevel === "busy"
+                                                                ? "bg-pink-400 text-white"
+                                                                : place.vibeLevel === "buzzing"
+                                                                    ? "bg-red-500 text-white"
+                                                                    : "bg-gray-100 text-gray-800"
                                             }`}
                                         >
                                             {place.vibeLevel}
@@ -226,157 +220,43 @@ function SearchResults({
     );
 }
 
-function MapView({ selectedLocation }) {
-    const mapRef = useRef(null);
-    const markerRef = useRef(null);
-
-    useEffect(() => {
-        if (!mapRef.current) {
-            const map = L.map("search-map", {
-                center: [37.7241, -122.4799],
-                zoom: 13,
-            });
-
-            L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-                attribution: "&copy; OpenStreetMap contributors",
-            }).addTo(map);
-
-            mapRef.current = map;
-        }
-
-        return () => {
-            // Keep map alive for component lifecycle
-        };
-    }, []);
-
-    useEffect(() => {
-        if (!mapRef.current || !selectedLocation) return;
-
-        const lat = Number(selectedLocation.lat);
-        const lon = Number(selectedLocation.lon);
-
-        mapRef.current.flyTo([lat, lon], 15);
-
-        if (markerRef.current) {
-            markerRef.current.remove();
-        }
-
-        markerRef.current = L.marker([lat, lon])
-            .addTo(mapRef.current)
-            .bindPopup(selectedLocation.name)
-            .openPopup();
-    }, [selectedLocation]);
-
-    return <div id="search-map" className="h-full w-full rounded-lg" />;
-}
-
-export default function Search() {
-    const [searchQuery, setSearchQuery] = useState("");
-    const [results, setResults] = useState([]);
-    const [selectedLocation, setSelectedLocation] = useState(null);
-    const [loading, setLoading] = useState(false);
-    const [user, setUser] = useState(null);
-    const [hasSearched, setHasSearched] = useState(false);
-
-    // Filter states
-    const [radius, setRadius] = useState(5);
-    const [vibeLevel, setVibeLevel] = useState("all");
-    const [category, setCategory] = useState("All Categories");
-
-    useEffect(() => {
-        const storedUser = localStorage.getItem("user");
-        if (!storedUser) return;
-
-        try {
-            setUser(JSON.parse(storedUser));
-        } catch {
-            localStorage.removeItem("user");
-        }
-    }, []);
-
-    useEffect(() => {
-        document.title = "Search - Vibe Check";
-    }, []);
-
-    const handleSearch = async () => {
-        if (!searchQuery.trim()) {
-            return;
-        }
-
-        try {
-            setLoading(true);
-            setHasSearched(true);
-
-            // Build query parameters
-            const params = new URLSearchParams({
-                q: searchQuery.trim(),
-                radius: radius.toString(),
-                vibeLevel: vibeLevel,
-                category: category === "All Categories" ? "" : category,
-            });
-
-            const response = await fetch(
-                `/api/search/locations?${params.toString()}`
-            );
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                console.error(data.error || "Search failed");
-                setResults([]);
-                return;
-            }
-
-            setResults(data);
-        } catch (error) {
-            console.error("Search error:", error);
-            setResults([]);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    // Optional: Allow search on Enter key
-    const handleKeyPress = (e) => {
-        if (e.key === "Enter") {
-            handleSearch();
-        }
-    };
-
+export default function Search({
+                                   searchQuery,
+                                   setSearchQuery,
+                                   radius,
+                                   setRadius,
+                                   vibeLevel,
+                                   setVibeLevel,
+                                   category,
+                                   setCategory,
+                                   results,
+                                   loading,
+                                   selectedLocation,
+                                   onSelectLocation,
+                                   hasSearched,
+                                   onSearch,
+                               }) {
     return (
-        <div className="flex h-screen flex-col bg-gray-50">
-            <Navbar user={user} />
+        <div className="flex h-full flex-col gap-4 overflow-y-auto px-5 py-4">
+            <SearchFilters
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
+                radius={radius}
+                setRadius={setRadius}
+                vibeLevel={vibeLevel}
+                setVibeLevel={setVibeLevel}
+                category={category}
+                setCategory={setCategory}
+                onSearch={onSearch}
+            />
 
-            <main className="flex flex-1 min-h-0 gap-4 p-4">
-                {/* Left Sidebar - Filters and Results */}
-                <aside className="w-96 flex flex-col gap-4 overflow-y-auto">
-                    <SearchFilters
-                        searchQuery={searchQuery}
-                        setSearchQuery={setSearchQuery}
-                        radius={radius}
-                        setRadius={setRadius}
-                        vibeLevel={vibeLevel}
-                        setVibeLevel={setVibeLevel}
-                        category={category}
-                        setCategory={setCategory}
-                        onSearch={handleSearch}
-                    />
-
-                    <SearchResults
-                        results={results}
-                        loading={loading}
-                        selectedLocation={selectedLocation}
-                        onSelectLocation={setSelectedLocation}
-                        hasSearched={hasSearched}
-                    />
-                </aside>
-
-                {/* Right Side - Map */}
-                <div className="flex-1 rounded-lg overflow-hidden shadow-lg border border-gray-200 bg-white">
-                    <MapView selectedLocation={selectedLocation} />
-                </div>
-            </main>
+            <SearchResults
+                results={results}
+                loading={loading}
+                selectedLocation={selectedLocation}
+                onSelectLocation={onSelectLocation}
+                hasSearched={hasSearched}
+            />
         </div>
     );
 }
-
