@@ -24,7 +24,7 @@ export default function Navbar({ user }) {
                                 Profile
                             </Link>
                             <Link
-                                to="/signout" // sign out route not implemented
+                                to="/signin" // sign out route not implemented
                                 className="bg-gray-100 text-black py-2 px-4 rounded-lg hover:bg-gray-200 transition"
                             >
                                 Sign Out
