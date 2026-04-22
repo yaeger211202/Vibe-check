@@ -85,7 +85,7 @@ export default function Signup() {
             });
 
             setTimeout(() => {
-                navigate("/map");
+                navigate("/signin");
             }, 1200);
         }
         catch {
@@ -97,7 +97,7 @@ export default function Signup() {
     }
 
     return (
-        <div className="min-h-screen grid lg:grid-cols-2">
+        <div className="min-h-screen grid lg:grid-cols-2 gap-y-8 overflow-x-hidden">
             <section className="hidden lg:flex relative bg-black text-white overflow-hidden">
                 <img
                     src={signupImage}
@@ -167,7 +167,8 @@ export default function Signup() {
                                     type="email"
                                     value={formData.email}
                                     onChange={handleChange}
-                                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                    placeholder="Email"
+                                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400 text-base placeholder:text-sm"
                                 />
                             </div>
 
@@ -181,8 +182,8 @@ export default function Signup() {
                                     type="text"
                                     value={formData.username}
                                     onChange={handleChange}
-                                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                                    placeholder="Must contain only letters and numbers"
+                                    placeholder="Username"
+                                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400 text-base placeholder:text-sm"
                                 />
                             </div>
 
@@ -196,8 +197,8 @@ export default function Signup() {
                                     type="password"
                                     value={formData.password}
                                     onChange={handleChange}
-                                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                                    placeholder="Must be at least 8 characters"
+                                    placeholder="Password"
+                                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400 text-base placeholder:text-sm"
                                 />
                             </div>
 
@@ -211,7 +212,8 @@ export default function Signup() {
                                     type="password"
                                     value={formData.confirmPassword}
                                     onChange={handleChange}
-                                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                    placeholder="Confirm Password"
+                                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400 text-base placeholder:text-sm"
                                 />
                             </div>
 
@@ -230,7 +232,7 @@ export default function Signup() {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full bg-green-500 text-white font-semibold px-6 py-3 rounded-xl shadow-sm hover:bg-green-600 transition disabled:opacity-60 disabled:cursor-not-allowed hover:underline cursor-pointer"
+                                className="w-full bg-green-500 text-white font-semibold px-6 py-3 rounded-xl shadow-sm hover:bg-green-600 transition disabled:opacity-60 disabled:cursor-not-allowed hover:underline cursor-pointer text-base"
                             >
                                 {loading ? "Creating Account..." : "Create Account"}
                             </button>

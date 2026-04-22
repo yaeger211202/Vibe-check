@@ -11,7 +11,7 @@ import Footer from "./components/Footer.jsx";
 
 function TeamMemberCard({ name, role, email, image, description }) {
     return (
-        <div className="border border-gray-200 bg-gray-100 rounded-xl p-6 shadow-sm hover:shadow-md transition flex flex-col items-center text-center gap-3">
+        <div className="border border-gray-200 bg-gray-100 rounded-xl p-6 shadow-sm hover:shadow-md transition flex flex-col items-center text-center gap-3 min-w-0">
             <img
                 src={image}
                 alt={name}
@@ -19,8 +19,22 @@ function TeamMemberCard({ name, role, email, image, description }) {
             />
             <h3 className="font-semibold">{name}</h3>
             <span className="italic text-sm text-gray-500">{role}</span>
-            <a href={description} className="text-blue-500 hover:underline">{description}</a>
-            <a href={`mailto:${email}`} className="text-blue-500 hover:underline">{email}</a>
+
+            <a
+                href={description}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-500 hover:underline"
+            >
+                View LinkedIn
+            </a>
+
+            <a
+                href={`mailto:${email}`}
+                className="text-blue-500 hover:underline break-all max-w-full"
+            >
+                {email}
+            </a>
         </div>
     );
 }
@@ -36,7 +50,8 @@ export default function OurTeam() {
 
         try {
             setUser(JSON.parse(storedUser));
-        } catch {
+        }
+        catch {
             localStorage.removeItem("user");
         }
     }, []);
@@ -80,14 +95,16 @@ export default function OurTeam() {
     ];
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-green-100 to-gray-400">
+        <div className="min-h-screen flex flex-col bg-gradient-to-br from-green-100 to-gray-400">
             <Navbar user={user} />
 
-            <div className="flex justify-center p-6 mt-5 mb-5">
+            <main className="flex-1 flex justify-center p-6 mt-5 mb-5">
                 <div className="bg-white shadow-2xl rounded-2xl p-8 w-full max-w-6xl">
-                    <h1 className="text-3xl font-bold mb-6 text-center tracking-wide">Meet Our Team</h1>
+                    <h1 className="text-3xl font-bold mb-6 text-center tracking-wide">
+                        Meet Our Team
+                    </h1>
 
-                    <div className="mb-6 grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-6">
+                    <div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-6">
                         {teamMembers.map(({ name, role, email, image, description }) => (
                             <TeamMemberCard
                                 key={email}
@@ -100,7 +117,7 @@ export default function OurTeam() {
                         ))}
                     </div>
                 </div>
-            </div>
+            </main>
 
             <Footer />
         </div>
