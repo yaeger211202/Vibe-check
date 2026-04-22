@@ -1,4 +1,4 @@
-export default function SearchFilterPanel({
+export default function Search({
                                               query,
                                               setQuery,
                                               results,
