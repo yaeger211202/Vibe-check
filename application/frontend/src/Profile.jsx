@@ -13,7 +13,7 @@ import Navbar from "./components/Navbar.jsx";
 import Footer from "./components/Footer.jsx";
 
 
-// MOCK DATA TODO: replace with API response for profile details sections
+// MOCK DATA — TODO: replace with API responses
 
 const MOCK_USER_PROFILE = {
     profile_picture_url: null,    // null triggers the avatar initial fallback
