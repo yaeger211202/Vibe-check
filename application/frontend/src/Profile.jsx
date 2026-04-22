@@ -8,6 +8,40 @@
  *
  */
 
+// import { useEffect, useState } from "react";
+// import { useNavigate } from "react-router-dom";
+// import Navbar from "./components/Navbar.jsx";
+// import Footer from "./components/Footer.jsx";
+
+
+// MOCK DATA — TODO: replace with API responses
+
+// const MOCK_USER_PROFILE = {
+//     profile_picture_url: null,    // null triggers the avatar initial fallback
+//     created_at: "2026-02-15T08:00:00Z",
+//     account_status: "active",     // active | suspended | deleted
+//     email_verified: true,
+//     visibility: "public",
+//     default_radius_km: 1.0,
+//     notifications_enabled: true,
+//     preferred_categories: ["Study Spot", "Coffee", "Restaurant"],
+// };
+
+
+// Main Profile component
+
+/**
+ * Profile
+ *
+ * Displays the logged-in user's account information and verification status.
+ *
+ * Sections:
+ * Profile header  - avatar, username, email, join date
+ * Profile details - visibility, radius, preferred categories
+ *
+ * TODO: Edit username / password
+ * TODO: Replace MOCK_USER_PROFILE with GET /api/profile/me
+ */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "./components/Navbar.jsx";

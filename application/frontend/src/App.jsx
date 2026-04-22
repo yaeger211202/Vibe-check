@@ -1,6 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import Landing from "./Landing.jsx";
-import Map from "./Map.jsx";
+import Map from "./Map/Map.jsx";
 import Signin from "./auth/Signin.jsx";
 import Signup from "./auth/Signup.jsx";
 import Signout from "./auth/Signout.jsx";

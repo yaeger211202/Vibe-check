@@ -57,7 +57,8 @@ CREATE TABLE locations (
     lat             DECIMAL(10,7) NOT NULL,
     lng             DECIMAL(10,7) NOT NULL,
     category_tags   TEXT[],
-    radius_meters   DECIMAL(10,2) DEFAULT 100.0
+    radius_meters   DECIMAL(10,2) DEFAULT 100.0,
+    geom             GEOGRAPHY(POINT, 4326)
 );
 
 -- ========================
@@ -84,7 +85,7 @@ CREATE TABLE notes (
     content      TEXT NOT NULL CHECK (char_length(content) <= 280),
     vibe_level   vibe_level_enum NOT NULL,
     is_anonymous BOOLEAN DEFAULT FALSE,
-    expires_at   TIMESTAMP,
+    expires_at   TIMESTAMP DEFAULT (NOW() + INTERVAL '24 hours'),
     created_at   TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
@@ -165,7 +166,7 @@ CREATE TABLE user_badges (
 CREATE TABLE heatmap_activity (
     heatmap_id     SERIAL PRIMARY KEY,
     location_id    INT NOT NULL REFERENCES locations(location_id) ON DELETE CASCADE,
-    activity_score DECIMAL(5,2),
+    activity_score DECIMAL(5,2) CONSTRAINT chk_activity_score_range CHECK (activity_score >= 0 AND activity_score <= 100),
     time_window    VARCHAR(50),
     computed_at    TIMESTAMP NOT NULL DEFAULT NOW()
 );
@@ -189,3 +190,26 @@ FROM locations l
 LEFT JOIN notes n ON n.location_id = l.location_id
     AND (n.expires_at IS NULL OR n.expires_at > NOW())
 GROUP BY l.location_id, l.name;
+
+-- ========================
+-- ADDITIONAL INDEXES
+-- ========================
+CREATE INDEX idx_locations_geom ON locations USING GIST (geom);
+CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_users_username ON users(username);
+CREATE INDEX idx_notes_user_created ON notes(user_id, created_at);
+CREATE INDEX idx_notes_expires_at ON notes(expires_at) WHERE expires_at IS NOT NULL;
+CREATE INDEX idx_reactions_note ON reactions(note_id);
+CREATE INDEX idx_replies_note ON replies(note_id);
+CREATE INDEX idx_notifications_user_read ON notifications(user_id, is_read);
+
+-- ========================
+-- CONSTRAINTS
+-- ========================
+ALTER TABLE locations ADD CONSTRAINT chk_lat_range CHECK (lat >= -90 AND lat <= 90);
+ALTER TABLE locations ADD CONSTRAINT chk_lng_range CHECK (lng >= -180 AND lng <= 180);
+ALTER TABLE user_profiles ADD CONSTRAINT chk_radius_positive CHECK (default_radius_km > 0);
+ALTER TABLE locations ADD CONSTRAINT chk_radius_positive CHECK (radius_meters > 0);
+
+ALTER TABLE friend_connections DROP CONSTRAINT friend_connections_user_id_1_user_id_2_key;
+ALTER TABLE friend_connections ADD CONSTRAINT chk_user_order CHECK (user_id_1 < user_id_2);
