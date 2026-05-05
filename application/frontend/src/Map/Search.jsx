@@ -1,3 +1,5 @@
+import { SEARCH_CATEGORIES, VIBE_FILTER_OPTIONS, VIBE_LEVELS } from "./constants.js";
+
 function SearchFilters({
                            searchQuery,
                            setSearchQuery,
@@ -9,28 +11,6 @@ function SearchFilters({
                            setCategory,
                            onSearch,
                        }) {
-    const categories = [
-        "All Categories",
-        "Restaurant",
-        "Libraries",
-        "Bar",
-        "Cafe",
-        "Park",
-        "Museum",
-        "Shopping",
-        "Entertainment",
-        "Nightlife",
-    ];
-
-    const vibeLevels = [
-        { value: "all", label: "All Vibes", color: "bg-black text-white" },
-        { value: "dead", label: "Dead", color: "bg-slate-200" },
-        { value: "quiet", label: "Quiet", color: "bg-green-400 text-white" },
-        { value: "moderate", label: "Moderate", color: "bg-yellow-300 text-black" },
-        { value: "busy", label: "Busy", color: "bg-pink-400 text-white" },
-        { value: "buzzing", label: "Buzzing", color: "bg-red-500 text-white" },
-    ];
-
     function handleKeyDown(e) {
         if (e.key === "Enter") onSearch();
     }
@@ -91,7 +71,7 @@ function SearchFilters({
                         onChange={(e) => setCategory(e.target.value)}
                         className="w-full rounded-lg border border-gray-300 px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"
                     >
-                        {categories.map((cat) => (
+                        {SEARCH_CATEGORIES.map((cat) => (
                             <option key={cat} value={cat}>
                                 {cat}
                             </option>
@@ -106,7 +86,7 @@ function SearchFilters({
                 </label>
                 {/* 3 columns on mobile so buttons don't get too squished */}
                 <div className="grid grid-cols-3 sm:grid-cols-2 gap-2">
-                    {vibeLevels.map((vibe) => (
+                    {VIBE_FILTER_OPTIONS.map((vibe) => (
                         <button
                             key={vibe.value}
                             type="button"
@@ -203,15 +183,15 @@ function SearchResults({
                                     <div className="flex-shrink-0">
                                         <span
                                             className={`inline-block px-2 py-1 rounded text-xs font-medium ${
-                                                place.vibeLevel === "dead"
+                                                place.vibeLevel === VIBE_LEVELS.dead
                                                     ? "bg-slate-100 text-slate-800"
-                                                    : place.vibeLevel === "quiet"
+                                                    : place.vibeLevel === VIBE_LEVELS.quiet
                                                         ? "bg-green-400 text-white"
-                                                        : place.vibeLevel === "moderate"
+                                                        : place.vibeLevel === VIBE_LEVELS.moderate
                                                             ? "bg-yellow-300 text-black"
-                                                            : place.vibeLevel === "busy"
+                                                            : place.vibeLevel === VIBE_LEVELS.busy
                                                                 ? "bg-pink-400 text-white"
-                                                                : place.vibeLevel === "buzzing"
+                                                                : place.vibeLevel === VIBE_LEVELS.buzzing
                                                                     ? "bg-red-500 text-white"
                                                                     : "bg-gray-100 text-gray-800"
                                             }`}
