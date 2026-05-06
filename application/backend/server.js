@@ -176,7 +176,6 @@ app.get("/api/locations/:location_id/vibe", async (req, res) => {
 
         const data = result.rows[0];
 
-        // 4.2 Edge case — fallback for low data
         if (parseInt(data.total_notes) < 3) {
             return res.json({
                 location_id: parseInt(location_id),
@@ -187,7 +186,6 @@ app.get("/api/locations/:location_id/vibe", async (req, res) => {
             });
         }
 
-        // 4.1 Map score to label
         const score = parseFloat(data.avg_vibe_score);
         let vibe_label;
         if (score < 1.5) vibe_label = "Dead";
@@ -207,6 +205,11 @@ app.get("/api/locations/:location_id/vibe", async (req, res) => {
         console.error("Vibe score error:", error);
         return res.status(500).json({ error: "Internal server error." });
     }
+});
+
+const PORT = 3000;
+app.listen(PORT, () => {
+    console.log(`Backend running on port ${PORT}`);
 });
 
 const PORT = 3000;
