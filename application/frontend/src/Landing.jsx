@@ -1,11 +1,24 @@
 import { Link } from "react-router-dom";
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 
 import Footer from "./components/Footer.jsx";
 
 export default function Landing() {
     useEffect(() => {
         document.title = "Vibe Check";
+    }, []);
+
+    const [user, setUser] = useState(null);
+
+    useEffect(() => {
+        const storedUser = localStorage.getItem("user");
+        if (!storedUser) return;
+
+        try {
+            setUser(JSON.parse(storedUser));
+        } catch {
+            localStorage.removeItem("user");
+        }
     }, []);
 
     return (
@@ -34,19 +47,27 @@ export default function Landing() {
                                 </Link>
 
                                 <div className="flex gap-4">
-                                    <Link
-                                        to="/signin"
-                                        className="w-1/2 text-center bg-white border border-gray-300 text-black font-semibold px-6 py-4 rounded-xl shadow-sm hover:bg-gray-50 hover:underline transition text-base"
-                                    >
-                                        Sign In
-                                    </Link>
+                                    { !user ? (
+                                        <>
+                                        <Link
+                                            to="/signin"
+                                            className="w-1/2 text-center bg-white border border-gray-300 text-black font-semibold px-6 py-4 rounded-xl shadow-sm hover:bg-gray-50 hover:underline transition text-base"
+                                        >
+                                            Sign In
+                                        </Link>
 
-                                    <Link
-                                        to="/signup"
-                                        className="w-1/2 text-center bg-blue-500 text-white font-semibold px-6 py-4 rounded-xl shadow-sm hover:bg-blue-600 hover:underline transition text-base"
-                                    >
-                                        Sign Up
-                                    </Link>
+                                        <Link
+                                            to="/signup"
+                                            className="w-1/2 text-center bg-blue-500 text-white font-semibold px-6 py-4 rounded-xl shadow-sm hover:bg-blue-600 hover:underline transition text-base"
+                                        >
+                                            Sign Up
+                                        </Link>
+                                        </>
+                                        )
+                                         : 
+                                        (null)
+                                    }
+                                        
                                 </div>
                             </div>
                         </div>
