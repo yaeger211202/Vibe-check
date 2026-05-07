@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar.jsx";
 import DesktopMapLayout from "./DesktopMapLayout.jsx";
 import MobileMapLayout from "./MobileMapLayout.jsx";
+import { DEFAULT_CATEGORY, DEFAULT_VIBE_LEVEL } from "./constants.js";
 
 export default function Map() {
     const [searchQuery, setSearchQuery] = useState("");
@@ -13,8 +14,8 @@ export default function Map() {
     const [hasSearched, setHasSearched] = useState(false);
 
     const [radius, setRadius] = useState(5);
-    const [vibeLevel, setVibeLevel] = useState("all");
-    const [category, setCategory] = useState("All Categories");
+    const [vibeLevel, setVibeLevel] = useState(DEFAULT_VIBE_LEVEL);
+    const [category, setCategory] = useState(DEFAULT_CATEGORY);
 
     const [mobileTab, setMobileTab] = useState("map");
     const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
@@ -135,7 +136,7 @@ export default function Map() {
                 q: searchQuery.trim(),
                 radius: radius.toString(),
                 vibeLevel,
-                category: category === "All Categories" ? "" : category,
+                category: category === DEFAULT_CATEGORY ? "" : category,
             });
 
             const response = await fetch(`/api/search/locations?${params.toString()}`);
