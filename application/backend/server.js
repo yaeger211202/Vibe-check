@@ -2,6 +2,9 @@ import dotenv from 'dotenv';
 import express from 'express';
 import bcrypt from "bcrypt";
 import pkg from 'pg';
+import jwt from 'jsonwebtoken';
+import cookieParser from 'cookie-parser';
+import { requireAuth } from './middleware/auth.js';
 
 const { Pool } = pkg;
 
@@ -9,6 +12,7 @@ dotenv.config();
 
 const app = express();
 app.use(express.json());
+app.use(cookieParser());
 
 const pool = new Pool({
     user: process.env.DB_USER,
@@ -87,14 +91,23 @@ app.post("/api/login", async (req, res) => {
             return res.status(401).json({ error: "Invalid email or password." });
         }
 
+        const token = jwt.sign(
+            { user_id: user.user_id, username: user.username },
+            process.env.JWT_SECRET,
+            { expiresIn: '7d' }
+        );
+
+        res.cookie('token', token, {
+            httpOnly: true,   
+            secure: true, // toggle to false when testing locally    
+            sameSite: 'strict',
+            maxAge: 7 * 24 * 60 * 60 * 1000 
+        });
+
         return res.status(200).json({
             message: "Login successful.",
-            user: {
-                user_id: user.user_id,
-                username: user.username,
-                email: user.email,
-            },
-        });
+            user: { user_id: user.user_id, username: user.username, email: user.email }
+          });
     }
     catch (error) {
         console.error("Login error:", error);
@@ -144,6 +157,15 @@ app.post("/api/signup", async (req, res) => {
         console.error("Signup error:", error);
         return res.status(500).json({ error: "Internal server error." });
     }
+});
+
+app.post("/api/logout", requireAuth, async (req, res) => {
+    res.clearCookie('token');
+    return res.status(200).json({ message: "Logged out successfully." });
+  });
+
+app.get("/api/me", requireAuth, (req, res) => {
+    return res.status(200).json({ user: req.user });
 });
 
 const PORT = 3000;
