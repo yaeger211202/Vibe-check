@@ -1,14 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-
-const VIBE_STYLES = {
-    dead: "bg-gray-300 text-gray-900 border-gray-500",
-    quiet: "bg-green-100 text-green-700 border-green-300",
-    moderate: "bg-yellow-100 text-yellow-800 border-yellow-400",
-    busy: "bg-red-100 text-red-700 border-red-300",
-    buzzing: "bg-pink-100 text-pink-700 border-pink-300",
-};
-
-const VIBE_OPTIONS = ["dead", "quiet", "moderate", "busy", "buzzing"];
+import {
+    DEFAULT_CURRENT_VIBE,
+    NOTE_MAX_LENGTH,
+    VIBE_OPTIONS,
+    VIBE_STYLES,
+} from "./constants.js";
 
 function formatLocationTitle(location) {
     const name = location?.name?.trim();
@@ -40,7 +36,7 @@ export default function LocationView({
 
     const title = formatLocationTitle(selectedLocation);
 
-    const currentVibe = locationData?.currentVibe || "unknown";
+    const currentVibe = locationData?.currentVibe || DEFAULT_CURRENT_VIBE;
     const progressPercent = locationData?.vibeScorePercent || 0;
 
     const notes = useMemo(() => {
@@ -60,7 +56,7 @@ export default function LocationView({
     }, [selectedLocation?.id]);
 
     const canSubmit =
-        selectedVibe && noteText.trim().length > 0 && noteText.length <= 280;
+        selectedVibe && noteText.trim().length > 0 && noteText.length <= NOTE_MAX_LENGTH;
 
     function handleSubmit(e) {
         e.preventDefault();
@@ -255,13 +251,13 @@ export default function LocationView({
                                 <textarea
                                     rows="4"
                                     value={noteText}
-                                    onChange={(e) => setNoteText(e.target.value.slice(0, 280))}
+                                    onChange={(e) => setNoteText(e.target.value.slice(0, NOTE_MAX_LENGTH))}
                                     placeholder="What's the vibe right now?"
                                     className="w-full resize-none border-none text-base text-gray-700 placeholder:text-gray-400 focus:outline-none"
                                 />
 
                                 <div className="mt-3 flex items-center justify-between gap-4 text-sm text-gray-500">
-                                    <span>{noteText.length} / 280</span>
+                                    <span>{noteText.length} / {NOTE_MAX_LENGTH}</span>
 
                                     <button
                                         type="button"

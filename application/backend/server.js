@@ -2,6 +2,9 @@ import dotenv from 'dotenv';
 import express from 'express';
 import bcrypt from "bcrypt";
 import pkg from 'pg';
+import { createNotesRoutes } from './routes/notesRoutes.js';
+import { createReactionsRoutes } from './routes/reactionsRoutes.js';
+import { createLocationsRoutes } from './routes/locationsRoutes.js';
 
 const { Pool } = pkg;
 
@@ -145,6 +148,15 @@ app.post("/api/signup", async (req, res) => {
         return res.status(500).json({ error: "Internal server error." });
     }
 });
+
+// ========================
+// ROUTE HANDLERS
+// ========================
+
+// Mount route handlers
+app.use("/api/notes", createNotesRoutes(pool));
+app.use("/api/reactions", createReactionsRoutes(pool));
+app.use("/api/locations", createLocationsRoutes(pool));
 
 const PORT = 3000;
 app.listen(PORT, () => {
