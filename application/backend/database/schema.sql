@@ -52,6 +52,7 @@ CREATE TABLE user_profiles (
 -- ========================
 CREATE TABLE locations (
     location_id     SERIAL PRIMARY KEY,
+    nominatim_id    BIGINT UNIQUE,
     name            VARCHAR(255) NOT NULL,
     address         TEXT,
     lat             DECIMAL(10,7) NOT NULL,
