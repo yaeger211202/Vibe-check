@@ -7,9 +7,11 @@ import jwt from 'jsonwebtoken';
 import cookieParser from 'cookie-parser';
 import { requireAuth } from './middleware/auth.js';
 
+import swaggerUi from "swagger-ui-express";
 import { createNotesRoutes } from './routes/notesRoutes.js';
 import { createReactionsRoutes } from './routes/reactionsRoutes.js';
 import { createLocationsRoutes } from './routes/locationsRoutes.js';
+import swaggerSpec from "./docs/openapi.js";
 
 
 const { Pool } = pkg;
@@ -19,6 +21,11 @@ dotenv.config();
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
+
+app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.get("/api/docs.json", (_req, res) => {
+    res.json(swaggerSpec);
+});
 
 const pool = new Pool({
     user: process.env.DB_USER,
@@ -235,6 +242,10 @@ app.get("/api/locations/:location_id/vibe", async (req, res) => {
 });
 
 
+const PORT = 3000;
+app.listen(PORT, () => {
+    console.log(`Backend running on port ${PORT}`);
+});
 const PORT = 3000;
 app.listen(PORT, () => {
     console.log(`Backend running on port ${PORT}`);

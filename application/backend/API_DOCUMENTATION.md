@@ -5,6 +5,17 @@
 http://localhost:3000
 ```
 
+## Swagger UI
+Interactive API documentation is available at:
+```
+http://localhost:3000/api/docs
+```
+
+Raw OpenAPI JSON is available at:
+```
+http://localhost:3000/api/docs.json
+```
+
 ---
 
 ## Authentication
@@ -588,5 +599,4 @@ curl -X DELETE http://localhost:3000/api/notes/42 \
 - [ ] Add friend/follow endpoints
 - [ ] Add badges/achievements system
 - [ ] Add heatmap data aggregation endpoints
-
 
