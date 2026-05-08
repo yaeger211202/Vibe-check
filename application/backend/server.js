@@ -2,9 +2,11 @@ import dotenv from 'dotenv';
 import express from 'express';
 import bcrypt from "bcrypt";
 import pkg from 'pg';
+import swaggerUi from "swagger-ui-express";
 import { createNotesRoutes } from './routes/notesRoutes.js';
 import { createReactionsRoutes } from './routes/reactionsRoutes.js';
 import { createLocationsRoutes } from './routes/locationsRoutes.js';
+import swaggerSpec from "./docs/openapi.js";
 
 const { Pool } = pkg;
 
@@ -12,6 +14,11 @@ dotenv.config();
 
 const app = express();
 app.use(express.json());
+
+app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.get("/api/docs.json", (_req, res) => {
+    res.json(swaggerSpec);
+});
 
 const pool = new Pool({
     user: process.env.DB_USER,
