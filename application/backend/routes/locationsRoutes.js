@@ -3,6 +3,33 @@ import express from 'express';
 const router = express.Router();
 
 export function createLocationsRoutes(pool) {
+
+    // Upsert
+    router.post("/upsert", async (req, res) => {
+        const { nominatim_id, name, lat, lng } = req.body;
+
+        if (!nominatim_id || !name || lat === undefined || lng === undefined) {
+            return res.status(400).json({ error: "nominatim_id, name, lat, and lng are required." });
+        }
+
+        try {
+            const result = await pool.query(
+                `INSERT INTO locations (nominatim_id, name, lat, lng)
+                VALUES ($1, $2, $3, $4)
+                ON CONFLICT (nominatim_id) DO UPDATE SET name = EXCLUDED.name
+                RETURNING location_id, nominatim_id, name, lat, lng`,
+                [nominatim_id, name, lat, lng]
+            );
+
+            return res.status(200).json({
+                location: result.rows[0]
+            });
+        } catch (error) {
+            console.error("Upsert error:", error);
+            return res.status(500).json({ error: "Internal server error." });
+        }
+    });
+
     // CREATE - Add a new location
     router.post("/", async (req, res) => {
         const { name, address, lat, lng, category_tags, radius_meters } = req.body;
@@ -21,9 +48,9 @@ export function createLocationsRoutes(pool) {
 
         try {
             const result = await pool.query(
-                `INSERT INTO locations (name, address, lat, lng, category_tags, radius_meters, geom)
-                 VALUES ($1, $2, $3, $4, $5, $6, ST_GeogFromText('SRID=4326;POINT(' || $4 || ' ' || $3 || ')'))
-                 RETURNING location_id, name, address, lat, lng, category_tags, radius_meters`,
+                `INSERT INTO locations (name, address, lat, lng, category_tags, radius_meters)
+                VALUES ($1, $2, $3, $4, $5, $6)
+                RETURNING location_id, name, address, lat, lng, category_tags, radius_meters`,
                 [
                     name.trim(),
                     address ? address.trim() : null,
@@ -33,6 +60,14 @@ export function createLocationsRoutes(pool) {
                     radius_meters || 100.0
                 ]
             );
+
+            const location_id = result.rows[0].location_id;
+
+            await pool.query(
+                `UPDATE locations SET geom = ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography WHERE location_id = $3`,
+                [lng, lat, location_id]
+            );
+
 
             return res.status(201).json({
                 message: "Location created successfully.",

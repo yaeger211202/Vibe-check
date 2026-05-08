@@ -60,6 +60,8 @@ export default function LocationView({
 
     function handleSubmit(e) {
         e.preventDefault();
+        console.log('handleSubmit fired', { canSubmit, selectedVibe, noteText });
+
         if (!canSubmit) return;
 
         const payload = {
@@ -68,6 +70,8 @@ export default function LocationView({
             text: noteText.trim(),
             anonymous: isAnonymous,
         };
+
+        console.log('calling onSubmitNote with payload:', payload);
 
         onSubmitNote?.(payload);
 

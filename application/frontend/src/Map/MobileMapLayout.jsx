@@ -3,10 +3,11 @@ import Heatmap from "./Heatmap.jsx";
 import LocationView from "./LocationView.jsx";
 
 export default function MobileMapLayout({
-                                            searchQuery,
+                                             searchQuery,
                                             setSearchQuery,
                                             results,
                                             selectedLocation,
+                                            setSelectedLocation,  
                                             loading,
                                             hasSearched,
                                             radius,
@@ -21,8 +22,12 @@ export default function MobileMapLayout({
                                             handleCloseLocation,
                                             mobileTab,
                                             setMobileTab,
-                                            getMockLocationData,
+                                            locationData,       
+                                            setLocationData,     
+                                            user,                
+                                            
                                         }) {
+
     return (
         <main className="flex flex-1 flex-col min-h-0">
             <div className="flex-1 min-h-0 overflow-hidden">
@@ -58,9 +63,54 @@ export default function MobileMapLayout({
                     <div className={`h-full bg-white overflow-y-auto ${mobileTab === "location" ? "block" : "hidden"}`}>
                         <LocationView
                             selectedLocation={selectedLocation}
-                            locationData={getMockLocationData()}
-                            onClose={handleCloseLocation}
-                            onSubmitNote={(payload) => console.log("submit note", payload)}
+                            locationData={locationData}
+                            onClose={() => setSelectedLocation(null)}
+                            onSubmitNote={async (payload) => {
+                                if (!selectedLocation?.db_id) {
+                                    console.error('No db_id on selected location');
+                                    return;
+                                }
+
+                                try {
+                                    const res = await fetch('/api/notes', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({
+                                            user_id: user?.user_id ?? 1,
+                                            location_id: selectedLocation.db_id,
+                                            content: payload.text,
+                                            vibe_level: payload.vibe,
+                                            is_anonymous: payload.anonymous
+                                        })
+                                    });
+
+                                    const data = await res.json();
+                                    console.log('Note creation response:', data);
+
+                                    if (!res.ok) {
+                                        console.error('Failed to create note:', data.error);
+                                        return;
+                                    }
+
+                                    if (data.note) {
+                                        setLocationData(prev => ({
+                                            ...prev,
+                                            notes: [{
+                                                id: data.note.note_id,
+                                                username: user?.username ?? 'Anonymous',
+                                                createdAt: data.note.created_at,
+                                                createdAtText: 'Just now',
+                                                vibe: data.note.vibe_level,
+                                                text: data.note.content,
+                                                reactionCount: 0,
+                                                commentCount: 0,
+                                            }, ...prev.notes]
+                                        }));
+                                    }
+                                } catch (err) {
+                                    console.error('Failed to submit note:', err);
+                                }
+                            }}
                             onReactToNote={(noteId) => console.log("react to note", noteId)}
                             onOpenComments={(noteId) => console.log("open comments for note", noteId)}
                         />
