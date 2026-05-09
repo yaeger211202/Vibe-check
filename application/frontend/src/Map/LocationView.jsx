@@ -24,6 +24,7 @@ function getInitials(name) {
 export default function LocationView({
                                          selectedLocation,
                                          locationData,
+                                         setLocationData,
                                          onClose,
                                          onSubmitNote,
                                          onReactToNote,
@@ -50,6 +51,25 @@ export default function LocationView({
 
     const visibleNotes = notes.slice(0, visibleNoteCount);
     const remainingNotes = Math.max(0, notes.length - visibleNoteCount);
+
+    useEffect(() => {
+        if (!locationData?.notes?.length) return;
+
+        const interval = setInterval(() => {
+            setLocationData(prev => {
+                if (!prev) return prev;
+                return {
+                    ...prev,
+                    notes: prev.notes.filter(n => {
+                        if (!n.expiresAt) return true;
+                        return new Date(n.expiresAt) > new Date();
+                    })
+                };
+            });
+        }, 60 * 1000); // check every minute
+
+        return () => clearInterval(interval);
+    }, [locationData?.notes]);
 
     useEffect(() => {
         setVisibleNoteCount(4);

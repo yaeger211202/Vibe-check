@@ -188,6 +188,7 @@ export default function Map() {
                     id: n.note_id,
                     username: n.username,
                     createdAt: n.created_at,
+                    expiresAt: n.expires_at,
                     createdAtText: new Date(n.created_at).toLocaleTimeString(),
                     vibe: n.vibe_level,
                     text: n.content,

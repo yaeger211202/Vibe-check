@@ -44,6 +44,7 @@ export default function MobileMapLayout({
                         results={results}
                         loading={loading}
                         selectedLocation={selectedLocation}
+                        setLocationData={setLocationData}
                         onSelectLocation={handleSelectLocation}
                         hasSearched={hasSearched}
                         onSearch={handleSearch}

@@ -36,7 +36,8 @@ export default function DesktopMapLayout({
                     category={category}
                     setCategory={setCategory}
                     results={results}
-                    loading={loading}
+                    loading={loading} 
+                    setLocationData={setLocationData}
                     selectedLocation={selectedLocation}
                     onSelectLocation={handleSelectLocation}
                     hasSearched={hasSearched}
