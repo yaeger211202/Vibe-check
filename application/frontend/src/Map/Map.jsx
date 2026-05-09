@@ -189,7 +189,7 @@ export default function Map() {
                     username: n.username,
                     createdAt: n.created_at,
                     expiresAt: n.expires_at,
-                    createdAtText: new Date(n.created_at).toLocaleTimeString(),
+                    createdAtText: new Date(n.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                     vibe: n.vibe_level,
                     text: n.content,
                     reactionCount: parseInt(n.reaction_count),
