@@ -2,11 +2,17 @@ import dotenv from 'dotenv';
 import express from 'express';
 import bcrypt from "bcrypt";
 import pkg from 'pg';
+
+import jwt from 'jsonwebtoken';
+import cookieParser from 'cookie-parser';
+import { requireAuth } from './middleware/auth.js';
+
 import swaggerUi from "swagger-ui-express";
 import { createNotesRoutes } from './routes/notesRoutes.js';
 import { createReactionsRoutes } from './routes/reactionsRoutes.js';
 import { createLocationsRoutes } from './routes/locationsRoutes.js';
 import swaggerSpec from "./docs/openapi.js";
+
 
 const { Pool } = pkg;
 
@@ -14,6 +20,7 @@ dotenv.config();
 
 const app = express();
 app.use(express.json());
+app.use(cookieParser());
 
 app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.get("/api/docs.json", (_req, res) => {
@@ -97,14 +104,23 @@ app.post("/api/login", async (req, res) => {
             return res.status(401).json({ error: "Invalid email or password." });
         }
 
+        const token = jwt.sign(
+            { user_id: user.user_id, username: user.username },
+            process.env.JWT_SECRET,
+            { expiresIn: '7d' }
+        );
+
+        res.cookie('token', token, {
+            httpOnly: true,   
+            secure: true, // toggle to false when testing locally    
+            sameSite: 'strict',
+            maxAge: 7 * 24 * 60 * 60 * 1000 
+        });
+
         return res.status(200).json({
             message: "Login successful.",
-            user: {
-                user_id: user.user_id,
-                username: user.username,
-                email: user.email,
-            },
-        });
+            user: { user_id: user.user_id, username: user.username, email: user.email }
+          });
     }
     catch (error) {
         console.error("Login error:", error);
@@ -156,6 +172,16 @@ app.post("/api/signup", async (req, res) => {
     }
 });
 
+
+app.post("/api/logout", requireAuth, async (req, res) => {
+    res.clearCookie('token');
+    return res.status(200).json({ message: "Logged out successfully." });
+  });
+
+app.get("/api/me", requireAuth, (req, res) => {
+    return res.status(200).json({ user: req.user });
+});
+
 // ========================
 // ROUTE HANDLERS
 // ========================
@@ -164,6 +190,56 @@ app.post("/api/signup", async (req, res) => {
 app.use("/api/notes", createNotesRoutes(pool));
 app.use("/api/reactions", createReactionsRoutes(pool));
 app.use("/api/locations", createLocationsRoutes(pool));
+
+// ========================
+// VIBE SCORE 
+// ========================
+app.get("/api/locations/:location_id/vibe", async (req, res) => {
+    const { location_id } = req.params;
+
+    try {
+        const result = await pool.query(
+            `SELECT * FROM location_vibe_scores WHERE location_id = $1`,
+            [location_id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: "Location not found." });
+        }
+
+        const data = result.rows[0];
+
+        if (parseInt(data.total_notes) < 3) {
+            return res.json({
+                location_id: parseInt(location_id),
+                avg_vibe_score: null,
+                vibe_label: null,
+                total_notes: parseInt(data.total_notes),
+                message: "Not enough data to calculate vibe score."
+            });
+        }
+
+        const score = parseFloat(data.avg_vibe_score);
+        let vibe_label;
+        if (score < 1.5) vibe_label = "Dead";
+        else if (score < 2.5) vibe_label = "Quiet";
+        else if (score < 3.5) vibe_label = "Moderate";
+        else if (score < 4.5) vibe_label = "Busy";
+        else vibe_label = "Buzzing";
+
+        return res.json({
+            location_id: parseInt(location_id),
+            avg_vibe_score: score,
+            vibe_label,
+            total_notes: parseInt(data.total_notes)
+        });
+
+    } catch (error) {
+        console.error("Vibe score error:", error);
+        return res.status(500).json({ error: "Internal server error." });
+    }
+
+});
 
 const PORT = 3000;
 app.listen(PORT, () => {

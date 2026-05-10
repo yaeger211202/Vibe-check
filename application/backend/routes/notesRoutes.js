@@ -170,7 +170,6 @@ export function createNotesRoutes(pool) {
                  LEFT JOIN reactions r ON n.note_id = r.note_id
                  LEFT JOIN replies rep ON n.note_id = rep.note_id
                  WHERE n.user_id = $1
-                    AND (n.expires_at IS NULL OR n.expires_at > NOW())
                  GROUP BY n.note_id, l.name
                  ORDER BY n.created_at DESC`,
                 [user_id]

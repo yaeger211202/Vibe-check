@@ -20,6 +20,8 @@ export default function Map() {
     const [mobileTab, setMobileTab] = useState("map");
     const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
 
+    const [locationData, setLocationData] = useState(null);
+
     const mockHeatmapData = [
         // SFSU / Stonestown / Parkmerced
         { lat: 37.7241, lon: -122.4799, intensity: 0.95 },
@@ -159,8 +161,45 @@ export default function Map() {
         }
     }
 
-    function handleSelectLocation(place) {
-        setSelectedLocation(place);
+    async function handleSelectLocation(place) {
+        console.log('handleSelectLocation fired', place);
+
+        try {
+            const res = await fetch('/api/locations/upsert', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    nominatim_id: place.id,
+                    name: place.name,
+                    lat: place.lat,
+                    lng: place.lon,
+                })
+            });
+            const data = await res.json();
+            const db_id = data.location.location_id;
+            setSelectedLocation({ ...place, db_id });
+
+            const notesRes = await fetch(`/api/notes/location/${db_id}`);
+            const notesData = await notesRes.json();
+            setLocationData({
+                currentVibe: "moderate",
+                vibeScorePercent: 58,
+                notes: notesData.notes.map(n => ({
+                    id: n.note_id,
+                    username: n.username,
+                    createdAt: n.created_at,
+                    expiresAt: n.expires_at,
+                    createdAtText: new Date(n.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    vibe: n.vibe_level,
+                    text: n.content,
+                    reactionCount: parseInt(n.reaction_count),
+                    commentCount: parseInt(n.reply_count),
+                }))
+            });
+        } catch (err) {
+            console.error('Failed to load location', err);
+            setSelectedLocation(place);
+        }
         setMobileTab("location");
     }
 
@@ -189,7 +228,9 @@ export default function Map() {
         setSelectedLocation,
         mobileTab,
         setMobileTab,
-        getMockLocationData,
+        locationData,
+        setLocationData,
+        user,
     };
 
     return (
@@ -205,71 +246,3 @@ export default function Map() {
     );
 }
 
-function getMockLocationData() {
-    return {
-        currentVibe: "moderate",
-        vibeScorePercent: 58,
-        notes: [
-            {
-                id: 1,
-                username: "@amulya",
-                createdAtText: "8 min ago",
-                distanceText: "0.1 mi away",
-                vibe: "busy",
-                text: "Every seat is taken. Group study sessions going on everywhere.",
-                reactionCount: 8,
-                commentCount: 0,
-            },
-            {
-                id: 2,
-                username: "@harry",
-                createdAtText: "1h ago",
-                distanceText: "0.2 mi away",
-                vibe: "quiet",
-                text: "Upstairs is super quiet right now",
-                reactionCount: 0,
-                commentCount: 2,
-            },
-            {
-                id: 3,
-                username: "@rahul",
-                createdAtText: "2h ago",
-                distanceText: "0.3 mi away",
-                vibe: "moderate",
-                text: "Good amount of space available",
-                reactionCount: 1,
-                commentCount: 4,
-            },
-            {
-                id: 4,
-                username: "@aljhay",
-                createdAtText: "2h ago",
-                distanceText: "0.1 mi away",
-                vibe: "busy",
-                text: "Some free space, but noisy groups around!",
-                reactionCount: 5,
-                commentCount: 3,
-            },
-            {
-                id: 5,
-                username: "@kaitlyn",
-                createdAtText: "3h ago",
-                distanceText: "0.2 mi away",
-                vibe: "buzzing",
-                text: "I wouldn't come here right now if you want some quiet.",
-                reactionCount: 7,
-                commentCount: 3,
-            },
-            {
-                id: 6,
-                username: "@ortiz",
-                createdAtText: "1h ago",
-                distanceText: "0.2 mi away",
-                vibe: "dead",
-                text: "Very chill, I'm like the only person here",
-                reactionCount: 1,
-                commentCount: 0,
-            },
-        ],
-    };
-}
