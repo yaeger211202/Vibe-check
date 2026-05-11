@@ -4,6 +4,36 @@ import Navbar from "../components/Navbar.jsx";
 import DesktopMapLayout from "./DesktopMapLayout.jsx";
 import MobileMapLayout from "./MobileMapLayout.jsx";
 import { DEFAULT_CATEGORY, DEFAULT_VIBE_LEVEL } from "./constants.js";
+import { searchLocations, upsertLocation, getLocationVibe } from "../api/locations.js";
+import { createNote, deleteNote, getNotesByLocation, updateNote } from "../api/notes.js";
+
+function formatNoteTimestamp(timestamp) {
+    return new Date(timestamp).toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+    });
+}
+
+function mapApiNote(note) {
+    return {
+        id: note.note_id,
+        userId: note.user_id,
+        username: note.username,
+        createdAt: note.created_at,
+        expiresAt: note.expires_at,
+        createdAtText: formatNoteTimestamp(note.created_at),
+        vibe: note.vibe_level,
+        text: note.content,
+        isAnonymous: note.is_anonymous,
+        reactionCount: Number.parseInt(note.reaction_count ?? 0, 10),
+        commentCount: Number.parseInt(note.reply_count ?? 0, 10),
+    };
+}
+
+function mapVibeScoreToPercent(score) {
+    if (!score) return 0;
+    return Math.max(0, Math.min(100, (score / 5) * 100));
+}
 
 export default function Map() {
     const [searchQuery, setSearchQuery] = useState("");
@@ -21,6 +51,7 @@ export default function Map() {
     const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
 
     const [locationData, setLocationData] = useState(null);
+    const [locationError, setLocationError] = useState("");
 
     const mockHeatmapData = [
         // SFSU / Stonestown / Parkmerced
@@ -141,19 +172,13 @@ export default function Map() {
                 category: category === DEFAULT_CATEGORY ? "" : category,
             });
 
-            const response = await fetch(`/api/search/locations?${params.toString()}`);
-            const data = await response.json();
-
-            if (!response.ok) {
-                console.error(data.error || "Search failed");
-                setResults([]);
-                return;
-            }
-
+            const data = await searchLocations(params);
+            setLocationError("");
             setResults(data);
         }
         catch (error) {
             console.error("Search error:", error);
+            setLocationError(error.message || "Search failed.");
             setResults([]);
         }
         finally {
@@ -161,43 +186,33 @@ export default function Map() {
         }
     }
 
+    async function loadLocationData(placeWithDbId) {
+        const [notesData, vibeData] = await Promise.all([
+            getNotesByLocation(placeWithDbId.db_id),
+            getLocationVibe(placeWithDbId.db_id).catch(() => null),
+        ]);
+
+        const currentVibe = vibeData?.vibe_label?.toLowerCase() || "unknown";
+        const vibeScorePercent = mapVibeScoreToPercent(vibeData?.avg_vibe_score);
+
+        setLocationData({
+            currentVibe,
+            vibeScorePercent,
+            notes: notesData.notes.map(mapApiNote),
+        });
+    }
+
     async function handleSelectLocation(place) {
-        console.log('handleSelectLocation fired', place);
-
         try {
-            const res = await fetch('/api/locations/upsert', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    nominatim_id: place.id,
-                    name: place.name,
-                    lat: place.lat,
-                    lng: place.lon,
-                })
-            });
-            const data = await res.json();
-            const db_id = data.location.location_id;
-            setSelectedLocation({ ...place, db_id });
-
-            const notesRes = await fetch(`/api/notes/location/${db_id}`);
-            const notesData = await notesRes.json();
-            setLocationData({
-                currentVibe: "moderate",
-                vibeScorePercent: 58,
-                notes: notesData.notes.map(n => ({
-                    id: n.note_id,
-                    username: n.username,
-                    createdAt: n.created_at,
-                    expiresAt: n.expires_at,
-                    createdAtText: new Date(n.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                    vibe: n.vibe_level,
-                    text: n.content,
-                    reactionCount: parseInt(n.reaction_count),
-                    commentCount: parseInt(n.reply_count),
-                }))
-            });
+            setLocationError("");
+            const data = await upsertLocation(place);
+            const nextLocation = { ...place, db_id: data.location.location_id };
+            setSelectedLocation(nextLocation);
+            await loadLocationData(nextLocation);
         } catch (err) {
-            console.error('Failed to load location', err);
+            console.error("Failed to load location", err);
+            setLocationError(err.message || "Failed to load location.");
+            setLocationData(null);
             setSelectedLocation(place);
         }
         setMobileTab("location");
@@ -205,7 +220,98 @@ export default function Map() {
 
     function handleCloseLocation() {
         setSelectedLocation(null);
+        setLocationData(null);
+        setLocationError("");
         setMobileTab("map");
+    }
+
+    async function handleSaveNote(payload) {
+        if (!user?.user_id) {
+            throw new Error("Sign in to post or edit notes.");
+        }
+
+        if (!selectedLocation?.db_id) {
+            throw new Error("Select a saved location first.");
+        }
+
+        let savedNote;
+
+        if (payload.noteId) {
+            const data = await updateNote(payload.noteId, {
+                content: payload.text,
+                vibe_level: payload.vibe,
+            });
+            savedNote = mapApiNote({
+                ...data.note,
+                username: payload.anonymous ? "Anonymous" : user.username,
+                reaction_count: 0,
+                reply_count: 0,
+            });
+
+            setLocationData((prev) => ({
+                ...prev,
+                notes: (prev?.notes || []).map((note) =>
+                    note.id === payload.noteId
+                        ? {
+                            ...note,
+                            ...savedNote,
+                            createdAtText: note.createdAtText,
+                        }
+                        : note
+                ),
+            }));
+            return savedNote;
+        }
+
+        const data = await createNote({
+            location_id: selectedLocation.db_id,
+            content: payload.text,
+            vibe_level: payload.vibe,
+            is_anonymous: payload.anonymous,
+        });
+
+        savedNote = mapApiNote({
+            ...data.note,
+            username: payload.anonymous ? "Anonymous" : user.username,
+            reaction_count: 0,
+            reply_count: 0,
+        });
+        savedNote.createdAtText = "Just now";
+
+        setLocationData((prev) => ({
+            ...(prev || {}),
+            currentVibe: prev?.currentVibe || "unknown",
+            vibeScorePercent: prev?.vibeScorePercent || 0,
+            notes: [savedNote, ...(prev?.notes || [])],
+        }));
+
+        return savedNote;
+    }
+
+    async function handleDeleteNote(noteId) {
+        if (!user?.user_id) {
+            throw new Error("Sign in to delete notes.");
+        }
+
+        if (!selectedLocation?.db_id) {
+            throw new Error("Select a saved location first.");
+        }
+
+        await deleteNote(noteId);
+
+        setLocationData((prev) => {
+            if (!prev) return prev;
+            return {
+                ...prev,
+                notes: (prev.notes || []).filter((note) => note.id !== noteId),
+            };
+        });
+
+        try {
+            await loadLocationData(selectedLocation);
+        } catch (error) {
+            console.error("Failed to refresh location data after delete", error);
+        }
     }
 
     const sharedProps = {
@@ -231,6 +337,9 @@ export default function Map() {
         locationData,
         setLocationData,
         user,
+        locationError,
+        onSaveNote: handleSaveNote,
+        onDeleteNote: handleDeleteNote,
     };
 
     return (
@@ -245,4 +354,3 @@ export default function Map() {
         </div>
     );
 }
-

@@ -1,16 +1,18 @@
 import express from 'express';
+import { requireAuth } from "../middleware/auth.js";
 
 const router = express.Router();
 
 // Middleware to pass pool to routes
 export function createNotesRoutes(pool) {
     // CREATE - Add a new note to a location
-    router.post("/", async (req, res) => {
-        const { user_id, location_id, content, vibe_level, is_anonymous } = req.body;
+    router.post("/", requireAuth, async (req, res) => {
+        const { location_id, content, vibe_level, is_anonymous } = req.body;
+        const user_id = req.user.user_id;
 
         // Validation
-        if (!user_id || !location_id || !content || !vibe_level) {
-            return res.status(400).json({ error: "Missing required fields: user_id, location_id, content, vibe_level" });
+        if (!location_id || !content || !vibe_level) {
+            return res.status(400).json({ error: "Missing required fields: location_id, content, vibe_level" });
         }
 
         if (!["dead", "quiet", "moderate", "busy", "buzzing"].includes(vibe_level)) {
@@ -188,12 +190,13 @@ export function createNotesRoutes(pool) {
     });
 
     // UPDATE - Edit an existing note
-    router.put("/:note_id", async (req, res) => {
+    router.put("/:note_id", requireAuth, async (req, res) => {
         const { note_id } = req.params;
-        const { user_id, content, vibe_level } = req.body;
+        const { content, vibe_level } = req.body;
+        const user_id = req.user.user_id;
 
-        if (!user_id || (!content && !vibe_level)) {
-            return res.status(400).json({ error: "user_id and at least one of (content, vibe_level) are required." });
+        if (!content && !vibe_level) {
+            return res.status(400).json({ error: "At least one of (content, vibe_level) is required." });
         }
 
         if (vibe_level && !["dead", "quiet", "moderate", "busy", "buzzing"].includes(vibe_level)) {
@@ -254,13 +257,9 @@ export function createNotesRoutes(pool) {
     });
 
     // DELETE - Remove a note
-    router.delete("/:note_id", async (req, res) => {
+    router.delete("/:note_id", requireAuth, async (req, res) => {
         const { note_id } = req.params;
-        const { user_id } = req.body;
-
-        if (!user_id) {
-            return res.status(400).json({ error: "user_id is required." });
-        }
+        const user_id = req.user.user_id;
 
         try {
             // Check if note exists and belongs to the user
@@ -292,4 +291,3 @@ export function createNotesRoutes(pool) {
 }
 
 export default router;
-

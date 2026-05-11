@@ -25,8 +25,11 @@ export default function LocationView({
                                          selectedLocation,
                                          locationData,
                                          setLocationData,
+                                         user,
+                                         errorMessage,
                                          onClose,
                                          onSubmitNote,
+                                         onDeleteNote,
                                          onReactToNote,
                                          onOpenComments,
                                      }) {
@@ -34,6 +37,10 @@ export default function LocationView({
     const [isAnonymous, setIsAnonymous] = useState(false);
     const [noteText, setNoteText] = useState("");
     const [visibleNoteCount, setVisibleNoteCount] = useState(4);
+    const [editingNoteId, setEditingNoteId] = useState(null);
+    const [submitError, setSubmitError] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [deletingNoteId, setDeletingNoteId] = useState(null);
 
     const title = formatLocationTitle(selectedLocation);
 
@@ -73,31 +80,72 @@ export default function LocationView({
 
     useEffect(() => {
         setVisibleNoteCount(4);
+        setEditingNoteId(null);
+        setSubmitError("");
+        setSelectedVibe(null);
+        setIsAnonymous(false);
+        setNoteText("");
     }, [selectedLocation?.id]);
 
     const canSubmit =
         selectedVibe && noteText.trim().length > 0 && noteText.length <= NOTE_MAX_LENGTH;
 
-    function handleSubmit(e) {
-        e.preventDefault();
-        console.log('handleSubmit fired', { canSubmit, selectedVibe, noteText });
+    function beginEditNote(note) {
+        setEditingNoteId(note.id);
+        setSelectedVibe(note.vibe);
+        setIsAnonymous(Boolean(note.isAnonymous));
+        setNoteText(note.text || "");
+        setSubmitError("");
+    }
 
+    function resetComposer() {
+        setEditingNoteId(null);
+        setSelectedVibe(null);
+        setIsAnonymous(false);
+        setNoteText("");
+    }
+
+    async function handleSubmit(e) {
+        e.preventDefault();
         if (!canSubmit) return;
 
         const payload = {
-            locationId: selectedLocation?.id ?? null,
+            noteId: editingNoteId,
             vibe: selectedVibe,
             text: noteText.trim(),
             anonymous: isAnonymous,
         };
 
-        console.log('calling onSubmitNote with payload:', payload);
+        try {
+            setIsSubmitting(true);
+            setSubmitError("");
+            await onSubmitNote?.(payload);
+            resetComposer();
+        } catch (error) {
+            setSubmitError(error.message || "Unable to save note.");
+        } finally {
+            setIsSubmitting(false);
+        }
+    }
 
-        onSubmitNote?.(payload);
+    async function handleDelete(note) {
+        const noteLabel = note.text?.trim() ? `"${note.text.trim().slice(0, 40)}"` : "this note";
+        const confirmed = window.confirm(`Delete ${noteLabel}?`);
+        if (!confirmed) return;
 
-        setNoteText("");
-        setSelectedVibe(null);
-        setIsAnonymous(false);
+        try {
+            setDeletingNoteId(note.id);
+            setSubmitError("");
+            await onDeleteNote?.(note.id);
+
+            if (editingNoteId === note.id) {
+                resetComposer();
+            }
+        } catch (error) {
+            setSubmitError(error.message || "Unable to delete note.");
+        } finally {
+            setDeletingNoteId(null);
+        }
     }
 
     return (
@@ -156,6 +204,12 @@ export default function LocationView({
                     </div>
 
                     <div className="mt-4">
+                        {errorMessage ? (
+                            <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                                {errorMessage}
+                            </div>
+                        ) : null}
+
                         {notes.length === 0 ? (
                             <div className="rounded-2xl border border-dashed border-gray-300 bg-gray-50 p-8 text-center">
                                 <p className="text-base font-medium text-gray-700">
@@ -202,7 +256,7 @@ export default function LocationView({
                                                 {note.text || ""}
                                             </p>
 
-                                            <div className="mt-3 flex gap-2">
+                                            <div className="mt-3 flex flex-wrap gap-2">
                                                 <button
                                                     type="button"
                                                     onClick={() => onReactToNote?.(note.id)}
@@ -220,6 +274,30 @@ export default function LocationView({
                                                 >
                                                     💬 {note.commentCount ?? 0}
                                                 </button>
+
+                                                {note.userId === user?.user_id ? (
+                                                    <>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => beginEditNote(note)}
+                                                            className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-sm text-blue-700 transition hover:bg-blue-100"
+                                                        >
+                                                            Edit
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleDelete(note)}
+                                                            disabled={deletingNoteId === note.id}
+                                                            className={`rounded-full border px-3 py-1 text-sm transition ${
+                                                                deletingNoteId === note.id
+                                                                    ? "cursor-not-allowed border-red-100 bg-red-50 text-red-300"
+                                                                    : "border-red-200 bg-red-50 text-red-700 hover:bg-red-100"
+                                                            }`}
+                                                        >
+                                                            {deletingNoteId === note.id ? "Deleting..." : "Delete"}
+                                                        </button>
+                                                    </>
+                                                ) : null}
                                             </div>
                                         </article>
                                     ))}
@@ -244,7 +322,7 @@ export default function LocationView({
                 {/* Add your vibe */}
                 <section className="border-t border-gray-200 pt-5 pb-4">
                     <h3 className="text-lg sm:text-xl font-semibold text-gray-900">
-                        Add your vibe
+                        {editingNoteId ? "Edit your note" : "Add your vibe"}
                     </h3>
 
                     <form onSubmit={handleSubmit}>
@@ -286,6 +364,7 @@ export default function LocationView({
                                     <button
                                         type="button"
                                         onClick={() => setIsAnonymous((prev) => !prev)}
+                                        disabled={Boolean(editingNoteId)}
                                         className="flex items-center gap-2"
                                         aria-pressed={isAnonymous}
                                     >
@@ -307,18 +386,34 @@ export default function LocationView({
                             </div>
 
                             {/* Full-width on mobile, auto width on sm+ */}
-                            <button
-                                type="submit"
-                                disabled={!canSubmit}
-                                className={`w-full sm:w-auto sm:min-w-[120px] rounded-2xl px-6 py-4 sm:py-5 text-lg font-semibold text-white transition ${
-                                    canSubmit
-                                        ? "bg-green-400 hover:bg-green-500 hover:cursor-pointer"
-                                        : "cursor-not-allowed bg-green-200"
-                                }`}
-                            >
-                                Post
-                            </button>
+                            <div className="flex w-full flex-col gap-2 sm:w-auto">
+                                <button
+                                    type="submit"
+                                    disabled={!canSubmit || isSubmitting}
+                                    className={`w-full sm:min-w-[140px] rounded-2xl px-6 py-4 sm:py-5 text-lg font-semibold text-white transition ${
+                                        canSubmit && !isSubmitting
+                                            ? "bg-green-400 hover:bg-green-500 hover:cursor-pointer"
+                                            : "cursor-not-allowed bg-green-200"
+                                    }`}
+                                >
+                                    {isSubmitting ? "Saving..." : editingNoteId ? "Save" : "Post"}
+                                </button>
+
+                                {editingNoteId ? (
+                                    <button
+                                        type="button"
+                                        onClick={resetComposer}
+                                        className="w-full rounded-2xl border border-gray-300 px-6 py-3 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+                                    >
+                                        Cancel
+                                    </button>
+                                ) : null}
+                            </div>
                         </div>
+
+                        {submitError ? (
+                            <p className="mt-3 text-sm text-red-600">{submitError}</p>
+                        ) : null}
                     </form>
                 </section>
             </div>

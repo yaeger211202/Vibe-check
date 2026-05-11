@@ -18,10 +18,13 @@ export default function DesktopMapLayout({
                                              setCategory,
                                              mockHeatmapData,
                                              handleSearch,
-                                             setSelectedLocation,
+                                             handleCloseLocation,
                                              locationData,
-                                             setLocationData,  
+                                             setLocationData,
                                              user,
+                                             locationError,
+                                             onSaveNote,
+                                             onDeleteNote,
                                          }) {
     return (
         <main className="flex flex-1 min-h-0">
@@ -58,53 +61,12 @@ export default function DesktopMapLayout({
                         <LocationView
                             selectedLocation={selectedLocation}
                             locationData={locationData}
-                            onClose={() => setSelectedLocation(null)}
-                            onSubmitNote={async (payload) => {
-                                if (!selectedLocation?.db_id) {
-                                    console.error('No db_id on selected location');
-                                    return;
-                                }
-
-                                try {
-                                    const res = await fetch('/api/notes', {
-                                        method: 'POST',
-                                        headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify({
-                                            user_id: user?.user_id ?? 1,
-                                            location_id: selectedLocation.db_id,
-                                            content: payload.text,
-                                            vibe_level: payload.vibe,
-                                            is_anonymous: payload.anonymous
-                                        })
-                                    });
-
-                                    const data = await res.json();
-                                    console.log('Note creation response:', data);
-
-                                    if (!res.ok) {
-                                        console.error('Failed to create note:', data.error);
-                                        return;
-                                    }
-
-                                    if (data.note) {
-                                        setLocationData(prev => ({
-                                            ...prev,
-                                            notes: [{
-                                                id: data.note.note_id,
-                                                username: user?.username ?? 'Anonymous',
-                                                createdAt: data.note.created_at,
-                                                createdAtText: 'Just now',
-                                                vibe: data.note.vibe_level,
-                                                text: data.note.content,
-                                                reactionCount: 0,
-                                                commentCount: 0,
-                                            }, ...prev.notes]
-                                        }));
-                                    }
-                                } catch (err) {
-                                    console.error('Failed to submit note:', err);
-                                }
-                            }}
+                            setLocationData={setLocationData}
+                            user={user}
+                            errorMessage={locationError}
+                            onClose={handleCloseLocation}
+                            onSubmitNote={onSaveNote}
+                            onDeleteNote={onDeleteNote}
                             onReactToNote={(noteId) => console.log("react to note", noteId)}
                             onOpenComments={(noteId) => console.log("open comments for note", noteId)}
                         />
