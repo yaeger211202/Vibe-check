@@ -88,22 +88,27 @@ const options = {
                 CreateNoteRequest: {
                     type: "object",
                     properties: {
-                        user_id: { type: "integer" },
                         location_id: { type: "integer" },
+                        category_tag: {
+                            type: "string",
+                            enum: ["na", "Restaurant", "Libraries", "Bar", "Cafe", "Park", "Museum", "Shopping", "Entertainment", "Nightlife"]
+                        },
                         content: { type: "string", maxLength: 280 },
                         vibe_level: { type: "string", enum: vibeLevelEnum },
                         is_anonymous: { type: "boolean", default: false }
                     },
-                    required: ["user_id", "location_id", "content", "vibe_level"]
+                    required: ["location_id", "category_tag", "content", "vibe_level"]
                 },
                 UpdateNoteRequest: {
                     type: "object",
                     properties: {
-                        user_id: { type: "integer" },
+                        category_tag: {
+                            type: "string",
+                            enum: ["na", "Restaurant", "Libraries", "Bar", "Cafe", "Park", "Museum", "Shopping", "Entertainment", "Nightlife"]
+                        },
                         content: { type: "string", maxLength: 280 },
                         vibe_level: { type: "string", enum: vibeLevelEnum }
-                    },
-                    required: ["user_id"]
+                    }
                 },
                 DeleteOwnedResourceRequest: {
                     type: "object",
@@ -118,6 +123,7 @@ const options = {
                         note_id: { type: "integer" },
                         user_id: { type: "integer" },
                         location_id: { type: "integer" },
+                        category_tag: { type: "string" },
                         content: { type: "string" },
                         vibe_level: { type: "string", enum: vibeLevelEnum },
                         is_anonymous: { type: "boolean" },
@@ -128,6 +134,7 @@ const options = {
                         "note_id",
                         "user_id",
                         "location_id",
+                        "category_tag",
                         "content",
                         "vibe_level",
                         "is_anonymous",
@@ -156,10 +163,11 @@ const options = {
                             type: "object",
                             properties: {
                                 location_name: { type: "string" },
+                                category_tag: { type: "string" },
                                 reaction_count: { type: "string" },
                                 reply_count: { type: "string" }
                             },
-                            required: ["location_name", "reaction_count", "reply_count"]
+                            required: ["location_name", "category_tag", "reaction_count", "reply_count"]
                         }
                     ]
                 },

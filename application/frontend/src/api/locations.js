@@ -14,12 +14,19 @@ export function upsertLocation(place) {
             name: place.name,
             lat: place.lat,
             lng: place.lon,
+            category_tags: place.categoryTags,
         }),
     });
 }
 
 export function getLocationVibe(locationId) {
     return apiRequest(`/api/locations/${locationId}/vibe`, {
+        method: "GET",
+    });
+}
+
+export function getLocationDetails(locationId) {
+    return apiRequest(`/api/locations/${locationId}`, {
         method: "GET",
     });
 }

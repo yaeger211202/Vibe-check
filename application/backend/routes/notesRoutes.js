@@ -2,21 +2,37 @@ import express from 'express';
 import { requireAuth } from "../middleware/auth.js";
 
 const router = express.Router();
+const NOTE_CATEGORY_OPTIONS = [
+    "na",
+    "Restaurant",
+    "Libraries",
+    "Bar",
+    "Cafe",
+    "Park",
+    "Museum",
+    "Shopping",
+    "Entertainment",
+    "Nightlife",
+];
 
 // Middleware to pass pool to routes
 export function createNotesRoutes(pool) {
     // CREATE - Add a new note to a location
     router.post("/", requireAuth, async (req, res) => {
-        const { location_id, content, vibe_level, is_anonymous } = req.body;
+        const { location_id, category_tag, content, vibe_level, is_anonymous } = req.body;
         const user_id = req.user.user_id;
 
         // Validation
-        if (!location_id || !content || !vibe_level) {
-            return res.status(400).json({ error: "Missing required fields: location_id, content, vibe_level" });
+        if (!location_id || !category_tag || !content || !vibe_level) {
+            return res.status(400).json({ error: "Missing required fields: location_id, category_tag, content, vibe_level" });
         }
 
         if (!["dead", "quiet", "moderate", "busy", "buzzing"].includes(vibe_level)) {
             return res.status(400).json({ error: "Invalid vibe_level. Must be: dead, quiet, moderate, busy, or buzzing" });
+        }
+
+        if (!NOTE_CATEGORY_OPTIONS.includes(category_tag)) {
+            return res.status(400).json({ error: `Invalid category_tag. Must be one of: ${NOTE_CATEGORY_OPTIONS.join(", ")}` });
         }
 
         if (content.trim().length > 280) {
@@ -31,17 +47,28 @@ export function createNotesRoutes(pool) {
             }
 
             // Check if location exists
-            const locationCheck = await pool.query("SELECT location_id FROM locations WHERE location_id = $1", [location_id]);
+            const locationCheck = await pool.query(
+                "SELECT location_id, category_tags FROM locations WHERE location_id = $1",
+                [location_id]
+            );
             if (locationCheck.rows.length === 0) {
                 return res.status(404).json({ error: "Location not found." });
             }
 
+            const locationCategories = Array.isArray(locationCheck.rows[0].category_tags)
+                ? locationCheck.rows[0].category_tags
+                : ["na"];
+
+            if (locationCategories.length === 0 || !locationCategories.includes(category_tag)) {
+                return res.status(400).json({ error: "Selected category is not valid for this location." });
+            }
+
             // Insert the note
             const result = await pool.query(
-                `INSERT INTO notes (user_id, location_id, content, vibe_level, is_anonymous, expires_at)
-                 VALUES ($1, $2, $3, $4, $5, NOW() + INTERVAL '24 hours')
-                 RETURNING note_id, user_id, location_id, content, vibe_level, is_anonymous, created_at, expires_at`,
-                [user_id, location_id, content.trim(), vibe_level, is_anonymous || false]
+                `INSERT INTO notes (user_id, location_id, category_tag, content, vibe_level, is_anonymous, expires_at)
+                 VALUES ($1, $2, $3, $4, $5, $6, NOW() + INTERVAL '24 hours')
+                 RETURNING note_id, user_id, location_id, category_tag, content, vibe_level, is_anonymous, created_at, expires_at`,
+                [user_id, location_id, category_tag, content.trim(), vibe_level, is_anonymous || false]
             );
 
             return res.status(201).json({
@@ -73,6 +100,7 @@ export function createNotesRoutes(pool) {
                     n.user_id, 
                     CASE WHEN n.is_anonymous THEN 'Anonymous' ELSE u.username END as username,
                     n.location_id, 
+                    n.category_tag,
                     n.content, 
                     n.vibe_level, 
                     n.is_anonymous,
@@ -114,6 +142,7 @@ export function createNotesRoutes(pool) {
                     n.user_id, 
                     CASE WHEN n.is_anonymous THEN 'Anonymous' ELSE u.username END as username,
                     n.location_id, 
+                    n.category_tag,
                     n.content, 
                     n.vibe_level, 
                     n.is_anonymous,
@@ -160,6 +189,7 @@ export function createNotesRoutes(pool) {
                     n.user_id, 
                     n.location_id, 
                     l.name as location_name,
+                    n.category_tag,
                     n.content, 
                     n.vibe_level,
                     n.is_anonymous,
@@ -192,15 +222,19 @@ export function createNotesRoutes(pool) {
     // UPDATE - Edit an existing note
     router.put("/:note_id", requireAuth, async (req, res) => {
         const { note_id } = req.params;
-        const { content, vibe_level } = req.body;
+        const { content, vibe_level, category_tag } = req.body;
         const user_id = req.user.user_id;
 
-        if (!content && !vibe_level) {
-            return res.status(400).json({ error: "At least one of (content, vibe_level) is required." });
+        if (!content && !vibe_level && !category_tag) {
+            return res.status(400).json({ error: "At least one of (content, vibe_level, category_tag) is required." });
         }
 
         if (vibe_level && !["dead", "quiet", "moderate", "busy", "buzzing"].includes(vibe_level)) {
             return res.status(400).json({ error: "Invalid vibe_level." });
+        }
+
+        if (category_tag && !NOTE_CATEGORY_OPTIONS.includes(category_tag)) {
+            return res.status(400).json({ error: `Invalid category_tag. Must be one of: ${NOTE_CATEGORY_OPTIONS.join(", ")}` });
         }
 
         if (content && content.trim().length > 280) {
@@ -210,7 +244,10 @@ export function createNotesRoutes(pool) {
         try {
             // Check if note exists and belongs to the user
             const noteCheck = await pool.query(
-                "SELECT user_id FROM notes WHERE note_id = $1",
+                `SELECT n.user_id, l.category_tags
+                 FROM notes n
+                 LEFT JOIN locations l ON n.location_id = l.location_id
+                 WHERE n.note_id = $1`,
                 [note_id]
             );
 
@@ -220,6 +257,14 @@ export function createNotesRoutes(pool) {
 
             if (noteCheck.rows[0].user_id !== parseInt(user_id)) {
                 return res.status(403).json({ error: "Unauthorized: You can only edit your own notes." });
+            }
+
+            const locationCategories = Array.isArray(noteCheck.rows[0].category_tags)
+                ? noteCheck.rows[0].category_tags
+                : ["na"];
+
+            if (category_tag && (locationCategories.length === 0 || !locationCategories.includes(category_tag))) {
+                return res.status(400).json({ error: "Selected category is not valid for this location." });
             }
 
             // Update the note
@@ -237,6 +282,13 @@ export function createNotesRoutes(pool) {
                 if (content) updateQuery += ", ";
                 updateQuery += `vibe_level = $${paramCount}`;
                 params.push(vibe_level);
+                paramCount++;
+            }
+
+            if (category_tag) {
+                if (content || vibe_level) updateQuery += ", ";
+                updateQuery += `category_tag = $${paramCount}`;
+                params.push(category_tag);
                 paramCount++;
             }
 

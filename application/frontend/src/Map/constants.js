@@ -12,6 +12,10 @@ export const SEARCH_CATEGORIES = [
 ];
 
 export const DEFAULT_CATEGORY = SEARCH_CATEGORIES[0];
+export const NOTE_DEFAULT_CATEGORY = "na";
+export const NOTE_CATEGORY_OPTIONS = SEARCH_CATEGORIES.filter(
+    (category) => category !== DEFAULT_CATEGORY
+);
 
 export const VIBE_LEVELS = {
     all: "all",

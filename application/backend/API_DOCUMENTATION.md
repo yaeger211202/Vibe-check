@@ -19,7 +19,7 @@ http://localhost:3000/api/docs.json
 ---
 
 ## Authentication
-Currently, no authentication middleware is implemented. Pass `user_id` in request body for operations that require it.
+Authentication is implemented with the session cookie set at login. For note create, update, and delete operations, the authenticated user is taken from the request cookie, not from `user_id` in the request body.
 
 ---
 
@@ -33,8 +33,8 @@ Create a new note for a location.
 **Request Body:**
 ```json
 {
-  "user_id": 1,
   "location_id": 5,
+  "category_tag": "Libraries",
   "content": "This place is packed right now!",
   "vibe_level": "busy",
   "is_anonymous": false
@@ -42,8 +42,8 @@ Create a new note for a location.
 ```
 
 **Required Fields:**
-- `user_id` (integer): ID of the user creating the note
 - `location_id` (integer): ID of the location
+- `category_tag` (string): Must be one of the allowed categories for that location. Use `na` when the location has no mapped category.
 - `content` (string): Note text (max 280 characters)
 - `vibe_level` (string): One of `dead`, `quiet`, `moderate`, `busy`, `buzzing`
 
@@ -58,6 +58,7 @@ Create a new note for a location.
     "note_id": 42,
     "user_id": 1,
     "location_id": 5,
+    "category_tag": "Libraries",
     "content": "This place is packed right now!",
     "vibe_level": "busy",
     "is_anonymous": false,
@@ -90,6 +91,7 @@ Get all non-expired notes for a specific location.
       "user_id": 1,
       "username": "john_doe",
       "location_id": 5,
+      "category_tag": "Libraries",
       "content": "This place is packed right now!",
       "vibe_level": "busy",
       "is_anonymous": false,
@@ -121,6 +123,7 @@ Get details of a specific note.
   "user_id": 1,
   "username": "john_doe",
   "location_id": 5,
+  "category_tag": "Libraries",
   "content": "This place is packed right now!",
   "vibe_level": "busy",
   "is_anonymous": false,
@@ -152,6 +155,7 @@ Get all notes created by a specific user.
       "user_id": 1,
       "location_id": 5,
       "location_name": "SFSU Library",
+      "category_tag": "Libraries",
       "content": "This place is packed right now!",
       "vibe_level": "busy",
       "is_anonymous": false,
@@ -169,7 +173,7 @@ Get all notes created by a specific user.
 ### 5. UPDATE NOTE
 **PUT** `/api/notes/:note_id`
 
-Update content or vibe_level of an existing note.
+Update category, content, or vibe_level of an existing note.
 
 **Parameters:**
 - `note_id` (path): ID of the note
@@ -177,20 +181,18 @@ Update content or vibe_level of an existing note.
 **Request Body:**
 ```json
 {
-  "user_id": 1,
+  "category_tag": "Cafe",
   "content": "Updated note content",
   "vibe_level": "moderate"
 }
 ```
 
-**Required Fields:**
-- `user_id` (integer): Must match the note creator
-
 **Optional Fields:**
+- `category_tag` (string): Must be one of the allowed categories for that location. Use `na` when the location has no mapped category.
 - `content` (string): New note text (max 280 characters)
 - `vibe_level` (string): One of `dead`, `quiet`, `moderate`, `busy`, `buzzing`
 
-**Note:** At least one of `content` or `vibe_level` must be provided.
+**Note:** At least one of `category_tag`, `content`, or `vibe_level` must be provided.
 
 **Response (200 OK):**
 ```json
@@ -200,6 +202,7 @@ Update content or vibe_level of an existing note.
     "note_id": 42,
     "user_id": 1,
     "location_id": 5,
+    "category_tag": "Cafe",
     "content": "Updated note content",
     "vibe_level": "moderate",
     "is_anonymous": false,
@@ -226,15 +229,7 @@ Delete a note.
 **Parameters:**
 - `note_id` (path): ID of the note
 
-**Request Body:**
-```json
-{
-  "user_id": 1
-}
-```
-
-**Required Fields:**
-- `user_id` (integer): Must match the note creator
+**Authentication:** The logged-in user must own the note.
 
 **Response (200 OK):**
 ```json
@@ -599,4 +594,3 @@ curl -X DELETE http://localhost:3000/api/notes/42 \
 - [ ] Add friend/follow endpoints
 - [ ] Add badges/achievements system
 - [ ] Add heatmap data aggregation endpoints
-

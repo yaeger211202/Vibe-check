@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
     DEFAULT_CURRENT_VIBE,
     NOTE_MAX_LENGTH,
+    NOTE_DEFAULT_CATEGORY,
     VIBE_OPTIONS,
     VIBE_STYLES,
 } from "./constants.js";
@@ -21,6 +22,23 @@ function getInitials(name) {
     return name.replace("@", "").trim()[0]?.toUpperCase() || "?";
 }
 
+function formatRemainingTime(expiresAt, now) {
+    if (!expiresAt) return "";
+
+    const expiryTime = new Date(expiresAt).getTime();
+    const remainingMs = expiryTime - now;
+
+    if (Number.isNaN(expiryTime) || remainingMs <= 0) return "Expired";
+
+    const minuteMs = 60 * 1000;
+    const hourMs = 60 * minuteMs;
+    const dayMs = 24 * hourMs;
+
+    if (remainingMs < hourMs) return `Expires in ${Math.max(1, Math.floor(remainingMs / minuteMs))}m`;
+    if (remainingMs < dayMs) return `Expires in ${Math.floor(remainingMs / hourMs)}h`;
+    return `Expires in ${Math.floor(remainingMs / dayMs)}d`;
+}
+
 export default function LocationView({
                                          selectedLocation,
                                          locationData,
@@ -34,6 +52,7 @@ export default function LocationView({
                                          onOpenComments,
                                      }) {
     const [selectedVibe, setSelectedVibe] = useState(null);
+    const [selectedCategory, setSelectedCategory] = useState("");
     const [isAnonymous, setIsAnonymous] = useState(false);
     const [noteText, setNoteText] = useState("");
     const [visibleNoteCount, setVisibleNoteCount] = useState(4);
@@ -41,23 +60,38 @@ export default function LocationView({
     const [submitError, setSubmitError] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [deletingNoteId, setDeletingNoteId] = useState(null);
+    const [currentTime, setCurrentTime] = useState(() => Date.now());
 
     const title = formatLocationTitle(selectedLocation);
 
+    const activeLocationId = selectedLocation?.db_id ?? locationData?.locationId ?? null;
     const currentVibe = locationData?.currentVibe || DEFAULT_CURRENT_VIBE;
     const progressPercent = locationData?.vibeScorePercent || 0;
+    const availableCategories = Array.isArray(locationData?.categoryTags) && locationData.categoryTags.length > 0
+        ? locationData.categoryTags
+        : [NOTE_DEFAULT_CATEGORY];
 
     const notes = useMemo(() => {
         const rawNotes = Array.isArray(locationData?.notes) ? locationData.notes : [];
-        return [...rawNotes].sort((a, b) => {
+        return rawNotes
+            .filter((note) => note.locationId === activeLocationId)
+            .sort((a, b) => {
             const aTime = new Date(a.createdAt || a.createdAtText || 0).getTime();
             const bTime = new Date(b.createdAt || b.createdAtText || 0).getTime();
             return bTime - aTime;
         });
-    }, [locationData]);
+    }, [activeLocationId, locationData?.notes]);
 
     const visibleNotes = notes.slice(0, visibleNoteCount);
     const remainingNotes = Math.max(0, notes.length - visibleNoteCount);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrentTime(Date.now());
+        }, 60 * 1000);
+
+        return () => clearInterval(interval);
+    }, []);
 
     useEffect(() => {
         if (!locationData?.notes?.length) return;
@@ -83,16 +117,18 @@ export default function LocationView({
         setEditingNoteId(null);
         setSubmitError("");
         setSelectedVibe(null);
+        setSelectedCategory("");
         setIsAnonymous(false);
         setNoteText("");
-    }, [selectedLocation?.id]);
+    }, [selectedLocation?.db_id, selectedLocation?.id]);
 
     const canSubmit =
-        selectedVibe && noteText.trim().length > 0 && noteText.length <= NOTE_MAX_LENGTH;
+        selectedVibe && selectedCategory && noteText.trim().length > 0 && noteText.length <= NOTE_MAX_LENGTH;
 
     function beginEditNote(note) {
         setEditingNoteId(note.id);
         setSelectedVibe(note.vibe);
+        setSelectedCategory(note.category || "");
         setIsAnonymous(Boolean(note.isAnonymous));
         setNoteText(note.text || "");
         setSubmitError("");
@@ -101,6 +137,7 @@ export default function LocationView({
     function resetComposer() {
         setEditingNoteId(null);
         setSelectedVibe(null);
+        setSelectedCategory("");
         setIsAnonymous(false);
         setNoteText("");
     }
@@ -112,6 +149,7 @@ export default function LocationView({
         const payload = {
             noteId: editingNoteId,
             vibe: selectedVibe,
+            category: selectedCategory,
             text: noteText.trim(),
             anonymous: isAnonymous,
         };
@@ -195,6 +233,121 @@ export default function LocationView({
                     </div>
                 </section>
 
+                {/* Add your vibe */}
+                <section className="border-t border-gray-200 pt-5 pb-4">
+                    <h3 className="text-lg sm:text-xl font-semibold text-gray-900">
+                        {editingNoteId ? "Edit your note" : "Add your vibe"}
+                    </h3>
+
+                    <form onSubmit={handleSubmit}>
+                        <div className="mt-4 flex flex-wrap gap-2">
+                            {VIBE_OPTIONS.map((option) => {
+                                const isSelected = selectedVibe === option;
+                                return (
+                                    <button
+                                        key={option}
+                                        type="button"
+                                        onClick={() => setSelectedVibe(option)}
+                                        className={`rounded-full border px-4 py-2 text-sm font-medium capitalize transition hover:cursor-pointer ${
+                                            isSelected
+                                                ? getNoteVibeClass(option)
+                                                : "border-gray-300 bg-gray-50 text-gray-600 hover:bg-gray-100"
+                                        }`}
+                                    >
+                                        {option}
+                                    </button>
+                                );
+                            })}
+                        </div>
+
+                        <div className="mt-4">
+                            <label className="mb-2 block text-sm font-medium text-gray-700">
+                                Category
+                            </label>
+                            <select
+                                value={selectedCategory}
+                                onChange={(e) => setSelectedCategory(e.target.value)}
+                                className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-base text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            >
+                                <option value="">
+                                    Select a category
+                                </option>
+                                {availableCategories.map((categoryOption) => (
+                                    <option key={categoryOption} value={categoryOption}>
+                                        {categoryOption}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="mt-4 flex flex-col sm:flex-row gap-3">
+                            <div className="flex-1 rounded-2xl border border-gray-300 bg-white p-4">
+                                <textarea
+                                    rows="4"
+                                    value={noteText}
+                                    onChange={(e) => setNoteText(e.target.value.slice(0, NOTE_MAX_LENGTH))}
+                                    placeholder="What's the vibe right now?"
+                                    className="w-full resize-none border-none text-base text-gray-700 placeholder:text-gray-400 focus:outline-none"
+                                />
+
+                                <div className="mt-3 flex items-center justify-between gap-4 text-sm text-gray-500">
+                                    <span>{noteText.length} / {NOTE_MAX_LENGTH}</span>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsAnonymous((prev) => !prev)}
+                                        disabled={Boolean(editingNoteId)}
+                                        className="flex items-center gap-2"
+                                        aria-pressed={isAnonymous}
+                                    >
+                                        <span className="text-sm text-gray-600">Anonymous</span>
+
+                                        <div
+                                            className={`relative h-6 w-11 rounded-full transition ${
+                                                isAnonymous ? "bg-green-500" : "bg-gray-300"
+                                            }`}
+                                        >
+                                            <div
+                                                className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all ${
+                                                    isAnonymous ? "left-5" : "left-0.5"
+                                                }`}
+                                            />
+                                        </div>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="flex w-full flex-col gap-2 sm:w-auto">
+                                <button
+                                    type="submit"
+                                    disabled={!canSubmit || isSubmitting}
+                                    className={`w-full sm:min-w-[140px] rounded-2xl px-6 py-4 sm:py-5 text-lg font-semibold text-white transition ${
+                                        canSubmit && !isSubmitting
+                                            ? "bg-green-400 hover:bg-green-500 hover:cursor-pointer"
+                                            : "cursor-not-allowed bg-green-200"
+                                    }`}
+                                >
+                                    {isSubmitting ? "Saving..." : editingNoteId ? "Save" : "Post"}
+                                </button>
+
+                                {editingNoteId ? (
+                                    <button
+                                        type="button"
+                                        onClick={resetComposer}
+                                        className="w-full rounded-2xl border border-gray-300 px-6 py-3 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+                                    >
+                                        Cancel
+                                    </button>
+                                ) : null}
+                            </div>
+                        </div>
+
+                        {submitError ? (
+                            <p className="mt-3 text-sm text-red-600">{submitError}</p>
+                        ) : null}
+                    </form>
+                </section>
+
                 {/* Notes */}
                 <section>
                     <div className="border-t border-gray-200 pt-3">
@@ -239,8 +392,11 @@ export default function LocationView({
                                                             {note.username || note.displayName || "Anonymous"}
                                                         </div>
                                                         <p className="text-xs text-gray-500">
-                                                            {note.createdAtText || "Just now"}
+                                                            {note.createdAtText}
                                                             {note.distanceText ? ` · ${note.distanceText}` : ""}
+                                                        </p>
+                                                        <p className="text-xs text-amber-700">
+                                                            {formatRemainingTime(note.expiresAt, currentTime)}
                                                         </p>
                                                     </div>
                                                 </div>
@@ -251,6 +407,19 @@ export default function LocationView({
                                                     {note.vibe || "Unknown"}
                                                 </span>
                                             </div>
+
+                                            {note.locationName ? (
+                                                <div className="mt-3 flex flex-wrap gap-2">
+                                                    <span className="rounded-full border border-purple-200 bg-purple-50 px-3 py-1 text-xs font-medium text-purple-700">
+                                                        {note.locationName}
+                                                    </span>
+                                                    {note.category ? (
+                                                        <span className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-medium text-gray-700">
+                                                            {note.category}
+                                                        </span>
+                                                    ) : null}
+                                                </div>
+                                            ) : null}
 
                                             <p className="mt-3 text-sm sm:text-base leading-relaxed text-gray-800">
                                                 {note.text || ""}
@@ -317,104 +486,6 @@ export default function LocationView({
                             </>
                         )}
                     </div>
-                </section>
-
-                {/* Add your vibe */}
-                <section className="border-t border-gray-200 pt-5 pb-4">
-                    <h3 className="text-lg sm:text-xl font-semibold text-gray-900">
-                        {editingNoteId ? "Edit your note" : "Add your vibe"}
-                    </h3>
-
-                    <form onSubmit={handleSubmit}>
-                        {/* Vibe pill buttons — wrap naturally */}
-                        <div className="mt-4 flex flex-wrap gap-2">
-                            {VIBE_OPTIONS.map((option) => {
-                                const isSelected = selectedVibe === option;
-                                return (
-                                    <button
-                                        key={option}
-                                        type="button"
-                                        onClick={() => setSelectedVibe(option)}
-                                        className={`rounded-full border px-4 py-2 text-sm font-medium capitalize transition hover:cursor-pointer ${
-                                            isSelected
-                                                ? getNoteVibeClass(option)
-                                                : "border-gray-300 bg-gray-50 text-gray-600 hover:bg-gray-100"
-                                        }`}
-                                    >
-                                        {option}
-                                    </button>
-                                );
-                            })}
-                        </div>
-
-                        {/* Textarea + submit — stacks on mobile */}
-                        <div className="mt-4 flex flex-col sm:flex-row gap-3">
-                            <div className="flex-1 rounded-2xl border border-gray-300 bg-white p-4">
-                                <textarea
-                                    rows="4"
-                                    value={noteText}
-                                    onChange={(e) => setNoteText(e.target.value.slice(0, NOTE_MAX_LENGTH))}
-                                    placeholder="What's the vibe right now?"
-                                    className="w-full resize-none border-none text-base text-gray-700 placeholder:text-gray-400 focus:outline-none"
-                                />
-
-                                <div className="mt-3 flex items-center justify-between gap-4 text-sm text-gray-500">
-                                    <span>{noteText.length} / {NOTE_MAX_LENGTH}</span>
-
-                                    <button
-                                        type="button"
-                                        onClick={() => setIsAnonymous((prev) => !prev)}
-                                        disabled={Boolean(editingNoteId)}
-                                        className="flex items-center gap-2"
-                                        aria-pressed={isAnonymous}
-                                    >
-                                        <span className="text-sm text-gray-600">Anonymous</span>
-
-                                        <div
-                                            className={`relative h-6 w-11 rounded-full transition ${
-                                                isAnonymous ? "bg-green-500" : "bg-gray-300"
-                                            }`}
-                                        >
-                                            <div
-                                                className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all ${
-                                                    isAnonymous ? "left-5" : "left-0.5"
-                                                }`}
-                                            />
-                                        </div>
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Full-width on mobile, auto width on sm+ */}
-                            <div className="flex w-full flex-col gap-2 sm:w-auto">
-                                <button
-                                    type="submit"
-                                    disabled={!canSubmit || isSubmitting}
-                                    className={`w-full sm:min-w-[140px] rounded-2xl px-6 py-4 sm:py-5 text-lg font-semibold text-white transition ${
-                                        canSubmit && !isSubmitting
-                                            ? "bg-green-400 hover:bg-green-500 hover:cursor-pointer"
-                                            : "cursor-not-allowed bg-green-200"
-                                    }`}
-                                >
-                                    {isSubmitting ? "Saving..." : editingNoteId ? "Save" : "Post"}
-                                </button>
-
-                                {editingNoteId ? (
-                                    <button
-                                        type="button"
-                                        onClick={resetComposer}
-                                        className="w-full rounded-2xl border border-gray-300 px-6 py-3 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
-                                    >
-                                        Cancel
-                                    </button>
-                                ) : null}
-                            </div>
-                        </div>
-
-                        {submitError ? (
-                            <p className="mt-3 text-sm text-red-600">{submitError}</p>
-                        ) : null}
-                    </form>
                 </section>
             </div>
         </aside>

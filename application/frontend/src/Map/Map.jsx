@@ -3,22 +3,39 @@ import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar.jsx";
 import DesktopMapLayout from "./DesktopMapLayout.jsx";
 import MobileMapLayout from "./MobileMapLayout.jsx";
-import { DEFAULT_CATEGORY, DEFAULT_VIBE_LEVEL } from "./constants.js";
-import { searchLocations, upsertLocation, getLocationVibe } from "../api/locations.js";
+import { DEFAULT_CATEGORY, DEFAULT_VIBE_LEVEL, NOTE_DEFAULT_CATEGORY } from "./constants.js";
+import { searchLocations, upsertLocation, getLocationDetails, getLocationVibe } from "../api/locations.js";
 import { createNote, deleteNote, getNotesByLocation, updateNote } from "../api/notes.js";
 
 function formatNoteTimestamp(timestamp) {
-    return new Date(timestamp).toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-    });
+    if (!timestamp) return "";
+    const createdAt = new Date(timestamp).getTime();
+    const elapsedMs = Date.now() - createdAt;
+
+    if (Number.isNaN(createdAt) || elapsedMs < 0) return "";
+
+    const minuteMs = 60 * 1000;
+    const hourMs = 60 * minuteMs;
+    const dayMs = 24 * hourMs;
+
+    if (elapsedMs < minuteMs) return "Just now";
+    if (elapsedMs < hourMs) return `${Math.floor(elapsedMs / minuteMs)}m ago`;
+    if (elapsedMs < dayMs) return `${Math.floor(elapsedMs / hourMs)}h ago`;
+    return `${Math.floor(elapsedMs / dayMs)}d ago`;
 }
 
-function mapApiNote(note) {
+function formatLocationName(location) {
+    return location?.name?.trim() || location?.address?.trim() || "Location";
+}
+
+function mapApiNote(note, location) {
     return {
         id: note.note_id,
         userId: note.user_id,
         username: note.username,
+        locationId: note.location_id ?? location?.db_id ?? null,
+        locationName: formatLocationName(location),
+        category: note.category_tag ?? "",
         createdAt: note.created_at,
         expiresAt: note.expires_at,
         createdAtText: formatNoteTimestamp(note.created_at),
@@ -33,6 +50,10 @@ function mapApiNote(note) {
 function mapVibeScoreToPercent(score) {
     if (!score) return 0;
     return Math.max(0, Math.min(100, (score / 5) * 100));
+}
+
+function getLocationIdentity(location) {
+    return location?.db_id ?? location?.id ?? null;
 }
 
 export default function Map() {
@@ -187,26 +208,47 @@ export default function Map() {
     }
 
     async function loadLocationData(placeWithDbId) {
-        const [notesData, vibeData] = await Promise.all([
+        const [notesData, vibeData, locationDetails] = await Promise.all([
             getNotesByLocation(placeWithDbId.db_id),
             getLocationVibe(placeWithDbId.db_id).catch(() => null),
+            getLocationDetails(placeWithDbId.db_id).catch(() => null),
         ]);
 
         const currentVibe = vibeData?.vibe_label?.toLowerCase() || "unknown";
         const vibeScorePercent = mapVibeScoreToPercent(vibeData?.avg_vibe_score);
 
-        setLocationData({
+        const nextLocationData = {
+            locationId: placeWithDbId.db_id,
+            categoryTags: Array.isArray(locationDetails?.category_tags) && locationDetails.category_tags.length > 0
+                ? locationDetails.category_tags
+                : [NOTE_DEFAULT_CATEGORY],
             currentVibe,
             vibeScorePercent,
-            notes: notesData.notes.map(mapApiNote),
+            notes: notesData.notes.map((note) => mapApiNote(note, placeWithDbId)),
+        };
+
+        setLocationData((prev) => {
+            if (getLocationIdentity(selectedLocation) !== placeWithDbId.db_id) {
+                return prev;
+            }
+
+            return nextLocationData;
         });
+
+        return nextLocationData;
     }
 
     async function handleSelectLocation(place) {
         try {
             setLocationError("");
             const data = await upsertLocation(place);
-            const nextLocation = { ...place, db_id: data.location.location_id };
+            const nextLocation = {
+                ...place,
+                db_id: data.location.location_id,
+                categoryTags: Array.isArray(data.location.category_tags) && data.location.category_tags.length > 0
+                    ? data.location.category_tags
+                    : (place.categoryTags?.length ? place.categoryTags : [NOTE_DEFAULT_CATEGORY]),
+            };
             setSelectedLocation(nextLocation);
             await loadLocationData(nextLocation);
         } catch (err) {
@@ -240,16 +282,18 @@ export default function Map() {
             const data = await updateNote(payload.noteId, {
                 content: payload.text,
                 vibe_level: payload.vibe,
+                category_tag: payload.category,
             });
             savedNote = mapApiNote({
                 ...data.note,
                 username: payload.anonymous ? "Anonymous" : user.username,
                 reaction_count: 0,
                 reply_count: 0,
-            });
+            }, selectedLocation);
 
             setLocationData((prev) => ({
                 ...prev,
+                locationId: selectedLocation.db_id,
                 notes: (prev?.notes || []).map((note) =>
                     note.id === payload.noteId
                         ? {
@@ -260,11 +304,18 @@ export default function Map() {
                         : note
                 ),
             }));
+            try {
+                await loadLocationData(selectedLocation);
+            } catch (error) {
+                console.error("Failed to refresh location data after update", error);
+            }
+
             return savedNote;
         }
 
         const data = await createNote({
             location_id: selectedLocation.db_id,
+            category_tag: payload.category,
             content: payload.text,
             vibe_level: payload.vibe,
             is_anonymous: payload.anonymous,
@@ -275,15 +326,20 @@ export default function Map() {
             username: payload.anonymous ? "Anonymous" : user.username,
             reaction_count: 0,
             reply_count: 0,
-        });
-        savedNote.createdAtText = "Just now";
-
+        }, selectedLocation);
         setLocationData((prev) => ({
             ...(prev || {}),
+            locationId: selectedLocation.db_id,
             currentVibe: prev?.currentVibe || "unknown",
             vibeScorePercent: prev?.vibeScorePercent || 0,
             notes: [savedNote, ...(prev?.notes || [])],
         }));
+
+        try {
+            await loadLocationData(selectedLocation);
+        } catch (error) {
+            console.error("Failed to refresh location data after create", error);
+        }
 
         return savedNote;
     }

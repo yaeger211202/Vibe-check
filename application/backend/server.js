@@ -89,25 +89,46 @@ function normalizeCategory(value) {
     return value?.trim().toLowerCase() || "";
 }
 
+const categoryMatchers = {
+    Restaurant: ["restaurant", "fast_food", "food", "eatery"],
+    Libraries: ["library", "books", "study"],
+    Bar: ["bar", "pub", "biergarten"],
+    Cafe: ["cafe", "coffee", "tea"],
+    Park: ["park", "garden", "playground", "nature_reserve"],
+    Museum: ["museum", "gallery", "exhibition"],
+    Shopping: ["shop", "mall", "supermarket", "retail", "store", "marketplace"],
+    Entertainment: ["cinema", "theatre", "theater", "arts_centre", "stadium", "bowling", "arcade"],
+    Nightlife: ["nightclub", "bar", "pub", "biergarten"],
+};
+
+function deriveLocationCategories(place) {
+    const normalizedClass = normalizeCategory(place.class || place.category);
+    const normalizedType = normalizeCategory(place.type);
+    const normalizedName = normalizeCategory(place.display_name || place.name);
+
+    const matches = Object.entries(categoryMatchers)
+        .filter(([, matchTerms]) =>
+            matchTerms.some((term) =>
+                normalizedClass.includes(term)
+                || normalizedType.includes(term)
+                || normalizedName.includes(term)
+            )
+        )
+        .map(([categoryName]) => categoryName);
+
+    return matches.length > 0 ? matches : ["na"];
+}
+
 function matchesCategoryFilter(place, requestedCategory) {
     if (!requestedCategory) return true;
+
+    const matchTerms = Object.entries(categoryMatchers).find(
+        ([categoryName]) => normalizeCategory(categoryName) === requestedCategory
+    )?.[1];
 
     const normalizedClass = normalizeCategory(place.class || place.category);
     const normalizedType = normalizeCategory(place.type);
     const normalizedName = normalizeCategory(place.display_name || place.name);
-    const categoryMatchers = {
-        restaurant: ["restaurant", "fast_food", "food", "eatery"],
-        libraries: ["library", "books", "study"],
-        bar: ["bar", "pub", "biergarten"],
-        cafe: ["cafe", "coffee", "tea"],
-        park: ["park", "garden", "playground", "nature_reserve"],
-        museum: ["museum", "gallery", "exhibition"],
-        shopping: ["shop", "mall", "supermarket", "retail", "store", "marketplace"],
-        entertainment: ["cinema", "theatre", "theater", "arts_centre", "stadium", "bowling", "arcade"],
-        nightlife: ["nightclub", "bar", "pub", "biergarten"],
-    };
-
-    const matchTerms = categoryMatchers[requestedCategory];
 
     if (!matchTerms) return true;
 
@@ -196,6 +217,7 @@ app.get("/api/search/locations", async (req, res) => {
                 const lat = Number.parseFloat(place.lat);
                 const lon = Number.parseFloat(place.lon);
                 const distanceKm = calculateDistanceKm(searchCenter.lat, searchCenter.lon, lat, lon);
+                const categoryTags = deriveLocationCategories(place);
 
                 return {
                     id: place.place_id,
@@ -204,6 +226,7 @@ app.get("/api/search/locations", async (req, res) => {
                     lon,
                     type: place.type,
                     category: place.class,
+                    categoryTags,
                     db_id: savedLocation?.dbId ?? null,
                     vibeLevel: savedLocation?.vibeLevel ?? null,
                     avgVibeScore: savedLocation?.avgVibeScore ?? null,
