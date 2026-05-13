@@ -24,11 +24,15 @@ export default function MobileMapLayout({
                                             mobileTab,
                                             setMobileTab,
                                             locationData,
+<<<<<<< Updated upstream
                                             setLocationData,
                                             user,
                                             locationError,
                                             onSaveNote,
                                             onDeleteNote,
+=======
+                                            onSubmitNote,
+>>>>>>> Stashed changes
                                         }) {
 
     return (
@@ -70,12 +74,17 @@ export default function MobileMapLayout({
                         <LocationView
                             selectedLocation={selectedLocation}
                             locationData={locationData}
+<<<<<<< Updated upstream
                             setLocationData={setLocationData}
                             user={user}
                             errorMessage={locationError}
                             onClose={handleCloseLocation}
                             onSubmitNote={onSaveNote}
                             onDeleteNote={onDeleteNote}
+=======
+                            onClose={handleCloseLocation}
+                            onSubmitNote={onSubmitNote}
+>>>>>>> Stashed changes
                             onReactToNote={(noteId) => console.log("react to note", noteId)}
                             onOpenComments={(noteId) => console.log("open comments for note", noteId)}
                         />

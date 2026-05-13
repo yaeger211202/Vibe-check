@@ -20,6 +20,7 @@ export default function DesktopMapLayout({
                                              setCategory,
                                              mockHeatmapData,
                                              handleSearch,
+<<<<<<< Updated upstream
                                              handleCloseLocation,
                                              locationData,
                                              setLocationData,
@@ -27,6 +28,12 @@ export default function DesktopMapLayout({
                                              locationError,
                                              onSaveNote,
                                              onDeleteNote,
+=======
+                                             setSelectedLocation,
+                                             locationData,
+                                             locationLoading,
+                                             onSubmitNote,
+>>>>>>> Stashed changes
                                          }) {
 
     return (
@@ -66,12 +73,17 @@ export default function DesktopMapLayout({
                         <LocationView
                             selectedLocation={selectedLocation}
                             locationData={locationData}
+<<<<<<< Updated upstream
                             setLocationData={setLocationData}
                             user={user}
                             errorMessage={locationError}
                             onClose={handleCloseLocation}
                             onSubmitNote={onSaveNote}
                             onDeleteNote={onDeleteNote}
+=======
+                            onClose={() => setSelectedLocation(null)}
+                            onSubmitNote={onSubmitNote}
+>>>>>>> Stashed changes
                             onReactToNote={(noteId) => console.log("react to note", noteId)}
                             onOpenComments={(noteId) => console.log("open comments for note", noteId)}
                         />

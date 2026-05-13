@@ -67,6 +67,9 @@ export default function Map() {
     const [vibeLevel, setVibeLevel] = useState(DEFAULT_VIBE_LEVEL);
     const [category, setCategory] = useState(DEFAULT_CATEGORY);
 
+    const [locationData, setLocationData] = useState(null);
+    const [locationLoading, setLocationLoading] = useState(false);
+
     const [mobileTab, setMobileTab] = useState("map");
     const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
 
@@ -163,6 +166,105 @@ export default function Map() {
             localStorage.removeItem("user");
         }
     }, []);
+
+    useEffect(() => {
+        if (!selectedLocation?.id) {
+            setLocationData(null);
+            return;
+        }
+
+        async function fetchLocationData() {
+            setLocationLoading(true);
+            try {
+                const [vibeRes, notesRes] = await Promise.all([
+                    fetch(`/api/locations/${selectedLocation.id}/vibe`),
+                    fetch(`/api/notes/location/${selectedLocation.id}`),
+                ]);
+
+                const vibeData = await vibeRes.json();
+                const notesPayload = await notesRes.json();
+
+                const notes = Array.isArray(notesPayload.notes)
+                    ? notesPayload.notes.map((n) => ({
+                          id: n.note_id,
+                          username: n.username || "Anonymous",
+                          createdAtText: formatTimeAgo(n.created_at),
+                          createdAt: n.created_at,
+                          vibe: n.vibe_level,
+                          text: n.content,
+                          reactionCount: parseInt(n.reaction_count) || 0,
+                          commentCount: parseInt(n.reply_count) || 0,
+                      }))
+                    : [];
+
+                setLocationData({
+                    currentVibe: vibeData.vibe_label || "Unknown",
+                    notes,
+                });
+            } catch (err) {
+                console.error("Failed to fetch location data:", err);
+                setLocationData({ currentVibe: "Unknown", notes: [] });
+            } finally {
+                setLocationLoading(false);
+            }
+        }
+
+        fetchLocationData();
+    }, [selectedLocation?.id]);
+
+    async function handleSubmitNote(payload) {
+        try {
+            const token = localStorage.getItem("token");
+            const storedUser = localStorage.getItem("user");
+            const userId = storedUser ? JSON.parse(storedUser)?.user_id : null;
+
+            const res = await fetch("/api/notes", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                },
+                body: JSON.stringify({
+                    user_id: userId,
+                    location_id: payload.locationId,
+                    content: payload.text,
+                    vibe_level: payload.vibe,
+                    is_anonymous: payload.anonymous,
+                }),
+            });
+
+            if (!res.ok) {
+                const err = await res.json();
+                console.error("Note post failed:", err);
+                return;
+            }
+
+            // Refresh location data after posting
+            if (selectedLocation?.id) {
+                const [vibeRes, notesRes] = await Promise.all([
+                    fetch(`/api/locations/${selectedLocation.id}/vibe`),
+                    fetch(`/api/notes/location/${selectedLocation.id}`),
+                ]);
+                const vibeData = await vibeRes.json();
+                const notesPayload = await notesRes.json();
+                const notes = Array.isArray(notesPayload.notes)
+                    ? notesPayload.notes.map((n) => ({
+                          id: n.note_id,
+                          username: n.username || "Anonymous",
+                          createdAtText: formatTimeAgo(n.created_at),
+                          createdAt: n.created_at,
+                          vibe: n.vibe_level,
+                          text: n.content,
+                          reactionCount: parseInt(n.reaction_count) || 0,
+                          commentCount: parseInt(n.reply_count) || 0,
+                      }))
+                    : [];
+                setLocationData({ currentVibe: vibeData.vibe_label || "Unknown", notes });
+            }
+        } catch (err) {
+            console.error("Submit note error:", err);
+        }
+    }
 
     useEffect(() => {
         document.title = "Vibe Check";
@@ -427,11 +529,16 @@ export default function Map() {
         mobileTab,
         setMobileTab,
         locationData,
+<<<<<<< Updated upstream
         setLocationData,
         user,
         locationError,
         onSaveNote: handleSaveNote,
         onDeleteNote: handleDeleteNote,
+=======
+        locationLoading,
+        onSubmitNote: handleSubmitNote,
+>>>>>>> Stashed changes
     };
 
     return (
@@ -446,3 +553,17 @@ export default function Map() {
         </div>
     );
 }
+<<<<<<< Updated upstream
+=======
+
+function formatTimeAgo(timestamp) {
+    if (!timestamp) return "Just now";
+    const diff = Date.now() - new Date(timestamp).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return "Just now";
+    if (mins < 60) return `${mins}m ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}h ago`;
+    return `${Math.floor(hrs / 24)}d ago`;
+}
+>>>>>>> Stashed changes

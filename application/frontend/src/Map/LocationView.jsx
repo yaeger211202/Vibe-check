@@ -93,9 +93,15 @@ export default function LocationView({
 
     const title = formatLocationTitle(selectedLocation);
 
+<<<<<<< Updated upstream
     const activeLocationId = selectedLocation?.db_id ?? locationData?.locationId ?? null;
+=======
+    const VIBE_SCORE_MAP = { dead: 1, quiet: 2, moderate: 3, busy: 4, buzzing: 5 };
+
+>>>>>>> Stashed changes
     const currentVibe = locationData?.currentVibe || DEFAULT_CURRENT_VIBE;
-    const progressPercent = locationData?.vibeScorePercent || 0;
+    const vibeScore = VIBE_SCORE_MAP[currentVibe?.toLowerCase()] ?? null;
+    const progressPercent = vibeScore ? (vibeScore / 5) * 100 : 0;
 
     const notes = useMemo(() => {
         const rawNotes = Array.isArray(locationData?.notes) ? locationData.notes : [];
