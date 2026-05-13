@@ -3,17 +3,31 @@ import Heatmap from "./Heatmap.jsx";
 import LocationView from "./LocationView.jsx";
 
 export default function DesktopMapLayout({
-    searchQuery, setSearchQuery,
-    results, selectedLocation,
-    loading, hasSearched,
-    radius, setRadius,
-    vibeLevel, setVibeLevel,
-    category, setCategory,
-    heatmapData,        
+    userLocation,
+    userLocationError,
+    searchQuery,
+    setSearchQuery,
+    results,
+    selectedLocation,
+    handleSelectLocation,
+    loading,
+    hasSearched,
+    radius,
+    setRadius,
+    vibeLevel,
+    setVibeLevel,
+    category,
+    setCategory,
+    heatmapData,
     heatmapLoading,
     handleSearch,
-    setSelectedLocation,
-    getMockLocationData,
+    handleCloseLocation,
+    locationData,
+    setLocationData,
+    user,
+    locationError,
+    onSaveNote,
+    onDeleteNote,
 }) {
     return (
         <main className="flex flex-1 min-h-0">
@@ -29,8 +43,9 @@ export default function DesktopMapLayout({
                     setCategory={setCategory}
                     results={results}
                     loading={loading}
+                    setLocationData={setLocationData}
                     selectedLocation={selectedLocation}
-                    onSelectLocation={setSelectedLocation}
+                    onSelectLocation={handleSelectLocation}
                     hasSearched={hasSearched}
                     onSearch={handleSearch}
                 />
@@ -42,6 +57,8 @@ export default function DesktopMapLayout({
                         selectedLocation={selectedLocation}
                         heatmapData={heatmapData}
                         heatmapLoading={heatmapLoading}
+                        userLocation={userLocation}
+                        userLocationError={userLocationError}
                     />
                 </div>
 
@@ -49,9 +66,13 @@ export default function DesktopMapLayout({
                     <div className="w-[54rem] max-w-[65%] min-h-0 border-l border-gray-200 bg-white shadow-xl">
                         <LocationView
                             selectedLocation={selectedLocation}
-                            locationData={getMockLocationData()}
-                            onClose={() => setSelectedLocation(null)}
-                            onSubmitNote={(payload) => console.log("submit note", payload)}
+                            locationData={locationData}
+                            setLocationData={setLocationData}
+                            user={user}
+                            errorMessage={locationError}
+                            onClose={handleCloseLocation}
+                            onSubmitNote={onSaveNote}
+                            onDeleteNote={onDeleteNote}
                             onReactToNote={(noteId) => console.log("react to note", noteId)}
                             onOpenComments={(noteId) => console.log("open comments for note", noteId)}
                         />

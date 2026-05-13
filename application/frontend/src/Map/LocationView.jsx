@@ -5,6 +5,8 @@ import {
     VIBE_OPTIONS,
     VIBE_STYLES,
 } from "./constants.js";
+import { addReaction, getReactionsByNote, removeReaction } from "../api/reactions.js";
+import { createReply, deleteReply, getRepliesByNote } from "../api/replies.js";
 
 function formatLocationTitle(location) {
     const name = location?.name?.trim();
@@ -19,6 +21,13 @@ function getNoteVibeClass(vibe) {
 function getInitials(name) {
     if (!name) return "?";
     return name.replace("@", "").trim()[0]?.toUpperCase() || "?";
+}
+
+function getReactionBuckets(reactions = []) {
+    return {
+        thumbsUp: reactions.filter((reaction) => reaction.type === "thumbs_up"),
+        thumbsDown: reactions.filter((reaction) => reaction.type === "thumbs_down"),
+    };
 }
 
 function formatRemainingTime(expiresAt, now) {
@@ -38,6 +47,24 @@ function formatRemainingTime(expiresAt, now) {
     return `Expires in ${Math.floor(remainingMs / dayMs)}d`;
 }
 
+function formatElapsedTime(timestamp, now) {
+    if (!timestamp) return "";
+
+    const time = new Date(timestamp).getTime();
+    const elapsedMs = now - time;
+
+    if (Number.isNaN(time) || elapsedMs < 0) return "";
+
+    const minuteMs = 60 * 1000;
+    const hourMs = 60 * minuteMs;
+    const dayMs = 24 * hourMs;
+
+    if (elapsedMs < minuteMs) return "Just now";
+    if (elapsedMs < hourMs) return `${Math.floor(elapsedMs / minuteMs)}m ago`;
+    if (elapsedMs < dayMs) return `${Math.floor(elapsedMs / hourMs)}h ago`;
+    return `${Math.floor(elapsedMs / dayMs)}d ago`;
+}
+
 export default function LocationView({
                                          selectedLocation,
                                          locationData,
@@ -47,9 +74,7 @@ export default function LocationView({
                                          onClose,
                                          onSubmitNote,
                                          onDeleteNote,
-                                         onReactToNote,
-                                         onOpenComments,
-                                     }) {
+                                 }) {
     const [selectedVibe, setSelectedVibe] = useState(null);
     const [isAnonymous, setIsAnonymous] = useState(false);
     const [noteText, setNoteText] = useState("");
@@ -59,12 +84,27 @@ export default function LocationView({
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [deletingNoteId, setDeletingNoteId] = useState(null);
     const [currentTime, setCurrentTime] = useState(() => Date.now());
+    const [openNoteId, setOpenNoteId] = useState(null);
+    const [loadingThreadNoteId, setLoadingThreadNoteId] = useState(null);
+    const [noteThreads, setNoteThreads] = useState({});
+    const [threadError, setThreadError] = useState("");
 
     const title = formatLocationTitle(selectedLocation);
 
-    const activeLocationId = selectedLocation?.db_id ?? locationData?.locationId ?? null;
+    const activeLocationId =
+        selectedLocation?.db_id ?? locationData?.locationId ?? null;
+
+    const VIBE_SCORE_MAP = {
+        dead: 1,
+        quiet: 2,
+        moderate: 3,
+        busy: 4,
+        buzzing: 5,
+    };
+
     const currentVibe = locationData?.currentVibe || DEFAULT_CURRENT_VIBE;
-    const progressPercent = locationData?.vibeScorePercent || 0;
+    const vibeScore = VIBE_SCORE_MAP[currentVibe?.toLowerCase()] ?? null;
+    const progressPercent = vibeScore ? (vibeScore / 5) * 100 : 0;
 
     const notes = useMemo(() => {
         const rawNotes = Array.isArray(locationData?.notes) ? locationData.notes : [];
@@ -114,6 +154,10 @@ export default function LocationView({
         setSelectedVibe(null);
         setIsAnonymous(false);
         setNoteText("");
+        setOpenNoteId(null);
+        setLoadingThreadNoteId(null);
+        setNoteThreads({});
+        setThreadError("");
     }, [selectedLocation?.db_id, selectedLocation?.id]);
 
     const canSubmit =
@@ -154,6 +198,225 @@ export default function LocationView({
             setSubmitError(error.message || "Unable to save note.");
         } finally {
             setIsSubmitting(false);
+        }
+    }
+
+    async function loadThread(noteId) {
+        const [reactionsData, repliesData] = await Promise.all([
+            getReactionsByNote(noteId),
+            getRepliesByNote(noteId),
+        ]);
+
+        let nextThread;
+        setNoteThreads((prev) => {
+            nextThread = {
+                reactions: reactionsData.reactions.map((reaction) => ({
+                    id: reaction.reaction_id,
+                    userId: reaction.user_id,
+                    username: reaction.username,
+                    type: reaction.reaction_type,
+                    createdAt: reaction.created_at,
+                })),
+                replies: repliesData.replies.map((reply) => ({
+                    id: reply.reply_id,
+                    noteId: reply.note_id,
+                    userId: reply.user_id,
+                    username: reply.username,
+                    text: reply.content,
+                    createdAt: reply.created_at,
+                })),
+                replyText: prev[noteId]?.replyText || "",
+            };
+
+            return {
+                ...prev,
+                [noteId]: nextThread,
+            };
+        });
+
+        return nextThread;
+    }
+
+    async function toggleThread(noteId) {
+        if (openNoteId === noteId) {
+            setOpenNoteId(null);
+            setLoadingThreadNoteId(null);
+            return;
+        }
+
+        setThreadError("");
+        setOpenNoteId(noteId);
+        setLoadingThreadNoteId(noteId);
+        setNoteThreads((prev) => ({
+            ...prev,
+            [noteId]: prev[noteId] || {
+                reactions: [],
+                replies: [],
+                replyText: "",
+            },
+        }));
+
+        try {
+            await loadThread(noteId);
+        } catch (error) {
+            setThreadError(error.message || "Unable to load note activity.");
+        } finally {
+            setLoadingThreadNoteId((current) => (current === noteId ? null : current));
+        }
+    }
+
+    function setReplyText(noteId, value) {
+        setNoteThreads((prev) => ({
+            ...prev,
+            [noteId]: {
+                reactions: prev[noteId]?.reactions || [],
+                replies: prev[noteId]?.replies || [],
+                replyText: value,
+            },
+        }));
+    }
+
+    async function handleReactionToggle(note, reactionType) {
+        if (!user?.user_id) {
+            setThreadError("Sign in to react to notes.");
+            return;
+        }
+
+        if (note.userId === user.user_id) {
+            setThreadError("You cannot react to your own note.");
+            return;
+        }
+
+        try {
+            setThreadError("");
+            const thread = noteThreads[note.id] || await loadThread(note.id);
+            const existingReaction = thread.reactions.find((reaction) => reaction.userId === user.user_id);
+
+            if (existingReaction?.type === reactionType) {
+                await removeReaction(existingReaction.id);
+                const nextReactions = thread.reactions.filter((reaction) => reaction.id !== existingReaction.id);
+                setNoteThreads((prev) => ({
+                    ...prev,
+                    [note.id]: {
+                        ...prev[note.id],
+                        reactions: nextReactions,
+                    },
+                }));
+                setLocationData((prev) => ({
+                    ...prev,
+                    notes: prev.notes.map((entry) =>
+                        entry.id === note.id
+                            ? { ...entry, reactionCount: Math.max(0, (entry.reactionCount ?? 0) - 1) }
+                            : entry
+                    ),
+                }));
+                return;
+            }
+
+            const data = await addReaction(note.id, reactionType);
+            const createdReaction = {
+                id: data.reaction.reaction_id,
+                userId: data.reaction.user_id,
+                username: user.username,
+                type: data.reaction.reaction_type,
+                createdAt: data.reaction.created_at,
+            };
+            const nextReactions = existingReaction
+                ? thread.reactions.map((reaction) =>
+                    reaction.id === existingReaction.id ? createdReaction : reaction
+                )
+                : [...thread.reactions, createdReaction];
+
+            setNoteThreads((prev) => ({
+                ...prev,
+                [note.id]: {
+                    ...prev[note.id],
+                    reactions: nextReactions,
+                },
+            }));
+            if (!existingReaction) {
+                setLocationData((prev) => ({
+                    ...prev,
+                    notes: prev.notes.map((entry) =>
+                        entry.id === note.id
+                            ? { ...entry, reactionCount: (entry.reactionCount ?? 0) + 1 }
+                            : entry
+                    ),
+                }));
+            }
+        } catch (error) {
+            setThreadError(error.message || "Unable to update reaction.");
+        }
+    }
+
+    async function handleReplySubmit(noteId) {
+        const replyText = noteThreads[noteId]?.replyText?.trim();
+        if (!replyText) return;
+
+        if (!user?.user_id) {
+            setThreadError("Sign in to reply to notes.");
+            return;
+        }
+
+        try {
+            setThreadError("");
+            const data = await createReply({
+                note_id: noteId,
+                content: replyText,
+                is_anonymous: false,
+            });
+
+            const createdReply = {
+                id: data.reply.reply_id,
+                noteId: data.reply.note_id,
+                userId: data.reply.user_id,
+                username: user.username,
+                text: data.reply.content,
+                createdAt: data.reply.created_at,
+            };
+
+            setNoteThreads((prev) => ({
+                ...prev,
+                [noteId]: {
+                    reactions: prev[noteId]?.reactions || [],
+                    replies: [...(prev[noteId]?.replies || []), createdReply],
+                    replyText: "",
+                },
+            }));
+            setLocationData((prev) => ({
+                ...prev,
+                notes: prev.notes.map((entry) =>
+                    entry.id === noteId
+                        ? { ...entry, commentCount: (entry.commentCount ?? 0) + 1 }
+                        : entry
+                ),
+            }));
+        } catch (error) {
+            setThreadError(error.message || "Unable to add reply.");
+        }
+    }
+
+    async function handleReplyDelete(noteId, replyId) {
+        try {
+            setThreadError("");
+            await deleteReply(replyId);
+            setNoteThreads((prev) => ({
+                ...prev,
+                [noteId]: {
+                    ...prev[noteId],
+                    replies: (prev[noteId]?.replies || []).filter((reply) => reply.id !== replyId),
+                },
+            }));
+            setLocationData((prev) => ({
+                ...prev,
+                notes: prev.notes.map((entry) =>
+                    entry.id === noteId
+                        ? { ...entry, commentCount: Math.max(0, (entry.commentCount ?? 0) - 1) }
+                        : entry
+                ),
+            }));
+        } catch (error) {
+            setThreadError(error.message || "Unable to delete reply.");
         }
     }
 
@@ -334,6 +597,12 @@ export default function LocationView({
                             </div>
                         ) : null}
 
+                        {threadError ? (
+                            <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                                {threadError}
+                            </div>
+                        ) : null}
+
                         {notes.length === 0 ? (
                             <div className="rounded-2xl border border-dashed border-gray-300 bg-gray-50 p-8 text-center">
                                 <p className="text-base font-medium text-gray-700">
@@ -347,6 +616,14 @@ export default function LocationView({
                             <>
                                 <div className="space-y-3 sm:space-y-4">
                                     {visibleNotes.map((note) => (
+                                        (() => {
+                                            const threadReactions = noteThreads[note.id]?.reactions || [];
+                                            const currentUserReaction = threadReactions.find(
+                                                (reaction) => reaction.userId === user?.user_id
+                                            );
+                                            const { thumbsUp, thumbsDown } = getReactionBuckets(threadReactions);
+
+                                            return (
                                         <article
                                             key={note.id}
                                             className="rounded-2xl border border-gray-200 bg-white p-4 sm:p-5"
@@ -384,6 +661,11 @@ export default function LocationView({
                                                     <span className="rounded-full border border-purple-200 bg-purple-50 px-3 py-1 text-xs font-medium text-purple-700">
                                                         {note.locationName}
                                                     </span>
+                                                    {note.category && note.category !== "na" ? (
+                                                        <span className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-medium text-gray-700">
+                                                            {note.category}
+                                                        </span>
+                                                    ) : null}
                                                 </div>
                                             ) : null}
 
@@ -394,21 +676,48 @@ export default function LocationView({
                                             <div className="mt-3 flex flex-wrap gap-2">
                                                 <button
                                                     type="button"
-                                                    onClick={() => onReactToNote?.(note.id)}
-                                                    className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-sm text-gray-600 transition hover:bg-gray-100"
-                                                    aria-label={`React to note by ${note.username || note.displayName || "anonymous user"}`}
+                                                    onClick={() => toggleThread(note.id)}
+                                                    className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-sm text-gray-600 transition hover:bg-gray-100 hover:cursor-pointer"
+                                                    aria-label={`View reactions for note by ${note.username || note.displayName || "anonymous user"}`}
                                                 >
-                                                    👍 {note.reactionCount ?? 0}
+                                                    Reactions {note.reactionCount ?? 0}
                                                 </button>
 
                                                 <button
                                                     type="button"
-                                                    onClick={() => onOpenComments?.(note.id)}
-                                                    className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-sm text-gray-600 transition hover:bg-gray-100"
+                                                    onClick={() => toggleThread(note.id)}
+                                                    className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-sm text-gray-600 transition hover:bg-gray-100 hover:cursor-pointer"
                                                     aria-label={`View comments for note by ${note.username || note.displayName || "anonymous user"}`}
                                                 >
-                                                    💬 {note.commentCount ?? 0}
+                                                    Replies {note.commentCount ?? 0}
                                                 </button>
+
+                                                {note.userId !== user?.user_id ? (
+                                                    <>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleReactionToggle(note, "thumbs_up")}
+                                                            className={`rounded-full border px-3 py-1 text-sm transition hover:cursor-pointer ${
+                                                                currentUserReaction?.type === "thumbs_up"
+                                                                    ? "border-green-300 bg-green-100 text-green-800"
+                                                                    : "border-green-200 bg-green-50 text-green-700 hover:bg-green-100"
+                                                            }`}
+                                                        >
+                                                            👍 Thumbs up
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleReactionToggle(note, "thumbs_down")}
+                                                            className={`rounded-full border px-3 py-1 text-sm transition hover:cursor-pointer ${
+                                                                currentUserReaction?.type === "thumbs_down"
+                                                                    ? "border-red-300 bg-red-100 text-red-800"
+                                                                    : "border-red-200 bg-red-50 text-red-700 hover:bg-red-100"
+                                                            }`}
+                                                        >
+                                                            👎 Thumbs down
+                                                        </button>
+                                                    </>
+                                                ) : null}
 
                                                 {note.userId === user?.user_id ? (
                                                     <>
@@ -434,7 +743,130 @@ export default function LocationView({
                                                     </>
                                                 ) : null}
                                             </div>
+
+                                            {openNoteId === note.id ? (
+                                                <div className="mt-4 space-y-4 rounded-2xl border border-gray-100 bg-gray-50 p-4">
+                                                    {loadingThreadNoteId === note.id ? (
+                                                        <p className="text-sm text-gray-500">Loading activity...</p>
+                                                    ) : null}
+
+                                                    <div>
+                                                        <h4 className="text-sm font-semibold text-gray-900">
+                                                            Reactions
+                                                        </h4>
+                                                        {threadReactions.length === 0 ? (
+                                                            <p className="mt-2 text-sm text-gray-500">No reactions yet.</p>
+                                                        ) : (
+                                                            <div className="mt-2 space-y-3">
+                                                                <div>
+                                                                    <p className="text-xs font-semibold uppercase tracking-wide text-green-700">
+                                                                        👍 Thumbs up
+                                                                    </p>
+                                                                    {thumbsUp.length === 0 ? (
+                                                                        <p className="mt-1 text-sm text-gray-500">No thumbs up yet.</p>
+                                                                    ) : (
+                                                                        <div className="mt-2 flex flex-wrap gap-2">
+                                                                            {thumbsUp.map((reaction) => (
+                                                                                <span
+                                                                                    key={reaction.id}
+                                                                                    className="rounded-full border border-green-200 bg-white px-3 py-1 text-xs font-medium text-green-800"
+                                                                                >
+                                                                                    {reaction.username}
+                                                                                </span>
+                                                                            ))}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+
+                                                                <div>
+                                                                    <p className="text-xs font-semibold uppercase tracking-wide text-red-700">
+                                                                        👎 Thumbs down
+                                                                    </p>
+                                                                    {thumbsDown.length === 0 ? (
+                                                                        <p className="mt-1 text-sm text-gray-500">No thumbs down yet.</p>
+                                                                    ) : (
+                                                                        <div className="mt-2 flex flex-wrap gap-2">
+                                                                            {thumbsDown.map((reaction) => (
+                                                                                <span
+                                                                                    key={reaction.id}
+                                                                                    className="rounded-full border border-red-200 bg-white px-3 py-1 text-xs font-medium text-red-800"
+                                                                                >
+                                                                                    {reaction.username}
+                                                                                </span>
+                                                                            ))}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+
+                                                    <div>
+                                                        <h4 className="text-sm font-semibold text-gray-900">
+                                                            Replies
+                                                        </h4>
+                                                        <div className="mt-2 space-y-3">
+                                                            {(noteThreads[note.id]?.replies || []).length === 0 ? (
+                                                                <p className="text-sm text-gray-500">No replies yet.</p>
+                                                            ) : (
+                                                                (noteThreads[note.id]?.replies || []).map((reply) => (
+                                                                    <div
+                                                                        key={reply.id}
+                                                                        className="rounded-xl border border-gray-200 bg-white px-4 py-3"
+                                                                    >
+                                                                        <div className="flex items-start justify-between gap-3">
+                                                                            <div>
+                                                                                <p className="text-sm font-semibold text-gray-900">
+                                                                                    {reply.username}
+                                                                                </p>
+                                                                                <p className="text-xs text-gray-500">
+                                                                                    {formatElapsedTime(reply.createdAt, currentTime)}
+                                                                                </p>
+                                                                            </div>
+                                                                            {reply.userId === user?.user_id ? (
+                                                                                <button
+                                                                                    type="button"
+                                                                                    onClick={() => handleReplyDelete(note.id, reply.id)}
+                                                                                    className="text-xs font-medium text-red-600 transition hover:text-red-700"
+                                                                                >
+                                                                                    Delete
+                                                                                </button>
+                                                                            ) : null}
+                                                                        </div>
+                                                                        <p className="mt-2 text-sm text-gray-800">
+                                                                            {reply.text}
+                                                                        </p>
+                                                                    </div>
+                                                                ))
+                                                            )}
+                                                        </div>
+                                                    </div>
+
+                                                    {note.userId !== user?.user_id ? (
+                                                        <div className="space-y-2">
+                                                            <textarea
+                                                                rows="3"
+                                                                value={noteThreads[note.id]?.replyText || ""}
+                                                                onChange={(event) => setReplyText(note.id, event.target.value)}
+                                                                placeholder="Write a reply..."
+                                                                className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                                            />
+                                                            <div className="flex justify-end">
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => handleReplySubmit(note.id)}
+                                                                    className="rounded-full bg-purple-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-purple-700"
+                                                                >
+                                                                    Reply
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    ) : null}
+                                                </div>
+                                            ) : null}
                                         </article>
+                                            );
+                                        })()
                                     ))}
                                 </div>
 
