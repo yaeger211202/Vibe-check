@@ -85,12 +85,15 @@ export default function Map() {
                 params.set("category", selectedCategory);
             }
 
-            const res = await fetch(`/api/heatmap?${params.toString()}`);
+            const res = await fetch(`/api/heatmap?${params.toString()}`, {
+                cache: "no-store",
+            });
             if (!res.ok) {
                 console.error("Heatmap fetch failed:", res.status);
                 return;
             }
             const data = await res.json();
+            console.log("NEW HEATMAP DATA", data);
             setHeatmapData(data);
         } catch (err) {
             console.error("Heatmap fetch error:", err);
@@ -262,6 +265,7 @@ export default function Map() {
                 vibe_level: payload.vibe,
                 category_tag: payload.category || "na",
             });
+
             savedNote = mapApiNote({
                 ...data.note,
                 username: payload.anonymous ? "Anonymous" : user.username,
@@ -278,11 +282,14 @@ export default function Map() {
                         : note
                 ),
             }));
+
             try {
                 await loadLocationData(selectedLocation);
+                await fetchHeatmap(category);
             } catch (error) {
-                console.error("Failed to refresh location data after update", error);
+                console.error("Failed to refresh data after update", error);
             }
+
             return savedNote;
         }
 
@@ -311,8 +318,9 @@ export default function Map() {
 
         try {
             await loadLocationData(selectedLocation);
+            await fetchHeatmap(category);
         } catch (error) {
-            console.error("Failed to refresh location data after create", error);
+            console.error("Failed to refresh data after create", error);
         }
 
         return savedNote;
@@ -331,6 +339,7 @@ export default function Map() {
 
         setLocationData((prev) => {
             if (!prev) return prev;
+
             return {
                 ...prev,
                 notes: (prev.notes || []).filter((note) => note.id !== noteId),
@@ -339,8 +348,9 @@ export default function Map() {
 
         try {
             await loadLocationData(selectedLocation);
+            await fetchHeatmap(category);
         } catch (error) {
-            console.error("Failed to refresh location data after delete", error);
+            console.error("Failed to refresh data after delete", error);
         }
     }
 
