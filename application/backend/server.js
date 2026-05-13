@@ -86,6 +86,10 @@ function calculateDistanceKm(fromLat, fromLon, toLat, toLon) {
     return earthRadiusKm * c;
 }
 
+function kmToMiles(distanceKm) {
+    return distanceKm * 0.621371;
+}
+
 function normalizeCategory(value) {
     return value?.trim().toLowerCase() || "";
 }
@@ -144,7 +148,7 @@ app.get("/api/search/locations", async (req, res) => {
     const query = req.query.q?.trim();
     const requestedVibeLevel = req.query.vibeLevel?.trim().toLowerCase();
     const requestedCategory = normalizeCategory(req.query.category);
-    const requestedRadiusKm = Number.parseFloat(req.query.radius);
+    const requestedRadiusMiles = Number.parseFloat(req.query.radius);
 
     if (!query) {
         return res.status(400).json({ error: "Missing search query." });
@@ -218,6 +222,7 @@ app.get("/api/search/locations", async (req, res) => {
                 const lat = Number.parseFloat(place.lat);
                 const lon = Number.parseFloat(place.lon);
                 const distanceKm = calculateDistanceKm(searchCenter.lat, searchCenter.lon, lat, lon);
+                const distanceMiles = kmToMiles(distanceKm);
                 const categoryTags = deriveLocationCategories(place);
 
                 return {
@@ -231,8 +236,8 @@ app.get("/api/search/locations", async (req, res) => {
                     db_id: savedLocation?.dbId ?? null,
                     vibeLevel: savedLocation?.vibeLevel ?? null,
                     avgVibeScore: savedLocation?.avgVibeScore ?? null,
-                    distance: distanceKm.toFixed(1),
-                    distanceKm,
+                    distance: distanceMiles.toFixed(1),
+                    distanceMiles,
                 };
             })
             .filter((place) => {
@@ -240,13 +245,13 @@ app.get("/api/search/locations", async (req, res) => {
                     || requestedVibeLevel === "all"
                     || place.vibeLevel === requestedVibeLevel;
                 const matchesCategory = matchesCategoryFilter(place, requestedCategory);
-                const matchesRadius = Number.isNaN(requestedRadiusKm)
-                    || requestedRadiusKm <= 0
-                    || place.distanceKm <= requestedRadiusKm;
+                const matchesRadius = Number.isNaN(requestedRadiusMiles)
+                    || requestedRadiusMiles <= 0
+                    || place.distanceMiles <= requestedRadiusMiles;
 
                 return matchesVibe && matchesCategory && matchesRadius;
             })
-            .map(({ distanceKm, ...place }) => place);
+            .map(({ distanceMiles, ...place }) => place);
 
         return res.json(results);
     }
