@@ -102,9 +102,18 @@ export default function LocationView({
         buzzing: 5,
     };
 
+    const VIBE_BAR_COLOR = {
+        dead: "bg-slate-300",
+        quiet: "bg-green-400",
+        moderate: "bg-yellow-300",
+        busy: "bg-pink-400",
+        buzzing: "bg-red-500",
+    };
+
     const currentVibe = locationData?.currentVibe || DEFAULT_CURRENT_VIBE;
     const vibeScore = VIBE_SCORE_MAP[currentVibe?.toLowerCase()] ?? null;
     const progressPercent = vibeScore ? (vibeScore / 5) * 100 : 0;
+    const barColor = VIBE_BAR_COLOR[currentVibe?.toLowerCase()] || "bg-gray-300";
 
     const notes = useMemo(() => {
         const rawNotes = Array.isArray(locationData?.notes) ? locationData.notes : [];
@@ -473,7 +482,7 @@ export default function LocationView({
                         <div className="flex-1">
                             <div className="h-4 overflow-hidden rounded-full bg-gray-200">
                                 <div
-                                    className="h-full rounded-full bg-yellow-500 transition-all"
+                                    className={`h-full rounded-full ${barColor} transition-all`}
                                     style={{ width: `${progressPercent}%` }}
                                 />
                             </div>
