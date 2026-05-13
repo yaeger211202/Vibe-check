@@ -1,13 +1,10 @@
 import dotenv from 'dotenv';
-dotenv.config();
-
 import express from 'express';
 import bcrypt from "bcrypt";
 import pkg from 'pg';
+
 import jwt from 'jsonwebtoken';
 import cookieParser from 'cookie-parser';
-import nodemailer from 'nodemailer';
-import crypto from 'crypto';
 import { requireAuth } from './middleware/auth.js';
 
 import swaggerUi from "swagger-ui-express";
@@ -26,6 +23,8 @@ const authCookieOptions = {
     sameSite: isProduction ? "strict" : "lax",
     maxAge: 7 * 24 * 60 * 60 * 1000,
 };
+
+dotenv.config();
 
 const app = express();
 app.use(express.json());
@@ -55,19 +54,6 @@ const pool = new Pool({
     password: process.env.DB_PASSWORD,
     port: process.env.DB_PORT,
 });
-
-// email transporter
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-    },
-});
-
-// ========================
-// HELPERS
-// ========================
 
 function mapScoreToVibeLevel(score) {
     if (score === null || score === undefined) return null;
@@ -157,10 +143,6 @@ function matchesCategoryFilter(place, requestedCategory) {
         || normalizedName.includes(term)
     );
 }
-
-// ========================
-// LOCATION SEARCH
-// ========================
 
 app.get("/api/search/locations", async (req, res) => {
     const query = req.query.q?.trim();
@@ -312,11 +294,6 @@ app.post("/api/login", async (req, res) => {
             return res.status(401).json({ error: "Invalid email or password." });
         }
 
-        // Block login if email is not verified
-        if (!user.email_verified) {
-            return res.status(403).json({ error: "Please verify your email before signing in. Check your inbox for the verification link." });
-        }
-
         const token = jwt.sign(
             { user_id: user.user_id, username: user.username },
             process.env.JWT_SECRET,
@@ -328,7 +305,7 @@ app.post("/api/login", async (req, res) => {
         return res.status(200).json({
             message: "Login successful.",
             user: { user_id: user.user_id, username: user.username, email: user.email }
-        });
+          });
     }
     catch (error) {
         console.error("Login error:", error);
@@ -365,36 +342,14 @@ app.post("/api/signup", async (req, res) => {
         }
 
         const passwordHash = await bcrypt.hash(password, 10);
-        const verificationToken = crypto.randomBytes(32).toString('hex');
 
         await pool.query(
-            `INSERT INTO users (username, email, password_hash, email_verified, verification_token, verification_sent_at)
-             VALUES ($1, $2, $3, false, $4, NOW())`,
-            [trimmedUsername, normalizedEmail, passwordHash, verificationToken]
+            `INSERT INTO users (username, email, password_hash)
+             VALUES ($1, $2, $3)`,
+            [trimmedUsername, normalizedEmail, passwordHash]
         );
 
-        const verifyUrl = `${process.env.APP_URL}/api/verify-email?token=${verificationToken}`;
-
-        await transporter.sendMail({
-            from: `"Vibe Check" <${process.env.EMAIL_USER}>`,
-            to: normalizedEmail,
-            subject: 'Verify your Vibe Check email',
-            html: `
-                <div style="font-family: sans-serif; max-width: 480px; margin: auto;">
-                    <h2>Welcome to Vibe Check, ${trimmedUsername}!</h2>
-                    <p>Click the button below to verify your email address and activate your account.</p>
-                    <a href="${verifyUrl}" style="display:inline-block;padding:12px 24px;background:#22c55e;color:#fff;border-radius:8px;text-decoration:none;font-weight:bold;">
-                        Verify Email
-                    </a>
-                    <p style="margin-top:16px;color:#888;font-size:13px;">
-                        If the button doesn't work, paste this link into your browser:<br/>
-                        <a href="${verifyUrl}">${verifyUrl}</a>
-                    </p>
-                </div>
-            `,
-        });
-
-        return res.status(201).json({ message: "Account created. Please check your email to verify your account before signing in." });
+        return res.status(201).json({ message: "Account created successfully." });
     }
     catch (error) {
         console.error("Signup error:", error);
@@ -402,34 +357,6 @@ app.post("/api/signup", async (req, res) => {
     }
 });
 
-app.get("/api/verify-email", async (req, res) => {
-    const { token } = req.query;
-
-    if (!token) {
-        return res.status(400).json({ error: "Missing verification token." });
-    }
-
-    try {
-        const result = await pool.query(
-            `UPDATE users
-             SET email_verified = true, verification_token = NULL, verified_at = NOW()
-             WHERE verification_token = $1
-             RETURNING user_id`,
-            [token]
-        );
-
-        if (result.rows.length === 0) {
-            return res.status(400).json({ error: "Invalid or expired verification token." });
-        }
-
-        // Redirect to signin page with a success flag the frontend can read
-        return res.redirect(`${process.env.APP_URL}/signin?verified=true`);
-    }
-    catch (error) {
-        console.error("Email verification error:", error);
-        return res.status(500).json({ error: "Internal server error." });
-    }
-});
 
 app.post("/api/logout", requireAuth, async (req, res) => {
     res.clearCookie('token', authCookieOptions);
@@ -492,8 +419,8 @@ app.get("/api/locations/:location_id/vibe", async (req, res) => {
             vibe_label,
             total_notes: parseInt(data.total_notes)
         });
-    }
-    catch (error) {
+
+    } catch (error) {
         console.error("Vibe score error:", error);
         return res.status(500).json({ error: "Internal server error." });
     }
