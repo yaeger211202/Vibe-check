@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import {
     DEFAULT_CURRENT_VIBE,
     NOTE_MAX_LENGTH,
-    NOTE_CATEGORY_OPTIONS,
     VIBE_OPTIONS,
     VIBE_STYLES,
 } from "./constants.js";
@@ -79,7 +78,6 @@ export default function LocationView({
                                      onOpenComments,
                                  }) {
     const [selectedVibe, setSelectedVibe] = useState(null);
-    const [selectedCategory, setSelectedCategory] = useState("");
     const [isAnonymous, setIsAnonymous] = useState(false);
     const [noteText, setNoteText] = useState("");
     const [visibleNoteCount, setVisibleNoteCount] = useState(4);
@@ -145,7 +143,6 @@ export default function LocationView({
         setEditingNoteId(null);
         setSubmitError("");
         setSelectedVibe(null);
-        setSelectedCategory("");
         setIsAnonymous(false);
         setNoteText("");
         setOpenNoteId(null);
@@ -160,7 +157,6 @@ export default function LocationView({
     function beginEditNote(note) {
         setEditingNoteId(note.id);
         setSelectedVibe(note.vibe);
-        setSelectedCategory(note.category && note.category !== "na" ? note.category : "");
         setIsAnonymous(Boolean(note.isAnonymous));
         setNoteText(note.text || "");
         setSubmitError("");
@@ -169,7 +165,6 @@ export default function LocationView({
     function resetComposer() {
         setEditingNoteId(null);
         setSelectedVibe(null);
-        setSelectedCategory("");
         setIsAnonymous(false);
         setNoteText("");
     }
@@ -181,7 +176,6 @@ export default function LocationView({
         const payload = {
             noteId: editingNoteId,
             vibe: selectedVibe,
-            category: selectedCategory,
             text: noteText.trim(),
             anonymous: isAnonymous,
         };
@@ -509,24 +503,6 @@ export default function LocationView({
                                     </button>
                                 );
                             })}
-                        </div>
-
-                        <div className="mt-4">
-                            <label className="mb-2 block text-sm font-medium text-gray-700">
-                                Category
-                            </label>
-                            <select
-                                value={selectedCategory}
-                                onChange={(e) => setSelectedCategory(e.target.value)}
-                                className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-base text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                            >
-                                <option value="">Select a category</option>
-                                {NOTE_CATEGORY_OPTIONS.map((categoryOption) => (
-                                    <option key={categoryOption} value={categoryOption}>
-                                        {categoryOption}
-                                    </option>
-                                ))}
-                            </select>
                         </div>
 
                         <div className="mt-4 flex flex-col sm:flex-row gap-3">
