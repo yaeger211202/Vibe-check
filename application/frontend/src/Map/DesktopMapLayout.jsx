@@ -20,7 +20,6 @@ export default function DesktopMapLayout({
                                              setCategory,
                                              mockHeatmapData,
                                              handleSearch,
-<<<<<<< Updated upstream
                                              handleCloseLocation,
                                              locationData,
                                              setLocationData,
@@ -28,14 +27,7 @@ export default function DesktopMapLayout({
                                              locationError,
                                              onSaveNote,
                                              onDeleteNote,
-=======
-                                             setSelectedLocation,
-                                             locationData,
-                                             locationLoading,
-                                             onSubmitNote,
->>>>>>> Stashed changes
                                          }) {
-
     return (
         <main className="flex flex-1 min-h-0">
             <aside className="w-[420px] flex flex-col border-r border-gray-200 bg-gray-50 min-h-0">
@@ -49,7 +41,7 @@ export default function DesktopMapLayout({
                     category={category}
                     setCategory={setCategory}
                     results={results}
-                    loading={loading} 
+                    loading={loading}
                     setLocationData={setLocationData}
                     selectedLocation={selectedLocation}
                     onSelectLocation={handleSelectLocation}
@@ -73,17 +65,12 @@ export default function DesktopMapLayout({
                         <LocationView
                             selectedLocation={selectedLocation}
                             locationData={locationData}
-<<<<<<< Updated upstream
                             setLocationData={setLocationData}
                             user={user}
                             errorMessage={locationError}
                             onClose={handleCloseLocation}
                             onSubmitNote={onSaveNote}
                             onDeleteNote={onDeleteNote}
-=======
-                            onClose={() => setSelectedLocation(null)}
-                            onSubmitNote={onSubmitNote}
->>>>>>> Stashed changes
                             onReactToNote={(noteId) => console.log("react to note", noteId)}
                             onOpenComments={(noteId) => console.log("open comments for note", noteId)}
                         />

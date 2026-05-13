@@ -74,8 +74,6 @@ export default function LocationView({
                                          onClose,
                                          onSubmitNote,
                                          onDeleteNote,
-                                     onReactToNote,
-                                     onOpenComments,
                                  }) {
     const [selectedVibe, setSelectedVibe] = useState(null);
     const [isAnonymous, setIsAnonymous] = useState(false);
@@ -93,12 +91,17 @@ export default function LocationView({
 
     const title = formatLocationTitle(selectedLocation);
 
-<<<<<<< Updated upstream
-    const activeLocationId = selectedLocation?.db_id ?? locationData?.locationId ?? null;
-=======
-    const VIBE_SCORE_MAP = { dead: 1, quiet: 2, moderate: 3, busy: 4, buzzing: 5 };
+    const activeLocationId =
+        selectedLocation?.db_id ?? locationData?.locationId ?? null;
 
->>>>>>> Stashed changes
+    const VIBE_SCORE_MAP = {
+        dead: 1,
+        quiet: 2,
+        moderate: 3,
+        busy: 4,
+        buzzing: 5,
+    };
+
     const currentVibe = locationData?.currentVibe || DEFAULT_CURRENT_VIBE;
     const vibeScore = VIBE_SCORE_MAP[currentVibe?.toLowerCase()] ?? null;
     const progressPercent = vibeScore ? (vibeScore / 5) * 100 : 0;

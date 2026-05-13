@@ -24,17 +24,12 @@ export default function MobileMapLayout({
                                             mobileTab,
                                             setMobileTab,
                                             locationData,
-<<<<<<< Updated upstream
                                             setLocationData,
                                             user,
                                             locationError,
                                             onSaveNote,
                                             onDeleteNote,
-=======
-                                            onSubmitNote,
->>>>>>> Stashed changes
                                         }) {
-
     return (
         <main className="flex flex-1 flex-col min-h-0">
             <div className="flex-1 min-h-0 overflow-hidden">
@@ -74,17 +69,12 @@ export default function MobileMapLayout({
                         <LocationView
                             selectedLocation={selectedLocation}
                             locationData={locationData}
-<<<<<<< Updated upstream
                             setLocationData={setLocationData}
                             user={user}
                             errorMessage={locationError}
                             onClose={handleCloseLocation}
                             onSubmitNote={onSaveNote}
                             onDeleteNote={onDeleteNote}
-=======
-                            onClose={handleCloseLocation}
-                            onSubmitNote={onSubmitNote}
->>>>>>> Stashed changes
                             onReactToNote={(noteId) => console.log("react to note", noteId)}
                             onOpenComments={(noteId) => console.log("open comments for note", noteId)}
                         />
@@ -140,7 +130,7 @@ export default function MobileMapLayout({
                     >
                         <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a2 2 0 0 1-2.827 0l-4.244-4.243a8 8 0 1 1 11.314 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 1 1-6 0 3 0 0 1 6 0z" />
                         </svg>
                         Vibes
                     </button>
