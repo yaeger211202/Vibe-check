@@ -120,13 +120,32 @@ CREATE TABLE reactions (
 -- ========================
 -- NOTIFICATIONS
 -- ========================
+
 CREATE TABLE notifications (
-    notification_id   SERIAL PRIMARY KEY,
+    notification_id SERIAL PRIMARY KEY,
     user_id           INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    location_id       INT REFERENCES locations(location_id) ON DELETE CASCADE,
     notification_type VARCHAR(50) NOT NULL,
+    title             VARCHAR(120) NOT NULL,
+    message           TEXT NOT NULL,
+    event_key         VARCHAR(255),
     is_read           BOOLEAN DEFAULT FALSE,
-    created_at        TIMESTAMP NOT NULL DEFAULT NOW()
+    created_at        TIMESTAMP NOT NULL DEFAULT NOW(),
+    UNIQUE (user_id, event_key)
 );
+
+-- ========================
+-- NOTIFICATION INDEXES
+-- ========================
+
+CREATE INDEX idx_notifications_user_read
+    ON notifications(user_id, is_read);
+
+CREATE INDEX idx_notifications_created
+    ON notifications(created_at DESC);
+
+CREATE INDEX idx_notifications_location
+    ON notifications(location_id);
 
 -- ========================
 -- FRIEND CONNECTIONS
@@ -203,7 +222,6 @@ CREATE INDEX idx_notes_user_created ON notes(user_id, created_at);
 CREATE INDEX idx_notes_expires_at ON notes(expires_at) WHERE expires_at IS NOT NULL;
 CREATE INDEX idx_reactions_note ON reactions(note_id);
 CREATE INDEX idx_replies_note ON replies(note_id);
-CREATE INDEX idx_notifications_user_read ON notifications(user_id, is_read);
 
 -- Schema compatibility for existing databases that still have note categories
 ALTER TABLE notes DROP COLUMN IF EXISTS category_tag;

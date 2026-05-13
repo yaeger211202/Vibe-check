@@ -34,7 +34,7 @@ app.use((req, res, next) => {
     res.header("Access-Control-Allow-Origin", "http://localhost:5173");
     res.header("Access-Control-Allow-Credentials", "true");
     res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
-    res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+    res.header("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
 
     if (req.method === "OPTIONS") {
         return res.sendStatus(204);
@@ -93,6 +93,73 @@ function kmToMiles(distanceKm) {
 
 function normalizeCategory(value) {
     return value?.trim().toLowerCase() || "";
+}
+
+async function createNotification({
+                                      userId,
+                                      locationId = null,
+                                      notificationType,
+                                      title,
+                                      message,
+                                      eventKey,
+                                  }) {
+    try {
+        await pool.query(
+            `INSERT INTO notifications
+             (user_id, location_id, notification_type, title, message, event_key)
+             VALUES ($1, $2, $3, $4, $5, $6)
+             ON CONFLICT (user_id, event_key)
+             DO NOTHING`,
+            [
+                userId,
+                locationId,
+                notificationType,
+                title,
+                message,
+                eventKey,
+            ]
+        );
+    }
+    catch (err) {
+        console.error("Create notification error:", err);
+    }
+}
+
+async function checkAndNotifyTrendingLocation(locationId) {
+    const vibeResult = await pool.query(
+        `SELECT location_id, name, total_notes, avg_vibe_score
+         FROM location_vibe_scores
+         WHERE location_id = $1`,
+        [locationId]
+    );
+
+    if (vibeResult.rows.length === 0) return;
+
+    const location = vibeResult.rows[0];
+    const totalNotes = Number(location.total_notes);
+    const avgVibeScore = Number(location.avg_vibe_score);
+
+    const isTrending = totalNotes >= 5 && avgVibeScore >= 4.0;
+
+    if (!isTrending) return;
+
+    const usersResult = await pool.query(
+        `SELECT u.user_id
+         FROM users u
+         JOIN user_profiles up ON up.user_id = u.user_id
+         WHERE up.notifications_enabled = true`
+    );
+
+    for (const user of usersResult.rows) {
+        await createNotification({
+            userId: user.user_id,
+            locationId: location.location_id,
+            notificationType: "trending_location_nearby",
+            title: "Trending nearby",
+            message: `${location.name} is getting active right now.`,
+            eventKey: `trending_location_nearby:${location.location_id}`,
+        });
+    }
 }
 
 const categoryMatchers = {
@@ -373,7 +440,7 @@ app.get("/api/me", requireAuth, (req, res) => {
 // ========================
 
 // Mount route handlers
-app.use("/api/notes", createNotesRoutes(pool));
+app.use("/api/notes", createNotesRoutes(pool, checkAndNotifyTrendingLocation));
 app.use("/api/reactions", createReactionsRoutes(pool));
 app.use("/api/replies", createRepliesRoutes(pool));
 app.use("/api/locations", createLocationsRoutes(pool));
@@ -427,6 +494,111 @@ app.get("/api/locations/:location_id/vibe", async (req, res) => {
         return res.status(500).json({ error: "Internal server error." });
     }
 
+});
+
+// ========================
+// NOTIFICATIONS
+// ========================
+app.get("/api/notifications", requireAuth, async (req, res) => {
+    try {
+        const result = await pool.query(
+            `SELECT notification_id, location_id, notification_type, title, message,
+                    event_key, is_read, created_at
+             FROM notifications
+             WHERE user_id = $1
+             ORDER BY created_at DESC`,
+            [req.user.user_id]
+        );
+
+        res.json(result.rows);
+    }
+    catch (err) {
+        console.error("Fetch notifications error:", err);
+        res.status(500).json({ error: "Failed to fetch notifications" });
+    }
+});
+
+app.patch("/api/notifications/:notificationId/read", requireAuth, async (req, res) => {
+    try {
+        const result = await pool.query(
+            `UPDATE notifications
+             SET is_read = true
+             WHERE notification_id = $1
+               AND user_id = $2
+                 RETURNING *`,
+            [req.params.notificationId, req.user.user_id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: "Notification not found" });
+        }
+
+        res.json(result.rows[0]);
+    }
+    catch (err) {
+        console.error("Mark notification read error:", err);
+        res.status(500).json({ error: "Failed to mark notification as read" });
+    }
+});
+
+app.post("/api/test-trending/:locationId", requireAuth, async (req, res) => {
+    const { locationId } = req.params;
+
+    try {
+        const vibeResult = await pool.query(
+            `SELECT location_id, name, total_notes, avg_vibe_score
+             FROM location_vibe_scores
+             WHERE location_id = $1`,
+            [locationId]
+        );
+
+        if (vibeResult.rows.length === 0) {
+            return res.status(404).json({ error: "Location not found." });
+        }
+
+        const location = vibeResult.rows[0];
+        const totalNotes = Number(location.total_notes);
+        const avgVibeScore = Number(location.avg_vibe_score);
+
+        const isTrending = totalNotes >= 5 && avgVibeScore >= 4.0;
+
+        if (!isTrending) {
+            return res.json({
+                trending: false,
+                message: "Location is not trending.",
+                location,
+            });
+        }
+
+        const usersResult = await pool.query(
+            `SELECT u.user_id
+             FROM users u
+             JOIN user_profiles up ON up.user_id = u.user_id
+             WHERE up.notifications_enabled = true`
+        );
+
+        for (const user of usersResult.rows) {
+            await createNotification({
+                userId: user.user_id,
+                locationId: location.location_id,
+                notificationType: "trending_location_nearby",
+                title: "Trending nearby",
+                message: `${location.name} is getting active right now.`,
+                eventKey: `trending_location_nearby:${location.location_id}`,
+            });
+        }
+
+        return res.json({
+            trending: true,
+            message: "Trending notifications created.",
+            notifiedUsers: usersResult.rows.length,
+            location,
+        });
+    }
+    catch (err) {
+        console.error("Test trending notification error:", err);
+        return res.status(500).json({ error: "Failed to test trending notification." });
+    }
 });
 
 const PORT = 3000;
