@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import loginImage from "../assets/signup/background.png";
 
 export default function Signin() {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
 
     const [formData, setFormData] = useState({
         email: "",
@@ -11,11 +12,11 @@ export default function Signin() {
     });
 
     const [error, setError] = useState("");
+    const [info, setInfo] = useState("");
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         const storedUser = localStorage.getItem("user");
-
         if (storedUser) {
             navigate("/map");
         }
@@ -24,6 +25,13 @@ export default function Signin() {
     useEffect(() => {
         document.title = "Sign In | Vibe Check";
     }, []);
+
+    // Show a success banner if redirected here after email verification
+    useEffect(() => {
+        if (searchParams.get("verified") === "true") {
+            setInfo("Email verified! You can now sign in.");
+        }
+    }, [searchParams]);
 
     function handleChange(event) {
         const { name, value } = event.target;
@@ -36,6 +44,7 @@ export default function Signin() {
     async function handleSubmit(event) {
         event.preventDefault();
         setError("");
+        setInfo("");
 
         const email = formData.email.trim().toLowerCase();
         const password = formData.password;
@@ -50,7 +59,6 @@ export default function Signin() {
         try {
             const response = await fetch("/api/login", {
                 method: "POST",
-                credentials: "include",
                 headers: {
                     "Content-Type": "application/json",
                 },
@@ -164,6 +172,12 @@ export default function Signin() {
                                     className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400 text-base placeholder:text-sm"
                                 />
                             </div>
+
+                            {info && (
+                                <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+                                    {info}
+                                </div>
+                            )}
 
                             {error && (
                                 <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">

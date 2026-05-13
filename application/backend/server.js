@@ -1,13 +1,14 @@
 import dotenv from 'dotenv';
+dotenv.config();
+
 import express from 'express';
 import bcrypt from "bcrypt";
-import crypto from 'crypto';
 import pkg from 'pg';
-
 import jwt from 'jsonwebtoken';
 import cookieParser from 'cookie-parser';
+import nodemailer from 'nodemailer';
+import crypto from 'crypto';
 import { requireAuth } from './middleware/auth.js';
-import { sendVerificationEmail } from './utils/email_verification.js';
 
 import swaggerUi from "swagger-ui-express";
 import { createNotesRoutes } from './routes/notesRoutes.js';
@@ -24,8 +25,6 @@ const authCookieOptions = {
     sameSite: isProduction ? "strict" : "lax",
     maxAge: 7 * 24 * 60 * 60 * 1000,
 };
-
-dotenv.config();
 
 const app = express();
 app.use(express.json());
@@ -56,6 +55,19 @@ const pool = new Pool({
     port: process.env.DB_PORT,
 });
 
+// email transporter
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+    },
+});
+
+// ========================
+// HELPERS
+// ========================
+
 function mapScoreToVibeLevel(score) {
     if (score === null || score === undefined) return null;
 
@@ -85,6 +97,10 @@ function calculateDistanceKm(fromLat, fromLon, toLat, toLon) {
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
     return earthRadiusKm * c;
+}
+
+function kmToMiles(distanceKm) {
+    return distanceKm * 0.621371;
 }
 
 function normalizeCategory(value) {
@@ -141,11 +157,15 @@ function matchesCategoryFilter(place, requestedCategory) {
     );
 }
 
+// ========================
+// LOCATION SEARCH
+// ========================
+
 app.get("/api/search/locations", async (req, res) => {
     const query = req.query.q?.trim();
     const requestedVibeLevel = req.query.vibeLevel?.trim().toLowerCase();
     const requestedCategory = normalizeCategory(req.query.category);
-    const requestedRadiusKm = Number.parseFloat(req.query.radius);
+    const requestedRadiusMiles = Number.parseFloat(req.query.radius);
 
     if (!query) {
         return res.status(400).json({ error: "Missing search query." });
@@ -171,10 +191,14 @@ app.get("/api/search/locations", async (req, res) => {
             return res.json([]);
         }
 
+        const requestedLat = Number.parseFloat(req.query.lat);
+        const requestedLon = Number.parseFloat(req.query.lon);
+
         const searchCenter = {
-            lat: Number.parseFloat(data[0].lat),
-            lon: Number.parseFloat(data[0].lon),
+            lat: !Number.isNaN(requestedLat) ? requestedLat : Number.parseFloat(data[0].lat),
+            lon: !Number.isNaN(requestedLon) ? requestedLon : Number.parseFloat(data[0].lon),
         };
+
         const nominatimIds = data
             .map((place) => Number.parseInt(place.place_id, 10))
             .filter((placeId) => !Number.isNaN(placeId));
@@ -219,6 +243,7 @@ app.get("/api/search/locations", async (req, res) => {
                 const lat = Number.parseFloat(place.lat);
                 const lon = Number.parseFloat(place.lon);
                 const distanceKm = calculateDistanceKm(searchCenter.lat, searchCenter.lon, lat, lon);
+                const distanceMiles = kmToMiles(distanceKm);
                 const categoryTags = deriveLocationCategories(place);
 
                 return {
@@ -232,8 +257,8 @@ app.get("/api/search/locations", async (req, res) => {
                     db_id: savedLocation?.dbId ?? null,
                     vibeLevel: savedLocation?.vibeLevel ?? null,
                     avgVibeScore: savedLocation?.avgVibeScore ?? null,
-                    distance: distanceKm.toFixed(1),
-                    distanceKm,
+                    distance: distanceMiles.toFixed(1),
+                    distanceMiles,
                 };
             })
             .filter((place) => {
@@ -241,13 +266,13 @@ app.get("/api/search/locations", async (req, res) => {
                     || requestedVibeLevel === "all"
                     || place.vibeLevel === requestedVibeLevel;
                 const matchesCategory = matchesCategoryFilter(place, requestedCategory);
-                const matchesRadius = Number.isNaN(requestedRadiusKm)
-                    || requestedRadiusKm <= 0
-                    || place.distanceKm <= requestedRadiusKm;
+                const matchesRadius = Number.isNaN(requestedRadiusMiles)
+                    || requestedRadiusMiles <= 0
+                    || place.distanceMiles <= requestedRadiusMiles;
 
                 return matchesVibe && matchesCategory && matchesRadius;
             })
-            .map(({ distanceKm, ...place }) => place);
+            .map(({ distanceMiles, ...place }) => place);
 
         return res.json(results);
     }
@@ -257,58 +282,9 @@ app.get("/api/search/locations", async (req, res) => {
     }
 });
 
-
-// grants full access after email verification
-app.get("/api/verify-email", async (req, res) => {
-    const { token } = req.query;
-
-    if (!token) {
-        return res.status(400).json({ error: "Missing verification token." });
-    }
-
-    try {
-        const result = await pool.query(
-            `SELECT user_id, email_verified, verification_sent_at
-             FROM users
-             WHERE verification_token = $1`,
-            [token]
-        );
-
-        if (result.rows.length === 0) {
-            return res.status(400).json({ error: "Invalid or expired verification token." });
-        }
-
-        const user = result.rows[0];
-
-        if (user.email_verified) {
-            return res.status(200).json({ message: "Email already verified. You can log in." });
-        }
-
-        // Token expires after 24 hours
-        const sentAt = new Date(user.verification_sent_at);
-        const now = new Date();
-        const hoursDiff = (now - sentAt) / (1000 * 60 * 60);
-
-        if (hoursDiff > 24) {
-            return res.status(400).json({
-                error: "Verification link has expired. Please request a new one."
-            });
-        }
-
-        await pool.query(
-            `UPDATE users
-             SET email_verified = TRUE, verified_at = NOW(), verification_token = NULL
-             WHERE user_id = $1`,
-            [user.user_id]
-        );
-
-        return res.status(200).json({ message: "Email verified successfully. You can now log in." });
-    } catch (error) {
-        console.error("Verify email error:", error);
-        return res.status(500).json({ error: "Internal server error." });
-    }
-});
-
+// ========================
+// AUTH
+// ========================
 app.post("/api/login", async (req, res) => {
     const { email, password } = req.body;
 
@@ -338,22 +314,22 @@ app.post("/api/login", async (req, res) => {
             return res.status(401).json({ error: "Invalid email or password." });
         }
 
+        // Block login if email is not verified
+        if (!user.email_verified) {
+            return res.status(403).json({ error: "Please verify your email before signing in. Check your inbox for the verification link." });
+        }
+
         const token = jwt.sign(
-            { user_id: user.user_id, username: user.username, email_verified: user.email_verified },
+            { user_id: user.user_id, username: user.username },
             process.env.JWT_SECRET,
             { expiresIn: '7d' }
         );
 
-        res.cookie('token', token, {
-            httpOnly: true,
-            secure: true, // toggle to false when testing locally
-            sameSite: 'strict',
-            maxAge: 7 * 24 * 60 * 60 * 1000
-        });
+        res.cookie('token', token, authCookieOptions);
 
         return res.status(200).json({
             message: "Login successful.",
-            user: { user_id: user.user_id, username: user.username, email: user.email, email_verified: user.email_verified }
+            user: { user_id: user.user_id, username: user.username, email: user.email }
         });
     }
     catch (error) {
@@ -362,7 +338,6 @@ app.post("/api/login", async (req, res) => {
     }
 });
 
-// Signup
 app.post("/api/signup", async (req, res) => {
     const { username, email, password } = req.body;
 
@@ -392,21 +367,36 @@ app.post("/api/signup", async (req, res) => {
         }
 
         const passwordHash = await bcrypt.hash(password, 10);
-
-        // generate token and store it, then send verification email 
         const verificationToken = crypto.randomBytes(32).toString('hex');
 
         await pool.query(
-            `INSERT INTO users (username, email, password_hash, verification_token, verification_sent_at)
-             VALUES ($1, $2, $3, $4, NOW())`,
+            `INSERT INTO users (username, email, password_hash, email_verified, verification_token, verification_sent_at)
+             VALUES ($1, $2, $3, false, $4, NOW())`,
             [trimmedUsername, normalizedEmail, passwordHash, verificationToken]
         );
 
-        await sendVerificationEmail(normalizedEmail, verificationToken);
+        const verifyUrl = `${process.env.APP_URL}/api/verify-email?token=${verificationToken}`;
 
-        return res.status(201).json({
-            message: "Account created. Please check your email to verify your account."
+        await transporter.sendMail({
+            from: `"Vibe Check" <${process.env.EMAIL_USER}>`,
+            to: normalizedEmail,
+            subject: 'Verify your Vibe Check email',
+            html: `
+                <div style="font-family: sans-serif; max-width: 480px; margin: auto;">
+                    <h2>Welcome to Vibe Check, ${trimmedUsername}!</h2>
+                    <p>Click the button below to verify your email address and activate your account.</p>
+                    <a href="${verifyUrl}" style="display:inline-block;padding:12px 24px;background:#22c55e;color:#fff;border-radius:8px;text-decoration:none;font-weight:bold;">
+                        Verify Email
+                    </a>
+                    <p style="margin-top:16px;color:#888;font-size:13px;">
+                        If the button doesn't work, paste this link into your browser:<br/>
+                        <a href="${verifyUrl}">${verifyUrl}</a>
+                    </p>
+                </div>
+            `,
         });
+
+        return res.status(201).json({ message: "Account created. Please check your email to verify your account before signing in." });
     }
     catch (error) {
         console.error("Signup error:", error);
@@ -414,58 +404,31 @@ app.post("/api/signup", async (req, res) => {
     }
 });
 
-// Resend verification email
-app.post("/api/resend-verification", async (req, res) => {
-    const { email } = req.body;
-    const normalizedEmail = email?.trim().toLowerCase();
+app.get("/api/verify-email", async (req, res) => {
+    const { token } = req.query;
 
-    if (!normalizedEmail) {
-        return res.status(400).json({ error: "Email is required." });
+    if (!token) {
+        return res.status(400).json({ error: "Missing verification token." });
     }
 
     try {
         const result = await pool.query(
-            `SELECT user_id, email_verified, verification_sent_at
-             FROM users WHERE email = $1`,
-            [normalizedEmail]
-        );
-
-        // Don't reveal whether the email exists (security best practice)
-        if (result.rows.length === 0) {
-            return res.status(200).json({ message: "If that email exists, a new verification link has been sent." });
-        }
-
-        const user = result.rows[0];
-
-        if (user.email_verified) {
-            return res.status(400).json({ error: "This account is already verified." });
-        }
-
-        // Rate-limit: only allow resend every 5 minutes
-        if (user.verification_sent_at) {
-            const sentAt = new Date(user.verification_sent_at);
-            const minutesSince = (new Date() - sentAt) / (1000 * 60);
-            if (minutesSince < 5) {
-                return res.status(429).json({
-                    error: "Please wait a few minutes before requesting another verification email."
-                });
-            }
-        }
-
-        const newToken = crypto.randomBytes(32).toString('hex');
-
-        await pool.query(
             `UPDATE users
-             SET verification_token = $1, verification_sent_at = NOW()
-             WHERE user_id = $2`,
-            [newToken, user.user_id]
+             SET email_verified = true, verification_token = NULL, verified_at = NOW()
+             WHERE verification_token = $1
+             RETURNING user_id`,
+            [token]
         );
 
-        await sendVerificationEmail(normalizedEmail, newToken);
+        if (result.rows.length === 0) {
+            return res.status(400).json({ error: "Invalid or expired verification token." });
+        }
 
-        return res.status(200).json({ message: "A new verification email has been sent." });
-    } catch (error) {
-        console.error("Resend verification error:", error);
+        // Redirect to signin page with a success flag the frontend can read
+        return res.redirect(`${process.env.APP_URL}/signin?verified=true`);
+    }
+    catch (error) {
+        console.error("Email verification error:", error);
         return res.status(500).json({ error: "Internal server error." });
     }
 });
@@ -479,11 +442,18 @@ app.get("/api/me", requireAuth, (req, res) => {
     return res.status(200).json({ user: req.user });
 });
 
+// ========================
+// ROUTE HANDLERS
+// ========================
 
 app.use("/api/notes", createNotesRoutes(pool));
 app.use("/api/reactions", createReactionsRoutes(pool));
 app.use("/api/replies", createRepliesRoutes(pool));
 app.use("/api/locations", createLocationsRoutes(pool));
+
+// ========================
+// VIBE SCORE
+// ========================
 
 app.get("/api/locations/:location_id/vibe", async (req, res) => {
     const { location_id } = req.params;
@@ -524,8 +494,8 @@ app.get("/api/locations/:location_id/vibe", async (req, res) => {
             vibe_label,
             total_notes: parseInt(data.total_notes)
         });
-
-    } catch (error) {
+    }
+    catch (error) {
         console.error("Vibe score error:", error);
         return res.status(500).json({ error: "Internal server error." });
     }
