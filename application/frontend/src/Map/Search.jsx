@@ -1,4 +1,5 @@
 import { SEARCH_CATEGORIES, VIBE_FILTER_OPTIONS, VIBE_LEVELS } from "./constants.js";
+import { useI18n } from "../localization/I18nProvider.jsx";
 
 function SearchFilters({
                            searchQuery,
@@ -7,10 +8,12 @@ function SearchFilters({
                            setRadius,
                            vibeLevel,
                            setVibeLevel,
-                           category,
+                       category,
                            setCategory,
                            onSearch,
                        }) {
+    const { t } = useI18n();
+
     function handleKeyDown(e) {
         if (e.key === "Enter") onSearch();
     }
@@ -19,7 +22,7 @@ function SearchFilters({
         <div className="space-y-4 rounded-lg bg-white p-4 shadow-sm border border-gray-200">
             <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Search Place Name
+                    {t("search.placeName")}
                 </label>
                 <div className="flex items-center gap-2">
                     <input
@@ -27,7 +30,7 @@ function SearchFilters({
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         onKeyDown={handleKeyDown}
-                        placeholder="Search for a place..."
+                        placeholder={t("search.placeholder")}
                         className="flex-1 min-w-0 rounded-lg border border-gray-300 px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
                     <button
@@ -35,14 +38,14 @@ function SearchFilters({
                         onClick={onSearch}
                         className="shrink-0 rounded-lg bg-purple-600 px-4 py-2 text-white font-medium hover:bg-purple-700 transition-colors"
                     >
-                        Search
+                        {t("search.button")}
                     </button>
                 </div>
             </div>
 
             <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Search Radius: {radius} km
+                    {t("search.radiusLabel", { radius, unit: "mi" })}
                 </label>
                 <div className="flex items-center gap-3">
                     <input
@@ -55,7 +58,7 @@ function SearchFilters({
                         className="flex-1 h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer accent-purple-600"
                     />
                     <span className="text-sm text-gray-600 font-medium min-w-[3rem] text-right">
-                        {radius.toFixed(1)} km
+                        {radius.toFixed(1)} mi
                     </span>
                 </div>
             </div>
@@ -64,7 +67,7 @@ function SearchFilters({
             <div className="flex flex-col sm:flex-row gap-4">
                 <div className="flex-1">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Category
+                        {t("search.category")}
                     </label>
                     <select
                         value={category}
@@ -82,7 +85,7 @@ function SearchFilters({
 
             <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Vibe Level
+                    {t("search.vibeLevel")}
                 </label>
                 {/* 3 columns on mobile so buttons don't get too squished */}
                 <div className="grid grid-cols-3 sm:grid-cols-2 gap-2">
@@ -105,8 +108,8 @@ function SearchFilters({
 
             <div className="rounded-lg bg-purple-50 p-3 border border-purple-200">
                 <p className="text-xs text-gray-600 leading-relaxed">
-                    <span className="font-semibold">Active Filters:</span>{" "}
-                    Radius <span className="font-medium">{radius.toFixed(1)}km</span>{" "}
+                    <span className="font-semibold">{t("search.activeFilters")}</span>{" "}
+                    Radius <span className="font-medium">{radius.toFixed(1)}mi</span>{" "}
                     • <span className="font-medium">{category}</span>{" "}
                     • <span className="font-medium capitalize">{vibeLevel}</span>
                 </p>
@@ -122,23 +125,25 @@ function SearchResults({
                            onSelectLocation,
                            hasSearched,
                        }) {
+    const { t } = useI18n();
+
     return (
         <div className="rounded-lg bg-white shadow-sm border border-gray-200 p-4">
             <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                Results {results.length > 0 && `(${results.length})`}
+                {t("search.results")} {results.length > 0 && `(${results.length})`}
             </h3>
 
             {loading && (
                 <div className="flex items-center justify-center py-8">
                     <div className="animate-spin rounded-full h-6 w-6 border-2 border-purple-600 border-t-transparent" />
-                    <span className="ml-2 text-sm text-gray-600">Searching...</span>
+                    <span className="ml-2 text-sm text-gray-600">{t("search.searching")}</span>
                 </div>
             )}
 
             {!loading && !hasSearched && (
                 <div className="py-6 text-center text-gray-500">
                     <p className="text-sm">
-                        Use the filters above to search for places and discover vibes
+                        {t("search.emptyPrompt")}
                     </p>
                 </div>
             )}
@@ -146,7 +151,7 @@ function SearchResults({
             {!loading && hasSearched && results.length === 0 && (
                 <div className="py-6 text-center text-gray-500">
                     <p className="text-sm">
-                        No places found matching your criteria. Try adjusting the filters.
+                        {t("search.noResults")}
                     </p>
                 </div>
             )}
@@ -174,7 +179,7 @@ function SearchResults({
                                     </p>
                                     {place.distance && (
                                         <p className="text-xs text-purple-600 font-medium mt-1">
-                                            {place.distance} km away
+                                            {t("search.away", { distance: place.distance, unit: "mi" })}
                                         </p>
                                     )}
                                 </div>
