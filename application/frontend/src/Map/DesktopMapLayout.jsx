@@ -3,10 +3,13 @@ import Heatmap from "./Heatmap.jsx";
 import LocationView from "./LocationView.jsx";
 
 export default function DesktopMapLayout({
+                                             userLocation,
+                                             userLocationError,
                                              searchQuery,
                                              setSearchQuery,
                                              results,
                                              selectedLocation,
+                                             handleSelectLocation,
                                              loading,
                                              hasSearched,
                                              radius,
@@ -17,9 +20,15 @@ export default function DesktopMapLayout({
                                              setCategory,
                                              mockHeatmapData,
                                              handleSearch,
-                                             setSelectedLocation,
-                                             getMockLocationData,
+                                             handleCloseLocation,
+                                             locationData,
+                                             setLocationData,
+                                             user,
+                                             locationError,
+                                             onSaveNote,
+                                             onDeleteNote,
                                          }) {
+
     return (
         <main className="flex flex-1 min-h-0">
             <aside className="w-[420px] flex flex-col border-r border-gray-200 bg-gray-50 min-h-0">
@@ -33,9 +42,10 @@ export default function DesktopMapLayout({
                     category={category}
                     setCategory={setCategory}
                     results={results}
-                    loading={loading}
+                    loading={loading} 
+                    setLocationData={setLocationData}
                     selectedLocation={selectedLocation}
-                    onSelectLocation={setSelectedLocation}
+                    onSelectLocation={handleSelectLocation}
                     hasSearched={hasSearched}
                     onSearch={handleSearch}
                 />
@@ -46,6 +56,8 @@ export default function DesktopMapLayout({
                     <Heatmap
                         selectedLocation={selectedLocation}
                         heatmapData={mockHeatmapData}
+                        userLocation={userLocation}
+                        userLocationError={userLocationError}
                     />
                 </div>
 
@@ -53,9 +65,13 @@ export default function DesktopMapLayout({
                     <div className="w-[54rem] max-w-[65%] min-h-0 border-l border-gray-200 bg-white shadow-xl">
                         <LocationView
                             selectedLocation={selectedLocation}
-                            locationData={getMockLocationData()}
-                            onClose={() => setSelectedLocation(null)}
-                            onSubmitNote={(payload) => console.log("submit note", payload)}
+                            locationData={locationData}
+                            setLocationData={setLocationData}
+                            user={user}
+                            errorMessage={locationError}
+                            onClose={handleCloseLocation}
+                            onSubmitNote={onSaveNote}
+                            onDeleteNote={onDeleteNote}
                             onReactToNote={(noteId) => console.log("react to note", noteId)}
                             onOpenComments={(noteId) => console.log("open comments for note", noteId)}
                         />

@@ -88,22 +88,19 @@ const options = {
                 CreateNoteRequest: {
                     type: "object",
                     properties: {
-                        user_id: { type: "integer" },
                         location_id: { type: "integer" },
                         content: { type: "string", maxLength: 280 },
                         vibe_level: { type: "string", enum: vibeLevelEnum },
                         is_anonymous: { type: "boolean", default: false }
                     },
-                    required: ["user_id", "location_id", "content", "vibe_level"]
+                    required: ["location_id", "content", "vibe_level"]
                 },
                 UpdateNoteRequest: {
                     type: "object",
                     properties: {
-                        user_id: { type: "integer" },
                         content: { type: "string", maxLength: 280 },
                         vibe_level: { type: "string", enum: vibeLevelEnum }
-                    },
-                    required: ["user_id"]
+                    }
                 },
                 DeleteOwnedResourceRequest: {
                     type: "object",
