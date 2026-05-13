@@ -150,7 +150,7 @@ export default function Navbar({ user }) {
                                 )}
                             </div>
 
-                            <Link to="/profile" aria-label="Go to profile">
+                            <Link to="/profile" aria-label={t("nav.profileAria")}>
                                 <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center border border-gray-200 hover:ring-2 hover:ring-gray-300 transition cursor-pointer">
                                     <span className="text-purple-700 font-semibold text-sm">
                                         {user.username?.[0]?.toUpperCase() || "U"}
