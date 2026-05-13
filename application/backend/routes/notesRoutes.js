@@ -1,18 +1,15 @@
 import express from 'express';
-import { requireAuth } from "../middleware/auth.js";
+import { requireAuth, requireVerified } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// Middleware to pass pool to routes
 export function createNotesRoutes(pool) {
     // CREATE - Add a new note to a location
-    router.post("/", requireAuth, async (req, res) => {
-        const { location_id, content, vibe_level, is_anonymous } = req.body;
-        const user_id = req.user.user_id;
+    router.post("/", requireAuth, requireVerified, async (req, res) => {
+        const { user_id, location_id, content, vibe_level, is_anonymous } = req.body;
 
-        // Validation
-        if (!location_id || !content || !vibe_level) {
-            return res.status(400).json({ error: "Missing required fields: location_id, content, vibe_level" });
+        if (!user_id || !location_id || !content || !vibe_level) {
+            return res.status(400).json({ error: "Missing required fields: user_id, location_id, content, vibe_level" });
         }
 
         if (!["dead", "quiet", "moderate", "busy", "buzzing"].includes(vibe_level)) {
@@ -24,22 +21,16 @@ export function createNotesRoutes(pool) {
         }
 
         try {
-            // Check if user exists
             const userCheck = await pool.query("SELECT user_id FROM users WHERE user_id = $1", [user_id]);
             if (userCheck.rows.length === 0) {
                 return res.status(404).json({ error: "User not found." });
             }
 
-            // Check if location exists
-            const locationCheck = await pool.query(
-                "SELECT location_id FROM locations WHERE location_id = $1",
-                [location_id]
-            );
+            const locationCheck = await pool.query("SELECT location_id FROM locations WHERE location_id = $1", [location_id]);
             if (locationCheck.rows.length === 0) {
                 return res.status(404).json({ error: "Location not found." });
             }
 
-            // Insert the note
             const result = await pool.query(
                 `INSERT INTO notes (user_id, location_id, content, vibe_level, is_anonymous, expires_at)
                  VALUES ($1, $2, $3, $4, $5, NOW() + INTERVAL '24 hours')
@@ -58,18 +49,15 @@ export function createNotesRoutes(pool) {
         }
     });
 
-    // READ - Get all notes for a specific location
     router.get("/location/:location_id", async (req, res) => {
         const { location_id } = req.params;
 
         try {
-            // Check if location exists
             const locationCheck = await pool.query("SELECT location_id FROM locations WHERE location_id = $1", [location_id]);
             if (locationCheck.rows.length === 0) {
                 return res.status(404).json({ error: "Location not found." });
             }
 
-            // Get all non-expired notes for the location
             const result = await pool.query(
                 `SELECT 
                     n.note_id, 
@@ -106,7 +94,6 @@ export function createNotesRoutes(pool) {
         }
     });
 
-    // READ - Get a specific note by note_id
     router.get("/:note_id", async (req, res) => {
         const { note_id } = req.params;
 
@@ -146,12 +133,10 @@ export function createNotesRoutes(pool) {
         }
     });
 
-    // READ - Get all notes by a specific user
     router.get("/user/:user_id", async (req, res) => {
         const { user_id } = req.params;
 
         try {
-            // Check if user exists
             const userCheck = await pool.query("SELECT user_id FROM users WHERE user_id = $1", [user_id]);
             if (userCheck.rows.length === 0) {
                 return res.status(404).json({ error: "User not found." });
@@ -192,14 +177,12 @@ export function createNotesRoutes(pool) {
         }
     });
 
-    // UPDATE - Edit an existing note
-    router.put("/:note_id", requireAuth, async (req, res) => {
+    router.put("/:note_id", requireAuth, requireVerified, async (req, res) => {
         const { note_id } = req.params;
-        const { content, vibe_level } = req.body;
-        const user_id = req.user.user_id;
+        const { user_id, content, vibe_level } = req.body;
 
-        if (!content && !vibe_level) {
-            return res.status(400).json({ error: "At least one of (content, vibe_level) is required." });
+        if (!user_id || (!content && !vibe_level)) {
+            return res.status(400).json({ error: "user_id and at least one of (content, vibe_level) are required." });
         }
 
         if (vibe_level && !["dead", "quiet", "moderate", "busy", "buzzing"].includes(vibe_level)) {
@@ -211,9 +194,8 @@ export function createNotesRoutes(pool) {
         }
 
         try {
-            // Check if note exists and belongs to the user
             const noteCheck = await pool.query(
-                `SELECT user_id FROM notes WHERE note_id = $1`,
+                "SELECT user_id FROM notes WHERE note_id = $1",
                 [note_id]
             );
 
@@ -225,7 +207,6 @@ export function createNotesRoutes(pool) {
                 return res.status(403).json({ error: "Unauthorized: You can only edit your own notes." });
             }
 
-            // Update the note
             let updateQuery = "UPDATE notes SET ";
             const params = [];
             let paramCount = 1;
@@ -259,13 +240,15 @@ export function createNotesRoutes(pool) {
         }
     });
 
-    // DELETE - Remove a note
-    router.delete("/:note_id", requireAuth, async (req, res) => {
+    router.delete("/:note_id", requireAuth, requireVerified, async (req, res) => {
         const { note_id } = req.params;
-        const user_id = req.user.user_id;
+        const { user_id } = req.body;
+
+        if (!user_id) {
+            return res.status(400).json({ error: "user_id is required." });
+        }
 
         try {
-            // Check if note exists and belongs to the user
             const noteCheck = await pool.query(
                 "SELECT user_id FROM notes WHERE note_id = $1",
                 [note_id]
@@ -279,7 +262,6 @@ export function createNotesRoutes(pool) {
                 return res.status(403).json({ error: "Unauthorized: You can only delete your own notes." });
             }
 
-            // Delete the note (cascade will handle replies and reactions)
             await pool.query("DELETE FROM notes WHERE note_id = $1", [note_id]);
 
             return res.json({ message: "Note deleted successfully." });
