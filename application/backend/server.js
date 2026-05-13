@@ -7,7 +7,7 @@ import pkg from 'pg';
 import jwt from 'jsonwebtoken';
 import cookieParser from 'cookie-parser';
 import { requireAuth } from './middleware/auth.js';
-import { sendVerificationEmail } from './utils/email.js';
+import { sendVerificationEmail } from './utils/email_verification.js';
 
 import swaggerUi from "swagger-ui-express";
 import { createNotesRoutes } from './routes/notesRoutes.js';
