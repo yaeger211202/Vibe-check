@@ -9,7 +9,7 @@ import { requireAuth } from './middleware/auth.js';
 
 import swaggerUi from "swagger-ui-express";
 import { createNotesRoutes } from './routes/notesRoutes.js';
-import { createReactionsRoutes } from './routes/reactionsRoutes.js';
+import { createReactionsRoutes } from './routes/reactionRoutes.js';
 import { createRepliesRoutes } from './routes/repliesRoutes.js';
 import { createLocationsRoutes } from './routes/locationsRoutes.js';
 import { createUsersRoutes } from './routes/userRoutes.js';
