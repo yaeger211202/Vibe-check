@@ -16,16 +16,20 @@ export default function Signin() {
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        const storedUser = localStorage.getItem("user");
+        document.title = "Sign In | Vibe Check";
 
-        if (storedUser) {
-            navigate("/map");
-        }
+        fetch("/api/me", { credentials: "include" })
+            .then(res => {
+                if (res.ok) {
+                    // Valid session cookie exists aka already logged in, go to map
+                    navigate("/map");
+                }
+                // 401 means no valid session so you stay on signin page, do nothing
+            })
+            .catch(() => {
+                // Network error we do the same stay on signin page, do nothing
+            });
     }, []);
-
-    useEffect(() => {
-        document.title = t("signin.title");
-    }, [t]);
 
     function handleChange(event) {
         const { name, value } = event.target;
@@ -53,9 +57,7 @@ export default function Signin() {
             const response = await fetch("/api/login", {
                 method: "POST",
                 credentials: "include",
-                headers: {
-                    "Content-Type": "application/json",
-                },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, password }),
             });
 
@@ -68,11 +70,9 @@ export default function Signin() {
 
             localStorage.setItem("user", JSON.stringify(data.user));
             navigate("/map");
-        }
-        catch {
-            setError(t("signin.validation.connect"));
-        }
-        finally {
+        } catch {
+            setError("Unable to connect to the server.");
+        } finally {
             setLoading(false);
         }
     }
@@ -172,7 +172,7 @@ export default function Signin() {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full bg-green-500 text-white font-semibold px-6 py-3 rounded-xl shadow-sm hover:bg-green-600 transition disabled:opacity-60 disabled:cursor-not-allowed text-base"
+                                className="w-full bg-green-500 text-white font-semibold px-6 py-3 rounded-xl shadow-sm hover:bg-green-600 transition disabled:opacity-60 disabled:cursor-not-allowed"
                             >
                                 {loading ? t("signin.loggingIn") : t("signin.logIn")}
                             </button>
