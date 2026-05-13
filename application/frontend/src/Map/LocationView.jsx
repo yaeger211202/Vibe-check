@@ -2,9 +2,12 @@ import { useEffect, useMemo, useState } from "react";
 import {
     DEFAULT_CURRENT_VIBE,
     NOTE_MAX_LENGTH,
+    NOTE_CATEGORY_OPTIONS,
     VIBE_OPTIONS,
     VIBE_STYLES,
 } from "./constants.js";
+import { addReaction, getReactionsByNote, removeReaction } from "../api/reactions.js";
+import { createReply, deleteReply, getRepliesByNote } from "../api/replies.js";
 
 function formatLocationTitle(location) {
     const name = location?.name?.trim();
@@ -38,6 +41,24 @@ function formatRemainingTime(expiresAt, now) {
     return `Expires in ${Math.floor(remainingMs / dayMs)}d`;
 }
 
+function formatElapsedTime(timestamp, now) {
+    if (!timestamp) return "";
+
+    const time = new Date(timestamp).getTime();
+    const elapsedMs = now - time;
+
+    if (Number.isNaN(time) || elapsedMs < 0) return "";
+
+    const minuteMs = 60 * 1000;
+    const hourMs = 60 * minuteMs;
+    const dayMs = 24 * hourMs;
+
+    if (elapsedMs < minuteMs) return "Just now";
+    if (elapsedMs < hourMs) return `${Math.floor(elapsedMs / minuteMs)}m ago`;
+    if (elapsedMs < dayMs) return `${Math.floor(elapsedMs / hourMs)}h ago`;
+    return `${Math.floor(elapsedMs / dayMs)}d ago`;
+}
+
 export default function LocationView({
                                          selectedLocation,
                                          locationData,
@@ -47,10 +68,11 @@ export default function LocationView({
                                          onClose,
                                          onSubmitNote,
                                          onDeleteNote,
-                                         onReactToNote,
-                                         onOpenComments,
-                                     }) {
+                                     onReactToNote,
+                                     onOpenComments,
+                                 }) {
     const [selectedVibe, setSelectedVibe] = useState(null);
+    const [selectedCategory, setSelectedCategory] = useState("");
     const [isAnonymous, setIsAnonymous] = useState(false);
     const [noteText, setNoteText] = useState("");
     const [visibleNoteCount, setVisibleNoteCount] = useState(4);
@@ -59,6 +81,9 @@ export default function LocationView({
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [deletingNoteId, setDeletingNoteId] = useState(null);
     const [currentTime, setCurrentTime] = useState(() => Date.now());
+    const [openNoteId, setOpenNoteId] = useState(null);
+    const [noteThreads, setNoteThreads] = useState({});
+    const [threadError, setThreadError] = useState("");
 
     const title = formatLocationTitle(selectedLocation);
 
@@ -112,8 +137,12 @@ export default function LocationView({
         setEditingNoteId(null);
         setSubmitError("");
         setSelectedVibe(null);
+        setSelectedCategory("");
         setIsAnonymous(false);
         setNoteText("");
+        setOpenNoteId(null);
+        setNoteThreads({});
+        setThreadError("");
     }, [selectedLocation?.db_id, selectedLocation?.id]);
 
     const canSubmit =
@@ -122,6 +151,7 @@ export default function LocationView({
     function beginEditNote(note) {
         setEditingNoteId(note.id);
         setSelectedVibe(note.vibe);
+        setSelectedCategory(note.category && note.category !== "na" ? note.category : "");
         setIsAnonymous(Boolean(note.isAnonymous));
         setNoteText(note.text || "");
         setSubmitError("");
@@ -130,6 +160,7 @@ export default function LocationView({
     function resetComposer() {
         setEditingNoteId(null);
         setSelectedVibe(null);
+        setSelectedCategory("");
         setIsAnonymous(false);
         setNoteText("");
     }
@@ -141,6 +172,7 @@ export default function LocationView({
         const payload = {
             noteId: editingNoteId,
             vibe: selectedVibe,
+            category: selectedCategory,
             text: noteText.trim(),
             anonymous: isAnonymous,
         };
@@ -154,6 +186,201 @@ export default function LocationView({
             setSubmitError(error.message || "Unable to save note.");
         } finally {
             setIsSubmitting(false);
+        }
+    }
+
+    async function loadThread(noteId) {
+        const [reactionsData, repliesData] = await Promise.all([
+            getReactionsByNote(noteId),
+            getRepliesByNote(noteId),
+        ]);
+
+        const nextThread = {
+            reactions: reactionsData.reactions.map((reaction) => ({
+                id: reaction.reaction_id,
+                userId: reaction.user_id,
+                username: reaction.username,
+                createdAt: reaction.created_at,
+            })),
+            replies: repliesData.replies.map((reply) => ({
+                id: reply.reply_id,
+                noteId: reply.note_id,
+                userId: reply.user_id,
+                username: reply.username,
+                text: reply.content,
+                createdAt: reply.created_at,
+            })),
+            replyText: noteThreads[noteId]?.replyText || "",
+        };
+
+        setNoteThreads((prev) => ({
+            ...prev,
+            [noteId]: nextThread,
+        }));
+
+        return nextThread;
+    }
+
+    async function toggleThread(noteId) {
+        if (openNoteId === noteId) {
+            setOpenNoteId(null);
+            return;
+        }
+
+        try {
+            setThreadError("");
+            await loadThread(noteId);
+            setOpenNoteId(noteId);
+        } catch (error) {
+            setThreadError(error.message || "Unable to load note activity.");
+        }
+    }
+
+    function setReplyText(noteId, value) {
+        setNoteThreads((prev) => ({
+            ...prev,
+            [noteId]: {
+                reactions: prev[noteId]?.reactions || [],
+                replies: prev[noteId]?.replies || [],
+                replyText: value,
+            },
+        }));
+    }
+
+    async function handleReactionToggle(note) {
+        if (!user?.user_id) {
+            setThreadError("Sign in to react to notes.");
+            return;
+        }
+
+        if (note.userId === user.user_id) {
+            setThreadError("You cannot react to your own note.");
+            return;
+        }
+
+        try {
+            setThreadError("");
+            const thread = noteThreads[note.id] || await loadThread(note.id);
+            const existingReaction = thread.reactions.find((reaction) => reaction.userId === user.user_id);
+
+            if (existingReaction) {
+                await removeReaction(existingReaction.id);
+                const nextReactions = thread.reactions.filter((reaction) => reaction.id !== existingReaction.id);
+                setNoteThreads((prev) => ({
+                    ...prev,
+                    [note.id]: {
+                        ...prev[note.id],
+                        reactions: nextReactions,
+                    },
+                }));
+                setLocationData((prev) => ({
+                    ...prev,
+                    notes: prev.notes.map((entry) =>
+                        entry.id === note.id
+                            ? { ...entry, reactionCount: Math.max(0, (entry.reactionCount ?? 0) - 1) }
+                            : entry
+                    ),
+                }));
+                return;
+            }
+
+            const data = await addReaction(note.id);
+            const createdReaction = {
+                id: data.reaction.reaction_id,
+                userId: data.reaction.user_id,
+                username: user.username,
+                createdAt: data.reaction.created_at,
+            };
+            const nextReactions = [...thread.reactions, createdReaction];
+
+            setNoteThreads((prev) => ({
+                ...prev,
+                [note.id]: {
+                    ...prev[note.id],
+                    reactions: nextReactions,
+                },
+            }));
+            setLocationData((prev) => ({
+                ...prev,
+                notes: prev.notes.map((entry) =>
+                    entry.id === note.id
+                        ? { ...entry, reactionCount: (entry.reactionCount ?? 0) + 1 }
+                        : entry
+                ),
+            }));
+        } catch (error) {
+            setThreadError(error.message || "Unable to update reaction.");
+        }
+    }
+
+    async function handleReplySubmit(noteId) {
+        const replyText = noteThreads[noteId]?.replyText?.trim();
+        if (!replyText) return;
+
+        if (!user?.user_id) {
+            setThreadError("Sign in to reply to notes.");
+            return;
+        }
+
+        try {
+            setThreadError("");
+            const data = await createReply({
+                note_id: noteId,
+                content: replyText,
+                is_anonymous: false,
+            });
+
+            const createdReply = {
+                id: data.reply.reply_id,
+                noteId: data.reply.note_id,
+                userId: data.reply.user_id,
+                username: user.username,
+                text: data.reply.content,
+                createdAt: data.reply.created_at,
+            };
+
+            setNoteThreads((prev) => ({
+                ...prev,
+                [noteId]: {
+                    reactions: prev[noteId]?.reactions || [],
+                    replies: [...(prev[noteId]?.replies || []), createdReply],
+                    replyText: "",
+                },
+            }));
+            setLocationData((prev) => ({
+                ...prev,
+                notes: prev.notes.map((entry) =>
+                    entry.id === noteId
+                        ? { ...entry, commentCount: (entry.commentCount ?? 0) + 1 }
+                        : entry
+                ),
+            }));
+        } catch (error) {
+            setThreadError(error.message || "Unable to add reply.");
+        }
+    }
+
+    async function handleReplyDelete(noteId, replyId) {
+        try {
+            setThreadError("");
+            await deleteReply(replyId);
+            setNoteThreads((prev) => ({
+                ...prev,
+                [noteId]: {
+                    ...prev[noteId],
+                    replies: (prev[noteId]?.replies || []).filter((reply) => reply.id !== replyId),
+                },
+            }));
+            setLocationData((prev) => ({
+                ...prev,
+                notes: prev.notes.map((entry) =>
+                    entry.id === noteId
+                        ? { ...entry, commentCount: Math.max(0, (entry.commentCount ?? 0) - 1) }
+                        : entry
+                ),
+            }));
+        } catch (error) {
+            setThreadError(error.message || "Unable to delete reply.");
         }
     }
 
@@ -251,6 +478,24 @@ export default function LocationView({
                             })}
                         </div>
 
+                        <div className="mt-4">
+                            <label className="mb-2 block text-sm font-medium text-gray-700">
+                                Category
+                            </label>
+                            <select
+                                value={selectedCategory}
+                                onChange={(e) => setSelectedCategory(e.target.value)}
+                                className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-base text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            >
+                                <option value="">Select a category</option>
+                                {NOTE_CATEGORY_OPTIONS.map((categoryOption) => (
+                                    <option key={categoryOption} value={categoryOption}>
+                                        {categoryOption}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
                         <div className="mt-4 flex flex-col sm:flex-row gap-3">
                             <div className="flex-1 rounded-2xl border border-gray-300 bg-white p-4">
                                 <textarea
@@ -334,6 +579,12 @@ export default function LocationView({
                             </div>
                         ) : null}
 
+                        {threadError ? (
+                            <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                                {threadError}
+                            </div>
+                        ) : null}
+
                         {notes.length === 0 ? (
                             <div className="rounded-2xl border border-dashed border-gray-300 bg-gray-50 p-8 text-center">
                                 <p className="text-base font-medium text-gray-700">
@@ -384,6 +635,11 @@ export default function LocationView({
                                                     <span className="rounded-full border border-purple-200 bg-purple-50 px-3 py-1 text-xs font-medium text-purple-700">
                                                         {note.locationName}
                                                     </span>
+                                                    {note.category && note.category !== "na" ? (
+                                                        <span className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-medium text-gray-700">
+                                                            {note.category}
+                                                        </span>
+                                                    ) : null}
                                                 </div>
                                             ) : null}
 
@@ -394,21 +650,33 @@ export default function LocationView({
                                             <div className="mt-3 flex flex-wrap gap-2">
                                                 <button
                                                     type="button"
-                                                    onClick={() => onReactToNote?.(note.id)}
+                                                    onClick={() => toggleThread(note.id)}
                                                     className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-sm text-gray-600 transition hover:bg-gray-100"
-                                                    aria-label={`React to note by ${note.username || note.displayName || "anonymous user"}`}
+                                                    aria-label={`View reactions for note by ${note.username || note.displayName || "anonymous user"}`}
                                                 >
-                                                    👍 {note.reactionCount ?? 0}
+                                                    Reactions {note.reactionCount ?? 0}
                                                 </button>
 
                                                 <button
                                                     type="button"
-                                                    onClick={() => onOpenComments?.(note.id)}
+                                                    onClick={() => toggleThread(note.id)}
                                                     className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-sm text-gray-600 transition hover:bg-gray-100"
                                                     aria-label={`View comments for note by ${note.username || note.displayName || "anonymous user"}`}
                                                 >
-                                                    💬 {note.commentCount ?? 0}
+                                                    Replies {note.commentCount ?? 0}
                                                 </button>
+
+                                                {note.userId !== user?.user_id ? (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleReactionToggle(note)}
+                                                        className="rounded-full border border-green-200 bg-green-50 px-3 py-1 text-sm text-green-700 transition hover:bg-green-100"
+                                                    >
+                                                        {(noteThreads[note.id]?.reactions || []).some((reaction) => reaction.userId === user?.user_id)
+                                                            ? "Remove reaction"
+                                                            : "React"}
+                                                    </button>
+                                                ) : null}
 
                                                 {note.userId === user?.user_id ? (
                                                     <>
@@ -434,6 +702,92 @@ export default function LocationView({
                                                     </>
                                                 ) : null}
                                             </div>
+
+                                            {openNoteId === note.id ? (
+                                                <div className="mt-4 space-y-4 rounded-2xl border border-gray-100 bg-gray-50 p-4">
+                                                    <div>
+                                                        <h4 className="text-sm font-semibold text-gray-900">
+                                                            Reactions
+                                                        </h4>
+                                                        {(noteThreads[note.id]?.reactions || []).length === 0 ? (
+                                                            <p className="mt-2 text-sm text-gray-500">No reactions yet.</p>
+                                                        ) : (
+                                                            <div className="mt-2 flex flex-wrap gap-2">
+                                                                {(noteThreads[note.id]?.reactions || []).map((reaction) => (
+                                                                    <span
+                                                                        key={reaction.id}
+                                                                        className="rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-medium text-gray-700"
+                                                                    >
+                                                                        {reaction.username}
+                                                                    </span>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                    </div>
+
+                                                    <div>
+                                                        <h4 className="text-sm font-semibold text-gray-900">
+                                                            Replies
+                                                        </h4>
+                                                        <div className="mt-2 space-y-3">
+                                                            {(noteThreads[note.id]?.replies || []).length === 0 ? (
+                                                                <p className="text-sm text-gray-500">No replies yet.</p>
+                                                            ) : (
+                                                                (noteThreads[note.id]?.replies || []).map((reply) => (
+                                                                    <div
+                                                                        key={reply.id}
+                                                                        className="rounded-xl border border-gray-200 bg-white px-4 py-3"
+                                                                    >
+                                                                        <div className="flex items-start justify-between gap-3">
+                                                                            <div>
+                                                                                <p className="text-sm font-semibold text-gray-900">
+                                                                                    {reply.username}
+                                                                                </p>
+                                                                                <p className="text-xs text-gray-500">
+                                                                                    {formatElapsedTime(reply.createdAt, currentTime)}
+                                                                                </p>
+                                                                            </div>
+                                                                            {reply.userId === user?.user_id ? (
+                                                                                <button
+                                                                                    type="button"
+                                                                                    onClick={() => handleReplyDelete(note.id, reply.id)}
+                                                                                    className="text-xs font-medium text-red-600 transition hover:text-red-700"
+                                                                                >
+                                                                                    Delete
+                                                                                </button>
+                                                                            ) : null}
+                                                                        </div>
+                                                                        <p className="mt-2 text-sm text-gray-800">
+                                                                            {reply.text}
+                                                                        </p>
+                                                                    </div>
+                                                                ))
+                                                            )}
+                                                        </div>
+                                                    </div>
+
+                                                    {note.userId !== user?.user_id ? (
+                                                        <div className="space-y-2">
+                                                            <textarea
+                                                                rows="3"
+                                                                value={noteThreads[note.id]?.replyText || ""}
+                                                                onChange={(event) => setReplyText(note.id, event.target.value)}
+                                                                placeholder="Write a reply..."
+                                                                className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                                            />
+                                                            <div className="flex justify-end">
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => handleReplySubmit(note.id)}
+                                                                    className="rounded-full bg-purple-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-purple-700"
+                                                                >
+                                                                    Reply
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    ) : null}
+                                                </div>
+                                            ) : null}
                                         </article>
                                     ))}
                                 </div>

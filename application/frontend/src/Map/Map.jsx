@@ -281,6 +281,7 @@ export default function Map() {
             const data = await updateNote(payload.noteId, {
                 content: payload.text,
                 vibe_level: payload.vibe,
+                category_tag: payload.category || "na",
             });
             savedNote = mapApiNote({
                 ...data.note,
@@ -313,6 +314,7 @@ export default function Map() {
 
         const data = await createNote({
             location_id: selectedLocation.db_id,
+            category_tag: payload.category || "na",
             content: payload.text,
             vibe_level: payload.vibe,
             is_anonymous: payload.anonymous,
