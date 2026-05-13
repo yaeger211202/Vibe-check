@@ -10,6 +10,7 @@ import { requireAuth } from './middleware/auth.js';
 import swaggerUi from "swagger-ui-express";
 import { createNotesRoutes } from './routes/notesRoutes.js';
 import { createReactionsRoutes } from './routes/reactionsRoutes.js';
+import { createRepliesRoutes } from './routes/repliesRoutes.js';
 import { createLocationsRoutes } from './routes/locationsRoutes.js';
 import swaggerSpec from "./docs/openapi.js";
 
@@ -364,6 +365,7 @@ app.get("/api/me", requireAuth, (req, res) => {
 // Mount route handlers
 app.use("/api/notes", createNotesRoutes(pool));
 app.use("/api/reactions", createReactionsRoutes(pool));
+app.use("/api/replies", createRepliesRoutes(pool));
 app.use("/api/locations", createLocationsRoutes(pool));
 
 // ========================

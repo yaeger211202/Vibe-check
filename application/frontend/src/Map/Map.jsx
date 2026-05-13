@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import Navbar from "../components/Navbar.jsx";
 import DesktopMapLayout from "./DesktopMapLayout.jsx";
@@ -72,6 +72,7 @@ export default function Map() {
 
     const [locationData, setLocationData] = useState(null);
     const [locationError, setLocationError] = useState("");
+    const latestLocationRequestRef = useRef(null);
 
     const mockHeatmapData = [
         // SFSU / Stonestown / Parkmerced
@@ -207,6 +208,8 @@ export default function Map() {
     }
 
     async function loadLocationData(placeWithDbId) {
+        latestLocationRequestRef.current = placeWithDbId.db_id;
+
         const [notesData, vibeData, locationDetails] = await Promise.all([
             getNotesByLocation(placeWithDbId.db_id),
             getLocationVibe(placeWithDbId.db_id).catch(() => null),
@@ -226,13 +229,11 @@ export default function Map() {
             notes: notesData.notes.map((note) => mapApiNote(note, placeWithDbId)),
         };
 
-        setLocationData((prev) => {
-            if (getLocationIdentity(selectedLocation) !== placeWithDbId.db_id) {
-                return prev;
-            }
-
+        if (latestLocationRequestRef.current !== placeWithDbId.db_id) {
             return nextLocationData;
-        });
+        }
+
+        setLocationData(nextLocationData);
 
         return nextLocationData;
     }
@@ -260,6 +261,7 @@ export default function Map() {
     }
 
     function handleCloseLocation() {
+        latestLocationRequestRef.current = null;
         setSelectedLocation(null);
         setLocationData(null);
         setLocationError("");
@@ -281,6 +283,7 @@ export default function Map() {
             const data = await updateNote(payload.noteId, {
                 content: payload.text,
                 vibe_level: payload.vibe,
+                category_tag: payload.category || "na",
             });
             savedNote = mapApiNote({
                 ...data.note,
@@ -313,6 +316,7 @@ export default function Map() {
 
         const data = await createNote({
             location_id: selectedLocation.db_id,
+            category_tag: payload.category || "na",
             content: payload.text,
             vibe_level: payload.vibe,
             is_anonymous: payload.anonymous,
