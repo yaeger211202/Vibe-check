@@ -48,11 +48,11 @@ export const VIBE_OPTIONS = [
 ];
 
 export const VIBE_STYLES = {
-    [VIBE_LEVELS.dead]: "bg-gray-300 text-gray-900 border-gray-500",
-    [VIBE_LEVELS.quiet]: "bg-green-100 text-green-700 border-green-300",
-    [VIBE_LEVELS.moderate]: "bg-yellow-100 text-yellow-800 border-yellow-400",
-    [VIBE_LEVELS.busy]: "bg-red-100 text-red-700 border-red-300",
-    [VIBE_LEVELS.buzzing]: "bg-pink-100 text-pink-700 border-pink-300",
+    [VIBE_LEVELS.dead]: "bg-slate-100 text-slate-800 border-slate-300",
+    [VIBE_LEVELS.quiet]: "bg-green-400 text-white border-green-500",
+    [VIBE_LEVELS.moderate]: "bg-yellow-300 text-black border-yellow-400",
+    [VIBE_LEVELS.busy]: "bg-pink-400 text-white border-pink-500",
+    [VIBE_LEVELS.buzzing]: "bg-red-500 text-white border-red-600",
 };
 
 export const NOTE_MAX_LENGTH = 280;
