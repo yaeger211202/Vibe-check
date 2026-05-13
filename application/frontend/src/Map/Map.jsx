@@ -51,10 +51,6 @@ function mapVibeScoreToPercent(score) {
     return Math.max(0, Math.min(100, (score / 5) * 100));
 }
 
-function getLocationIdentity(location) {
-    return location?.db_id ?? location?.id ?? null;
-}
-
 export default function Map() {
     const [searchQuery, setSearchQuery] = useState("");
     const [results, setResults] = useState([]);
@@ -67,12 +63,15 @@ export default function Map() {
     const [vibeLevel, setVibeLevel] = useState(DEFAULT_VIBE_LEVEL);
     const [category, setCategory] = useState(DEFAULT_CATEGORY);
 
+
     const [mobileTab, setMobileTab] = useState("map");
     const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
 
     const [locationData, setLocationData] = useState(null);
     const [locationError, setLocationError] = useState("");
     const latestLocationRequestRef = useRef(null);
+    const [userLocation, setUserLocation] = useState(null);
+    const [userLocationError, setUserLocationError] = useState("");
 
     const mockHeatmapData = [
         // SFSU / Stonestown / Parkmerced
@@ -167,6 +166,32 @@ export default function Map() {
     }, []);
 
     useEffect(() => {
+        if (!navigator.geolocation) {
+            setUserLocationError("Location services are not supported by this browser.");
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                setUserLocation({
+                    lat: position.coords.latitude,
+                    lon: position.coords.longitude,
+                });
+                setUserLocationError("");
+            },
+            (error) => {
+                console.error("Location permission error:", error);
+                setUserLocationError("Location permission denied or unavailable.");
+            },
+            {
+                enableHighAccuracy: false,
+                timeout: 10000,
+                maximumAge: 60000,
+            }
+        );
+    }, []);
+
+    useEffect(() => {
         function handleResize() {
             setIsMobile(window.innerWidth < 768);
         }
@@ -192,6 +217,11 @@ export default function Map() {
                 vibeLevel,
                 category: category === DEFAULT_CATEGORY ? "" : category,
             });
+
+            if (userLocation) {
+                params.set("lat", userLocation.lat.toString());
+                params.set("lon", userLocation.lon.toString());
+            }
 
             const data = await searchLocations(params);
             setLocationError("");
@@ -372,6 +402,8 @@ export default function Map() {
     }
 
     const sharedProps = {
+        userLocation,
+        userLocationError,
         searchQuery,
         setSearchQuery,
         results,

@@ -17,6 +17,7 @@ import { createRepliesRoutes } from './routes/repliesRoutes.js';
 import { createLocationsRoutes } from './routes/locationsRoutes.js';
 import swaggerSpec from "./docs/openapi.js";
 
+
 const { Pool } = pkg;
 const isProduction = process.env.NODE_ENV === "production";
 const authCookieOptions = {
@@ -282,9 +283,6 @@ app.get("/api/search/locations", async (req, res) => {
     }
 });
 
-// ========================
-// AUTH
-// ========================
 app.post("/api/login", async (req, res) => {
     const { email, password } = req.body;
 
@@ -296,7 +294,7 @@ app.post("/api/login", async (req, res) => {
 
     try {
         const result = await pool.query(
-            `SELECT user_id, username, email, password_hash, email_verified
+            `SELECT user_id, username, email, password_hash
              FROM users
              WHERE email = $1`,
             [normalizedEmail]
@@ -436,7 +434,7 @@ app.get("/api/verify-email", async (req, res) => {
 app.post("/api/logout", requireAuth, async (req, res) => {
     res.clearCookie('token', authCookieOptions);
     return res.status(200).json({ message: "Logged out successfully." });
-});
+  });
 
 app.get("/api/me", requireAuth, (req, res) => {
     return res.status(200).json({ user: req.user });
@@ -446,15 +444,15 @@ app.get("/api/me", requireAuth, (req, res) => {
 // ROUTE HANDLERS
 // ========================
 
+// Mount route handlers
 app.use("/api/notes", createNotesRoutes(pool));
 app.use("/api/reactions", createReactionsRoutes(pool));
 app.use("/api/replies", createRepliesRoutes(pool));
 app.use("/api/locations", createLocationsRoutes(pool));
 
 // ========================
-// VIBE SCORE
+// VIBE SCORE 
 // ========================
-
 app.get("/api/locations/:location_id/vibe", async (req, res) => {
     const { location_id } = req.params;
 
@@ -499,6 +497,7 @@ app.get("/api/locations/:location_id/vibe", async (req, res) => {
         console.error("Vibe score error:", error);
         return res.status(500).json({ error: "Internal server error." });
     }
+
 });
 
 const PORT = 3000;

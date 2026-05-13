@@ -42,7 +42,7 @@ function SearchFilters({
 
             <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Search Radius: {radius} km
+                    Search Radius: {radius} mi
                 </label>
                 <div className="flex items-center gap-3">
                     <input
@@ -55,7 +55,7 @@ function SearchFilters({
                         className="flex-1 h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer accent-purple-600"
                     />
                     <span className="text-sm text-gray-600 font-medium min-w-[3rem] text-right">
-                        {radius.toFixed(1)} km
+                        {radius.toFixed(1)} mi
                     </span>
                 </div>
             </div>
@@ -106,7 +106,7 @@ function SearchFilters({
             <div className="rounded-lg bg-purple-50 p-3 border border-purple-200">
                 <p className="text-xs text-gray-600 leading-relaxed">
                     <span className="font-semibold">Active Filters:</span>{" "}
-                    Radius <span className="font-medium">{radius.toFixed(1)}km</span>{" "}
+                    Radius <span className="font-medium">{radius.toFixed(1)}mi</span>{" "}
                     • <span className="font-medium">{category}</span>{" "}
                     • <span className="font-medium capitalize">{vibeLevel}</span>
                 </p>
@@ -174,7 +174,7 @@ function SearchResults({
                                     </p>
                                     {place.distance && (
                                         <p className="text-xs text-purple-600 font-medium mt-1">
-                                            {place.distance} km away
+                                            {place.distance} mi away
                                         </p>
                                     )}
                                 </div>

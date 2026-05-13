@@ -3,6 +3,8 @@ import Heatmap from "./Heatmap.jsx";
 import LocationView from "./LocationView.jsx";
 
 export default function DesktopMapLayout({
+                                             userLocation,
+                                             userLocationError,
                                              searchQuery,
                                              setSearchQuery,
                                              results,
@@ -39,7 +41,7 @@ export default function DesktopMapLayout({
                     category={category}
                     setCategory={setCategory}
                     results={results}
-                    loading={loading} 
+                    loading={loading}
                     setLocationData={setLocationData}
                     selectedLocation={selectedLocation}
                     onSelectLocation={handleSelectLocation}
@@ -53,6 +55,8 @@ export default function DesktopMapLayout({
                     <Heatmap
                         selectedLocation={selectedLocation}
                         heatmapData={mockHeatmapData}
+                        userLocation={userLocation}
+                        userLocationError={userLocationError}
                     />
                 </div>
 
