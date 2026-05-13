@@ -5,10 +5,21 @@
 http://localhost:3000
 ```
 
+## Swagger UI
+Interactive API documentation is available at:
+```
+http://localhost:3000/api/docs
+```
+
+Raw OpenAPI JSON is available at:
+```
+http://localhost:3000/api/docs.json
+```
+
 ---
 
 ## Authentication
-Currently, no authentication middleware is implemented. Pass `user_id` in request body for operations that require it.
+Authentication is implemented with the session cookie set at login. For note create, update, and delete operations, the authenticated user is taken from the request cookie, not from `user_id` in the request body.
 
 ---
 
@@ -22,7 +33,6 @@ Create a new note for a location.
 **Request Body:**
 ```json
 {
-  "user_id": 1,
   "location_id": 5,
   "content": "This place is packed right now!",
   "vibe_level": "busy",
@@ -31,7 +41,6 @@ Create a new note for a location.
 ```
 
 **Required Fields:**
-- `user_id` (integer): ID of the user creating the note
 - `location_id` (integer): ID of the location
 - `content` (string): Note text (max 280 characters)
 - `vibe_level` (string): One of `dead`, `quiet`, `moderate`, `busy`, `buzzing`
@@ -166,14 +175,10 @@ Update content or vibe_level of an existing note.
 **Request Body:**
 ```json
 {
-  "user_id": 1,
   "content": "Updated note content",
   "vibe_level": "moderate"
 }
 ```
-
-**Required Fields:**
-- `user_id` (integer): Must match the note creator
 
 **Optional Fields:**
 - `content` (string): New note text (max 280 characters)
@@ -215,15 +220,7 @@ Delete a note.
 **Parameters:**
 - `note_id` (path): ID of the note
 
-**Request Body:**
-```json
-{
-  "user_id": 1
-}
-```
-
-**Required Fields:**
-- `user_id` (integer): Must match the note creator
+**Authentication:** The logged-in user must own the note.
 
 **Response (200 OK):**
 ```json
@@ -588,5 +585,3 @@ curl -X DELETE http://localhost:3000/api/notes/42 \
 - [ ] Add friend/follow endpoints
 - [ ] Add badges/achievements system
 - [ ] Add heatmap data aggregation endpoints
-
-

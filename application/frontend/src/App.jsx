@@ -7,7 +7,6 @@ import Signout from "./auth/Signout.jsx";
 import OurTeam from "./OurTeam.jsx";
 import Profile from "./Profile.jsx";
 
-
 export default function App() {
     return (
         <Routes>
@@ -18,6 +17,7 @@ export default function App() {
             <Route path="/signout" element={<Signout />} />
             <Route path="/team" element={<OurTeam />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/profile/:userId" element={<Profile />} />
         </Routes>
     );
 }

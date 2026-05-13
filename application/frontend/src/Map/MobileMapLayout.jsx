@@ -3,6 +3,8 @@ import Heatmap from "./Heatmap.jsx";
 import LocationView from "./LocationView.jsx";
 
 export default function MobileMapLayout({
+                                            userLocation,
+                                            userLocationError,
                                             searchQuery,
                                             setSearchQuery,
                                             results,
@@ -21,7 +23,12 @@ export default function MobileMapLayout({
                                             handleCloseLocation,
                                             mobileTab,
                                             setMobileTab,
-                                            getMockLocationData,
+                                            locationData,
+                                            setLocationData,
+                                            user,
+                                            locationError,
+                                            onSaveNote,
+                                            onDeleteNote,
                                         }) {
     return (
         <main className="flex flex-1 flex-col min-h-0">
@@ -39,6 +46,7 @@ export default function MobileMapLayout({
                         results={results}
                         loading={loading}
                         selectedLocation={selectedLocation}
+                        setLocationData={setLocationData}
                         onSelectLocation={handleSelectLocation}
                         hasSearched={hasSearched}
                         onSearch={handleSearch}
@@ -50,6 +58,8 @@ export default function MobileMapLayout({
                         <Heatmap
                             selectedLocation={selectedLocation}
                             heatmapData={mockHeatmapData}
+                            userLocation={userLocation}
+                            userLocationError={userLocationError}
                         />
                     </div>
                 )}
@@ -58,9 +68,13 @@ export default function MobileMapLayout({
                     <div className={`h-full bg-white overflow-y-auto ${mobileTab === "location" ? "block" : "hidden"}`}>
                         <LocationView
                             selectedLocation={selectedLocation}
-                            locationData={getMockLocationData()}
+                            locationData={locationData}
+                            setLocationData={setLocationData}
+                            user={user}
+                            errorMessage={locationError}
                             onClose={handleCloseLocation}
-                            onSubmitNote={(payload) => console.log("submit note", payload)}
+                            onSubmitNote={onSaveNote}
+                            onDeleteNote={onDeleteNote}
                             onReactToNote={(noteId) => console.log("react to note", noteId)}
                             onOpenComments={(noteId) => console.log("open comments for note", noteId)}
                         />
@@ -116,7 +130,7 @@ export default function MobileMapLayout({
                     >
                         <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a2 2 0 0 1-2.827 0l-4.244-4.243a8 8 0 1 1 11.314 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 1 1-6 0 3 0 0 1 6 0z" />
                         </svg>
                         Vibes
                     </button>
