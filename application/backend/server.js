@@ -1,13 +1,11 @@
 import dotenv from 'dotenv';
 import express from 'express';
 import bcrypt from "bcrypt";
-import crypto from 'crypto';
 import pkg from 'pg';
 
 import jwt from 'jsonwebtoken';
 import cookieParser from 'cookie-parser';
 import { requireAuth } from './middleware/auth.js';
-import { sendVerificationEmail } from './utils/email_verification.js';
 
 import swaggerUi from "swagger-ui-express";
 import { createNotesRoutes } from './routes/notesRoutes.js';
@@ -15,6 +13,7 @@ import { createReactionsRoutes } from './routes/reactionsRoutes.js';
 import { createRepliesRoutes } from './routes/repliesRoutes.js';
 import { createLocationsRoutes } from './routes/locationsRoutes.js';
 import swaggerSpec from "./docs/openapi.js";
+
 
 const { Pool } = pkg;
 const isProduction = process.env.NODE_ENV === "production";
@@ -56,7 +55,6 @@ const pool = new Pool({
     port: process.env.DB_PORT,
 });
 
-
 function mapScoreToVibeLevel(score) {
     if (score === null || score === undefined) return null;
 
@@ -86,18 +84,6 @@ function calculateDistanceKm(fromLat, fromLon, toLat, toLon) {
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
     return earthRadiusKm * c;
-}
-
-function createViewbox(lat, lon, radiusKm) {
-    const latDelta = radiusKm / 111;
-    const lonDelta = radiusKm / (111 * Math.cos(toRadians(lat)));
-
-    const left = lon - lonDelta;
-    const right = lon + lonDelta;
-    const top = lat + latDelta;
-    const bottom = lat - latDelta;
-
-    return `${left},${top},${right},${bottom}`;
 }
 
 function normalizeCategory(value) {
@@ -159,40 +145,14 @@ app.get("/api/search/locations", async (req, res) => {
     const requestedVibeLevel = req.query.vibeLevel?.trim().toLowerCase();
     const requestedCategory = normalizeCategory(req.query.category);
     const requestedRadiusKm = Number.parseFloat(req.query.radius);
-    const requestedLat = Number.parseFloat(req.query.lat);
-    const requestedLon = Number.parseFloat(req.query.lon);
 
     if (!query) {
         return res.status(400).json({ error: "Missing search query." });
     }
 
     try {
-        const hasUserLocation =
-            Number.isFinite(requestedLat) &&
-            Number.isFinite(requestedLon);
-
-        const effectiveRadiusKm =
-            Number.isFinite(requestedRadiusKm) && requestedRadiusKm > 0
-                ? requestedRadiusKm
-                : 10;
-
-        const viewbox = hasUserLocation
-            ? createViewbox(requestedLat, requestedLon, effectiveRadiusKm)
-            : null;
-
-        const searchParams = new URLSearchParams({
-            format: "jsonv2",
-            q: query,
-            limit: "50",
-        });
-
-        if (viewbox) {
-            searchParams.set("viewbox", viewbox);
-            searchParams.set("bounded", "1");
-        }
-
         const response = await fetch(
-            `https://nominatim.openstreetmap.org/search?${searchParams.toString()}`,
+            `https://nominatim.openstreetmap.org/search?format=jsonv2&q=${encodeURIComponent(query)}&limit=25`,
             {
                 headers: {
                     "User-Agent": "VibeCheck/0.1 (contact: rsrinath@sfsu.edu)"
@@ -210,16 +170,10 @@ app.get("/api/search/locations", async (req, res) => {
             return res.json([]);
         }
 
-        const searchCenter = hasUserLocation
-            ? {
-                lat: requestedLat,
-                lon: requestedLon,
-            }
-            : {
-                lat: Number.parseFloat(data[0].lat),
-                lon: Number.parseFloat(data[0].lon),
-            };
-
+        const searchCenter = {
+            lat: Number.parseFloat(data[0].lat),
+            lon: Number.parseFloat(data[0].lon),
+        };
         const nominatimIds = data
             .map((place) => Number.parseInt(place.place_id, 10))
             .filter((placeId) => !Number.isNaN(placeId));
@@ -302,58 +256,6 @@ app.get("/api/search/locations", async (req, res) => {
     }
 });
 
-
-// grants full access after email verification
-app.get("/api/verify-email", async (req, res) => {
-    const { token } = req.query;
-
-    if (!token) {
-        return res.status(400).json({ error: "Missing verification token." });
-    }
-
-    try {
-        const result = await pool.query(
-            `SELECT user_id, email_verified, verification_sent_at
-             FROM users
-             WHERE verification_token = $1`,
-            [token]
-        );
-
-        if (result.rows.length === 0) {
-            return res.status(400).json({ error: "Invalid or expired verification token." });
-        }
-
-        const user = result.rows[0];
-
-        if (user.email_verified) {
-            return res.status(200).json({ message: "Email already verified. You can log in." });
-        }
-
-        // Token expires after 24 hours
-        const sentAt = new Date(user.verification_sent_at);
-        const now = new Date();
-        const hoursDiff = (now - sentAt) / (1000 * 60 * 60);
-
-        if (hoursDiff > 24) {
-            return res.status(400).json({
-                error: "Verification link has expired. Please request a new one."
-            });
-        }
-
-        await pool.query(
-            `UPDATE users
-             SET email_verified = TRUE, verified_at = NOW(), verification_token = NULL
-             WHERE user_id = $1`,
-            [user.user_id]
-        );
-
-        return res.status(200).json({ message: "Email verified successfully. You can now log in." });
-    } catch (error) {
-        console.error("Verify email error:", error);
-        return res.status(500).json({ error: "Internal server error." });
-    }
-});
-
 app.post("/api/login", async (req, res) => {
     const { email, password } = req.body;
 
@@ -365,7 +267,7 @@ app.post("/api/login", async (req, res) => {
 
     try {
         const result = await pool.query(
-            `SELECT user_id, username, email, password_hash, email_verified
+            `SELECT user_id, username, email, password_hash
              FROM users
              WHERE email = $1`,
             [normalizedEmail]
@@ -384,22 +286,17 @@ app.post("/api/login", async (req, res) => {
         }
 
         const token = jwt.sign(
-            { user_id: user.user_id, username: user.username, email_verified: user.email_verified },
+            { user_id: user.user_id, username: user.username },
             process.env.JWT_SECRET,
             { expiresIn: '7d' }
         );
 
-        res.cookie('token', token, {
-            httpOnly: true,
-            secure: true, // toggle to false when testing locally
-            sameSite: 'strict',
-            maxAge: 7 * 24 * 60 * 60 * 1000
-        });
+        res.cookie('token', token, authCookieOptions);
 
         return res.status(200).json({
             message: "Login successful.",
-            user: { user_id: user.user_id, username: user.username, email: user.email, email_verified: user.email_verified }
-        });
+            user: { user_id: user.user_id, username: user.username, email: user.email }
+          });
     }
     catch (error) {
         console.error("Login error:", error);
@@ -407,7 +304,6 @@ app.post("/api/login", async (req, res) => {
     }
 });
 
-// Signup
 app.post("/api/signup", async (req, res) => {
     const { username, email, password } = req.body;
 
@@ -438,20 +334,13 @@ app.post("/api/signup", async (req, res) => {
 
         const passwordHash = await bcrypt.hash(password, 10);
 
-        // generate token and store it, then send verification email 
-        const verificationToken = crypto.randomBytes(32).toString('hex');
-
         await pool.query(
-            `INSERT INTO users (username, email, password_hash, verification_token, verification_sent_at)
-             VALUES ($1, $2, $3, $4, NOW())`,
-            [trimmedUsername, normalizedEmail, passwordHash, verificationToken]
+            `INSERT INTO users (username, email, password_hash)
+             VALUES ($1, $2, $3)`,
+            [trimmedUsername, normalizedEmail, passwordHash]
         );
 
-        await sendVerificationEmail(normalizedEmail, verificationToken);
-
-        return res.status(201).json({
-            message: "Account created. Please check your email to verify your account."
-        });
+        return res.status(201).json({ message: "Account created successfully." });
     }
     catch (error) {
         console.error("Signup error:", error);
@@ -459,77 +348,29 @@ app.post("/api/signup", async (req, res) => {
     }
 });
 
-// Resend verification email
-app.post("/api/resend-verification", async (req, res) => {
-    const { email } = req.body;
-    const normalizedEmail = email?.trim().toLowerCase();
-
-    if (!normalizedEmail) {
-        return res.status(400).json({ error: "Email is required." });
-    }
-
-    try {
-        const result = await pool.query(
-            `SELECT user_id, email_verified, verification_sent_at
-             FROM users WHERE email = $1`,
-            [normalizedEmail]
-        );
-
-        // Don't reveal whether the email exists (security best practice)
-        if (result.rows.length === 0) {
-            return res.status(200).json({ message: "If that email exists, a new verification link has been sent." });
-        }
-
-        const user = result.rows[0];
-
-        if (user.email_verified) {
-            return res.status(400).json({ error: "This account is already verified." });
-        }
-
-        // Rate-limit: only allow resend every 5 minutes
-        if (user.verification_sent_at) {
-            const sentAt = new Date(user.verification_sent_at);
-            const minutesSince = (new Date() - sentAt) / (1000 * 60);
-            if (minutesSince < 5) {
-                return res.status(429).json({
-                    error: "Please wait a few minutes before requesting another verification email."
-                });
-            }
-        }
-
-        const newToken = crypto.randomBytes(32).toString('hex');
-
-        await pool.query(
-            `UPDATE users
-             SET verification_token = $1, verification_sent_at = NOW()
-             WHERE user_id = $2`,
-            [newToken, user.user_id]
-        );
-
-        await sendVerificationEmail(normalizedEmail, newToken);
-
-        return res.status(200).json({ message: "A new verification email has been sent." });
-    } catch (error) {
-        console.error("Resend verification error:", error);
-        return res.status(500).json({ error: "Internal server error." });
-    }
-});
 
 app.post("/api/logout", requireAuth, async (req, res) => {
     res.clearCookie('token', authCookieOptions);
     return res.status(200).json({ message: "Logged out successfully." });
-});
+  });
 
 app.get("/api/me", requireAuth, (req, res) => {
     return res.status(200).json({ user: req.user });
 });
 
+// ========================
+// ROUTE HANDLERS
+// ========================
 
+// Mount route handlers
 app.use("/api/notes", createNotesRoutes(pool));
 app.use("/api/reactions", createReactionsRoutes(pool));
 app.use("/api/replies", createRepliesRoutes(pool));
 app.use("/api/locations", createLocationsRoutes(pool));
 
+// ========================
+// VIBE SCORE 
+// ========================
 app.get("/api/locations/:location_id/vibe", async (req, res) => {
     const { location_id } = req.params;
 
@@ -574,6 +415,7 @@ app.get("/api/locations/:location_id/vibe", async (req, res) => {
         console.error("Vibe score error:", error);
         return res.status(500).json({ error: "Internal server error." });
     }
+
 });
 
 const PORT = 3000;
