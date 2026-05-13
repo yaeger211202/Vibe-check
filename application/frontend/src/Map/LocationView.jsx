@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import {
     DEFAULT_CURRENT_VIBE,
     NOTE_MAX_LENGTH,
-    NOTE_DEFAULT_CATEGORY,
     VIBE_OPTIONS,
     VIBE_STYLES,
 } from "./constants.js";
@@ -52,7 +51,6 @@ export default function LocationView({
                                          onOpenComments,
                                      }) {
     const [selectedVibe, setSelectedVibe] = useState(null);
-    const [selectedCategory, setSelectedCategory] = useState("");
     const [isAnonymous, setIsAnonymous] = useState(false);
     const [noteText, setNoteText] = useState("");
     const [visibleNoteCount, setVisibleNoteCount] = useState(4);
@@ -67,9 +65,6 @@ export default function LocationView({
     const activeLocationId = selectedLocation?.db_id ?? locationData?.locationId ?? null;
     const currentVibe = locationData?.currentVibe || DEFAULT_CURRENT_VIBE;
     const progressPercent = locationData?.vibeScorePercent || 0;
-    const availableCategories = Array.isArray(locationData?.categoryTags) && locationData.categoryTags.length > 0
-        ? locationData.categoryTags
-        : [NOTE_DEFAULT_CATEGORY];
 
     const notes = useMemo(() => {
         const rawNotes = Array.isArray(locationData?.notes) ? locationData.notes : [];
@@ -117,18 +112,16 @@ export default function LocationView({
         setEditingNoteId(null);
         setSubmitError("");
         setSelectedVibe(null);
-        setSelectedCategory("");
         setIsAnonymous(false);
         setNoteText("");
     }, [selectedLocation?.db_id, selectedLocation?.id]);
 
     const canSubmit =
-        selectedVibe && selectedCategory && noteText.trim().length > 0 && noteText.length <= NOTE_MAX_LENGTH;
+        selectedVibe && noteText.trim().length > 0 && noteText.length <= NOTE_MAX_LENGTH;
 
     function beginEditNote(note) {
         setEditingNoteId(note.id);
         setSelectedVibe(note.vibe);
-        setSelectedCategory(note.category || "");
         setIsAnonymous(Boolean(note.isAnonymous));
         setNoteText(note.text || "");
         setSubmitError("");
@@ -137,7 +130,6 @@ export default function LocationView({
     function resetComposer() {
         setEditingNoteId(null);
         setSelectedVibe(null);
-        setSelectedCategory("");
         setIsAnonymous(false);
         setNoteText("");
     }
@@ -149,7 +141,6 @@ export default function LocationView({
         const payload = {
             noteId: editingNoteId,
             vibe: selectedVibe,
-            category: selectedCategory,
             text: noteText.trim(),
             anonymous: isAnonymous,
         };
@@ -258,26 +249,6 @@ export default function LocationView({
                                     </button>
                                 );
                             })}
-                        </div>
-
-                        <div className="mt-4">
-                            <label className="mb-2 block text-sm font-medium text-gray-700">
-                                Category
-                            </label>
-                            <select
-                                value={selectedCategory}
-                                onChange={(e) => setSelectedCategory(e.target.value)}
-                                className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-base text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                            >
-                                <option value="">
-                                    Select a category
-                                </option>
-                                {availableCategories.map((categoryOption) => (
-                                    <option key={categoryOption} value={categoryOption}>
-                                        {categoryOption}
-                                    </option>
-                                ))}
-                            </select>
                         </div>
 
                         <div className="mt-4 flex flex-col sm:flex-row gap-3">
@@ -413,11 +384,6 @@ export default function LocationView({
                                                     <span className="rounded-full border border-purple-200 bg-purple-50 px-3 py-1 text-xs font-medium text-purple-700">
                                                         {note.locationName}
                                                     </span>
-                                                    {note.category ? (
-                                                        <span className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-medium text-gray-700">
-                                                            {note.category}
-                                                        </span>
-                                                    ) : null}
                                                 </div>
                                             ) : null}
 

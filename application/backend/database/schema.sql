@@ -83,7 +83,6 @@ CREATE TABLE notes (
     note_id      SERIAL PRIMARY KEY,
     user_id      INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
     location_id  INT NOT NULL REFERENCES locations(location_id) ON DELETE CASCADE,
-    category_tag VARCHAR(50) NOT NULL,
     content      TEXT NOT NULL CHECK (char_length(content) <= 280),
     vibe_level   vibe_level_enum NOT NULL,
     is_anonymous BOOLEAN DEFAULT FALSE,
@@ -205,10 +204,8 @@ CREATE INDEX idx_reactions_note ON reactions(note_id);
 CREATE INDEX idx_replies_note ON replies(note_id);
 CREATE INDEX idx_notifications_user_read ON notifications(user_id, is_read);
 
--- Schema compatibility for existing databases that predate note categories
-ALTER TABLE notes ADD COLUMN IF NOT EXISTS category_tag VARCHAR(50);
-UPDATE notes SET category_tag = 'na' WHERE category_tag IS NULL;
-ALTER TABLE notes ALTER COLUMN category_tag SET NOT NULL;
+-- Schema compatibility for existing databases that still have note categories
+ALTER TABLE notes DROP COLUMN IF EXISTS category_tag;
 
 -- ========================
 -- CONSTRAINTS

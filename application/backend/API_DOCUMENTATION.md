@@ -34,7 +34,6 @@ Create a new note for a location.
 ```json
 {
   "location_id": 5,
-  "category_tag": "Libraries",
   "content": "This place is packed right now!",
   "vibe_level": "busy",
   "is_anonymous": false
@@ -43,7 +42,6 @@ Create a new note for a location.
 
 **Required Fields:**
 - `location_id` (integer): ID of the location
-- `category_tag` (string): Must be one of the allowed categories for that location. Use `na` when the location has no mapped category.
 - `content` (string): Note text (max 280 characters)
 - `vibe_level` (string): One of `dead`, `quiet`, `moderate`, `busy`, `buzzing`
 
@@ -58,7 +56,6 @@ Create a new note for a location.
     "note_id": 42,
     "user_id": 1,
     "location_id": 5,
-    "category_tag": "Libraries",
     "content": "This place is packed right now!",
     "vibe_level": "busy",
     "is_anonymous": false,
@@ -91,7 +88,6 @@ Get all non-expired notes for a specific location.
       "user_id": 1,
       "username": "john_doe",
       "location_id": 5,
-      "category_tag": "Libraries",
       "content": "This place is packed right now!",
       "vibe_level": "busy",
       "is_anonymous": false,
@@ -123,7 +119,6 @@ Get details of a specific note.
   "user_id": 1,
   "username": "john_doe",
   "location_id": 5,
-  "category_tag": "Libraries",
   "content": "This place is packed right now!",
   "vibe_level": "busy",
   "is_anonymous": false,
@@ -155,7 +150,6 @@ Get all notes created by a specific user.
       "user_id": 1,
       "location_id": 5,
       "location_name": "SFSU Library",
-      "category_tag": "Libraries",
       "content": "This place is packed right now!",
       "vibe_level": "busy",
       "is_anonymous": false,
@@ -173,7 +167,7 @@ Get all notes created by a specific user.
 ### 5. UPDATE NOTE
 **PUT** `/api/notes/:note_id`
 
-Update category, content, or vibe_level of an existing note.
+Update content or vibe_level of an existing note.
 
 **Parameters:**
 - `note_id` (path): ID of the note
@@ -181,18 +175,16 @@ Update category, content, or vibe_level of an existing note.
 **Request Body:**
 ```json
 {
-  "category_tag": "Cafe",
   "content": "Updated note content",
   "vibe_level": "moderate"
 }
 ```
 
 **Optional Fields:**
-- `category_tag` (string): Must be one of the allowed categories for that location. Use `na` when the location has no mapped category.
 - `content` (string): New note text (max 280 characters)
 - `vibe_level` (string): One of `dead`, `quiet`, `moderate`, `busy`, `buzzing`
 
-**Note:** At least one of `category_tag`, `content`, or `vibe_level` must be provided.
+**Note:** At least one of `content` or `vibe_level` must be provided.
 
 **Response (200 OK):**
 ```json
@@ -202,7 +194,6 @@ Update category, content, or vibe_level of an existing note.
     "note_id": 42,
     "user_id": 1,
     "location_id": 5,
-    "category_tag": "Cafe",
     "content": "Updated note content",
     "vibe_level": "moderate",
     "is_anonymous": false,

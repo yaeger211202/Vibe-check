@@ -35,7 +35,6 @@ function mapApiNote(note, location) {
         username: note.username,
         locationId: note.location_id ?? location?.db_id ?? null,
         locationName: formatLocationName(location),
-        category: note.category_tag ?? "",
         createdAt: note.created_at,
         expiresAt: note.expires_at,
         createdAtText: formatNoteTimestamp(note.created_at),
@@ -282,7 +281,6 @@ export default function Map() {
             const data = await updateNote(payload.noteId, {
                 content: payload.text,
                 vibe_level: payload.vibe,
-                category_tag: payload.category,
             });
             savedNote = mapApiNote({
                 ...data.note,
@@ -315,7 +313,6 @@ export default function Map() {
 
         const data = await createNote({
             location_id: selectedLocation.db_id,
-            category_tag: payload.category,
             content: payload.text,
             vibe_level: payload.vibe,
             is_anonymous: payload.anonymous,
