@@ -55,6 +55,7 @@ const pool = new Pool({
     port: process.env.DB_PORT,
 });
 
+
 function mapScoreToVibeLevel(score) {
     if (score === null || score === undefined) return null;
 
@@ -84,6 +85,18 @@ function calculateDistanceKm(fromLat, fromLon, toLat, toLon) {
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
     return earthRadiusKm * c;
+}
+
+function createViewbox(lat, lon, radiusKm) {
+    const latDelta = radiusKm / 111;
+    const lonDelta = radiusKm / (111 * Math.cos(toRadians(lat)));
+
+    const left = lon - lonDelta;
+    const right = lon + lonDelta;
+    const top = lat + latDelta;
+    const bottom = lat - latDelta;
+
+    return `${left},${top},${right},${bottom}`;
 }
 
 function normalizeCategory(value) {
@@ -145,14 +158,40 @@ app.get("/api/search/locations", async (req, res) => {
     const requestedVibeLevel = req.query.vibeLevel?.trim().toLowerCase();
     const requestedCategory = normalizeCategory(req.query.category);
     const requestedRadiusKm = Number.parseFloat(req.query.radius);
+    const requestedLat = Number.parseFloat(req.query.lat);
+    const requestedLon = Number.parseFloat(req.query.lon);
 
     if (!query) {
         return res.status(400).json({ error: "Missing search query." });
     }
 
     try {
+        const hasUserLocation =
+            Number.isFinite(requestedLat) &&
+            Number.isFinite(requestedLon);
+
+        const effectiveRadiusKm =
+            Number.isFinite(requestedRadiusKm) && requestedRadiusKm > 0
+                ? requestedRadiusKm
+                : 10;
+
+        const viewbox = hasUserLocation
+            ? createViewbox(requestedLat, requestedLon, effectiveRadiusKm)
+            : null;
+
+        const searchParams = new URLSearchParams({
+            format: "jsonv2",
+            q: query,
+            limit: "50",
+        });
+
+        if (viewbox) {
+            searchParams.set("viewbox", viewbox);
+            searchParams.set("bounded", "1");
+        }
+
         const response = await fetch(
-            `https://nominatim.openstreetmap.org/search?format=jsonv2&q=${encodeURIComponent(query)}&limit=25`,
+            `https://nominatim.openstreetmap.org/search?${searchParams.toString()}`,
             {
                 headers: {
                     "User-Agent": "VibeCheck/0.1 (contact: rsrinath@sfsu.edu)"
@@ -170,10 +209,16 @@ app.get("/api/search/locations", async (req, res) => {
             return res.json([]);
         }
 
-        const searchCenter = {
-            lat: Number.parseFloat(data[0].lat),
-            lon: Number.parseFloat(data[0].lon),
-        };
+        const searchCenter = hasUserLocation
+            ? {
+                lat: requestedLat,
+                lon: requestedLon,
+            }
+            : {
+                lat: Number.parseFloat(data[0].lat),
+                lon: Number.parseFloat(data[0].lon),
+            };
+
         const nominatimIds = data
             .map((place) => Number.parseInt(place.place_id, 10))
             .filter((placeId) => !Number.isNaN(placeId));
