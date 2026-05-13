@@ -109,10 +109,11 @@ CREATE TABLE replies (
 -- REACTIONS
 -- ========================
 CREATE TABLE reactions (
-    reaction_id SERIAL PRIMARY KEY,
-    note_id     INT NOT NULL REFERENCES notes(note_id) ON DELETE CASCADE,
-    user_id     INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-    created_at  TIMESTAMP NOT NULL DEFAULT NOW(),
+    reaction_id   SERIAL PRIMARY KEY,
+    note_id       INT NOT NULL REFERENCES notes(note_id) ON DELETE CASCADE,
+    user_id       INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    reaction_type VARCHAR(20) NOT NULL CHECK (reaction_type IN ('thumbs_up', 'thumbs_down')),
+    created_at    TIMESTAMP NOT NULL DEFAULT NOW(),
     UNIQUE (user_id, note_id)
 );
 

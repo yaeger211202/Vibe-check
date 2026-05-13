@@ -6,10 +6,10 @@ export function getReactionsByNote(noteId) {
     });
 }
 
-export function addReaction(noteId) {
+export function addReaction(noteId, reactionType) {
     return apiRequest("/api/reactions", {
         method: "POST",
-        body: JSON.stringify({ note_id: noteId }),
+        body: JSON.stringify({ note_id: noteId, reaction_type: reactionType }),
     });
 }
 

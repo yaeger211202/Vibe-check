@@ -24,6 +24,13 @@ function getInitials(name) {
     return name.replace("@", "").trim()[0]?.toUpperCase() || "?";
 }
 
+function getReactionBuckets(reactions = []) {
+    return {
+        thumbsUp: reactions.filter((reaction) => reaction.type === "thumbs_up"),
+        thumbsDown: reactions.filter((reaction) => reaction.type === "thumbs_down"),
+    };
+}
+
 function formatRemainingTime(expiresAt, now) {
     if (!expiresAt) return "";
 
@@ -82,6 +89,7 @@ export default function LocationView({
     const [deletingNoteId, setDeletingNoteId] = useState(null);
     const [currentTime, setCurrentTime] = useState(() => Date.now());
     const [openNoteId, setOpenNoteId] = useState(null);
+    const [loadingThreadNoteId, setLoadingThreadNoteId] = useState(null);
     const [noteThreads, setNoteThreads] = useState({});
     const [threadError, setThreadError] = useState("");
 
@@ -141,6 +149,7 @@ export default function LocationView({
         setIsAnonymous(false);
         setNoteText("");
         setOpenNoteId(null);
+        setLoadingThreadNoteId(null);
         setNoteThreads({});
         setThreadError("");
     }, [selectedLocation?.db_id, selectedLocation?.id]);
@@ -195,28 +204,32 @@ export default function LocationView({
             getRepliesByNote(noteId),
         ]);
 
-        const nextThread = {
-            reactions: reactionsData.reactions.map((reaction) => ({
-                id: reaction.reaction_id,
-                userId: reaction.user_id,
-                username: reaction.username,
-                createdAt: reaction.created_at,
-            })),
-            replies: repliesData.replies.map((reply) => ({
-                id: reply.reply_id,
-                noteId: reply.note_id,
-                userId: reply.user_id,
-                username: reply.username,
-                text: reply.content,
-                createdAt: reply.created_at,
-            })),
-            replyText: noteThreads[noteId]?.replyText || "",
-        };
+        let nextThread;
+        setNoteThreads((prev) => {
+            nextThread = {
+                reactions: reactionsData.reactions.map((reaction) => ({
+                    id: reaction.reaction_id,
+                    userId: reaction.user_id,
+                    username: reaction.username,
+                    type: reaction.reaction_type,
+                    createdAt: reaction.created_at,
+                })),
+                replies: repliesData.replies.map((reply) => ({
+                    id: reply.reply_id,
+                    noteId: reply.note_id,
+                    userId: reply.user_id,
+                    username: reply.username,
+                    text: reply.content,
+                    createdAt: reply.created_at,
+                })),
+                replyText: prev[noteId]?.replyText || "",
+            };
 
-        setNoteThreads((prev) => ({
-            ...prev,
-            [noteId]: nextThread,
-        }));
+            return {
+                ...prev,
+                [noteId]: nextThread,
+            };
+        });
 
         return nextThread;
     }
@@ -224,15 +237,28 @@ export default function LocationView({
     async function toggleThread(noteId) {
         if (openNoteId === noteId) {
             setOpenNoteId(null);
+            setLoadingThreadNoteId(null);
             return;
         }
 
+        setThreadError("");
+        setOpenNoteId(noteId);
+        setLoadingThreadNoteId(noteId);
+        setNoteThreads((prev) => ({
+            ...prev,
+            [noteId]: prev[noteId] || {
+                reactions: [],
+                replies: [],
+                replyText: "",
+            },
+        }));
+
         try {
-            setThreadError("");
             await loadThread(noteId);
-            setOpenNoteId(noteId);
         } catch (error) {
             setThreadError(error.message || "Unable to load note activity.");
+        } finally {
+            setLoadingThreadNoteId((current) => (current === noteId ? null : current));
         }
     }
 
@@ -247,7 +273,7 @@ export default function LocationView({
         }));
     }
 
-    async function handleReactionToggle(note) {
+    async function handleReactionToggle(note, reactionType) {
         if (!user?.user_id) {
             setThreadError("Sign in to react to notes.");
             return;
@@ -263,7 +289,7 @@ export default function LocationView({
             const thread = noteThreads[note.id] || await loadThread(note.id);
             const existingReaction = thread.reactions.find((reaction) => reaction.userId === user.user_id);
 
-            if (existingReaction) {
+            if (existingReaction?.type === reactionType) {
                 await removeReaction(existingReaction.id);
                 const nextReactions = thread.reactions.filter((reaction) => reaction.id !== existingReaction.id);
                 setNoteThreads((prev) => ({
@@ -284,14 +310,19 @@ export default function LocationView({
                 return;
             }
 
-            const data = await addReaction(note.id);
+            const data = await addReaction(note.id, reactionType);
             const createdReaction = {
                 id: data.reaction.reaction_id,
                 userId: data.reaction.user_id,
                 username: user.username,
+                type: data.reaction.reaction_type,
                 createdAt: data.reaction.created_at,
             };
-            const nextReactions = [...thread.reactions, createdReaction];
+            const nextReactions = existingReaction
+                ? thread.reactions.map((reaction) =>
+                    reaction.id === existingReaction.id ? createdReaction : reaction
+                )
+                : [...thread.reactions, createdReaction];
 
             setNoteThreads((prev) => ({
                 ...prev,
@@ -300,14 +331,16 @@ export default function LocationView({
                     reactions: nextReactions,
                 },
             }));
-            setLocationData((prev) => ({
-                ...prev,
-                notes: prev.notes.map((entry) =>
-                    entry.id === note.id
-                        ? { ...entry, reactionCount: (entry.reactionCount ?? 0) + 1 }
-                        : entry
-                ),
-            }));
+            if (!existingReaction) {
+                setLocationData((prev) => ({
+                    ...prev,
+                    notes: prev.notes.map((entry) =>
+                        entry.id === note.id
+                            ? { ...entry, reactionCount: (entry.reactionCount ?? 0) + 1 }
+                            : entry
+                    ),
+                }));
+            }
         } catch (error) {
             setThreadError(error.message || "Unable to update reaction.");
         }
@@ -598,6 +631,14 @@ export default function LocationView({
                             <>
                                 <div className="space-y-3 sm:space-y-4">
                                     {visibleNotes.map((note) => (
+                                        (() => {
+                                            const threadReactions = noteThreads[note.id]?.reactions || [];
+                                            const currentUserReaction = threadReactions.find(
+                                                (reaction) => reaction.userId === user?.user_id
+                                            );
+                                            const { thumbsUp, thumbsDown } = getReactionBuckets(threadReactions);
+
+                                            return (
                                         <article
                                             key={note.id}
                                             className="rounded-2xl border border-gray-200 bg-white p-4 sm:p-5"
@@ -651,7 +692,7 @@ export default function LocationView({
                                                 <button
                                                     type="button"
                                                     onClick={() => toggleThread(note.id)}
-                                                    className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-sm text-gray-600 transition hover:bg-gray-100"
+                                                    className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-sm text-gray-600 transition hover:bg-gray-100 hover:cursor-pointer"
                                                     aria-label={`View reactions for note by ${note.username || note.displayName || "anonymous user"}`}
                                                 >
                                                     Reactions {note.reactionCount ?? 0}
@@ -660,22 +701,37 @@ export default function LocationView({
                                                 <button
                                                     type="button"
                                                     onClick={() => toggleThread(note.id)}
-                                                    className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-sm text-gray-600 transition hover:bg-gray-100"
+                                                    className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-sm text-gray-600 transition hover:bg-gray-100 hover:cursor-pointer"
                                                     aria-label={`View comments for note by ${note.username || note.displayName || "anonymous user"}`}
                                                 >
                                                     Replies {note.commentCount ?? 0}
                                                 </button>
 
                                                 {note.userId !== user?.user_id ? (
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => handleReactionToggle(note)}
-                                                        className="rounded-full border border-green-200 bg-green-50 px-3 py-1 text-sm text-green-700 transition hover:bg-green-100"
-                                                    >
-                                                        {(noteThreads[note.id]?.reactions || []).some((reaction) => reaction.userId === user?.user_id)
-                                                            ? "Remove reaction"
-                                                            : "React"}
-                                                    </button>
+                                                    <>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleReactionToggle(note, "thumbs_up")}
+                                                            className={`rounded-full border px-3 py-1 text-sm transition hover:cursor-pointer ${
+                                                                currentUserReaction?.type === "thumbs_up"
+                                                                    ? "border-green-300 bg-green-100 text-green-800"
+                                                                    : "border-green-200 bg-green-50 text-green-700 hover:bg-green-100"
+                                                            }`}
+                                                        >
+                                                            👍 Thumbs up
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleReactionToggle(note, "thumbs_down")}
+                                                            className={`rounded-full border px-3 py-1 text-sm transition hover:cursor-pointer ${
+                                                                currentUserReaction?.type === "thumbs_down"
+                                                                    ? "border-red-300 bg-red-100 text-red-800"
+                                                                    : "border-red-200 bg-red-50 text-red-700 hover:bg-red-100"
+                                                            }`}
+                                                        >
+                                                            👎 Thumbs down
+                                                        </button>
+                                                    </>
                                                 ) : null}
 
                                                 {note.userId === user?.user_id ? (
@@ -705,22 +761,57 @@ export default function LocationView({
 
                                             {openNoteId === note.id ? (
                                                 <div className="mt-4 space-y-4 rounded-2xl border border-gray-100 bg-gray-50 p-4">
+                                                    {loadingThreadNoteId === note.id ? (
+                                                        <p className="text-sm text-gray-500">Loading activity...</p>
+                                                    ) : null}
+
                                                     <div>
                                                         <h4 className="text-sm font-semibold text-gray-900">
                                                             Reactions
                                                         </h4>
-                                                        {(noteThreads[note.id]?.reactions || []).length === 0 ? (
+                                                        {threadReactions.length === 0 ? (
                                                             <p className="mt-2 text-sm text-gray-500">No reactions yet.</p>
                                                         ) : (
-                                                            <div className="mt-2 flex flex-wrap gap-2">
-                                                                {(noteThreads[note.id]?.reactions || []).map((reaction) => (
-                                                                    <span
-                                                                        key={reaction.id}
-                                                                        className="rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-medium text-gray-700"
-                                                                    >
-                                                                        {reaction.username}
-                                                                    </span>
-                                                                ))}
+                                                            <div className="mt-2 space-y-3">
+                                                                <div>
+                                                                    <p className="text-xs font-semibold uppercase tracking-wide text-green-700">
+                                                                        👍 Thumbs up
+                                                                    </p>
+                                                                    {thumbsUp.length === 0 ? (
+                                                                        <p className="mt-1 text-sm text-gray-500">No thumbs up yet.</p>
+                                                                    ) : (
+                                                                        <div className="mt-2 flex flex-wrap gap-2">
+                                                                            {thumbsUp.map((reaction) => (
+                                                                                <span
+                                                                                    key={reaction.id}
+                                                                                    className="rounded-full border border-green-200 bg-white px-3 py-1 text-xs font-medium text-green-800"
+                                                                                >
+                                                                                    {reaction.username}
+                                                                                </span>
+                                                                            ))}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+
+                                                                <div>
+                                                                    <p className="text-xs font-semibold uppercase tracking-wide text-red-700">
+                                                                        👎 Thumbs down
+                                                                    </p>
+                                                                    {thumbsDown.length === 0 ? (
+                                                                        <p className="mt-1 text-sm text-gray-500">No thumbs down yet.</p>
+                                                                    ) : (
+                                                                        <div className="mt-2 flex flex-wrap gap-2">
+                                                                            {thumbsDown.map((reaction) => (
+                                                                                <span
+                                                                                    key={reaction.id}
+                                                                                    className="rounded-full border border-red-200 bg-white px-3 py-1 text-xs font-medium text-red-800"
+                                                                                >
+                                                                                    {reaction.username}
+                                                                                </span>
+                                                                            ))}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
                                                             </div>
                                                         )}
                                                     </div>
@@ -789,6 +880,8 @@ export default function LocationView({
                                                 </div>
                                             ) : null}
                                         </article>
+                                            );
+                                        })()
                                     ))}
                                 </div>
 

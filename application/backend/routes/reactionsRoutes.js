@@ -20,6 +20,7 @@ export function createReactionsRoutes(pool) {
                     r.user_id,
                     u.username,
                     r.note_id,
+                    r.reaction_type,
                     r.created_at
                  FROM reactions r
                  LEFT JOIN users u ON r.user_id = u.user_id
@@ -41,11 +42,16 @@ export function createReactionsRoutes(pool) {
 
     // CREATE - Add a reaction to a note
     router.post("/", requireAuth, async (req, res) => {
-        const { note_id } = req.body;
+        const { note_id, reaction_type } = req.body;
         const user_id = req.user.user_id;
+        const normalizedReactionType = typeof reaction_type === "string" ? reaction_type.trim().toLowerCase() : "";
 
         if (!note_id) {
             return res.status(400).json({ error: "note_id is required." });
+        }
+
+        if (!["thumbs_up", "thumbs_down"].includes(normalizedReactionType)) {
+            return res.status(400).json({ error: "reaction_type must be thumbs_up or thumbs_down." });
         }
 
         try {
@@ -55,21 +61,17 @@ export function createReactionsRoutes(pool) {
                 return res.status(404).json({ error: "Note not found." });
             }
 
-            // Try to insert reaction (unique constraint will prevent duplicates)
             const result = await pool.query(
-                `INSERT INTO reactions (user_id, note_id)
-                 VALUES ($1, $2)
-                 ON CONFLICT (user_id, note_id) DO NOTHING
-                 RETURNING reaction_id, user_id, note_id, created_at`,
-                [user_id, note_id]
+                `INSERT INTO reactions (user_id, note_id, reaction_type)
+                 VALUES ($1, $2, $3)
+                 ON CONFLICT (user_id, note_id)
+                 DO UPDATE SET reaction_type = EXCLUDED.reaction_type, created_at = NOW()
+                 RETURNING reaction_id, user_id, note_id, reaction_type, created_at`,
+                [user_id, note_id, normalizedReactionType]
             );
 
-            if (result.rows.length === 0) {
-                return res.status(200).json({ message: "Reaction already exists." });
-            }
-
             return res.status(201).json({
-                message: "Reaction added successfully.",
+                message: "Reaction saved successfully.",
                 reaction: result.rows[0]
             });
         }
