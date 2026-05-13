@@ -379,6 +379,63 @@ app.use("/api/replies", createRepliesRoutes(pool));
 app.use("/api/locations", createLocationsRoutes(pool));
 app.use("/api/users", createUsersRoutes(pool));
 
+app.get("/api/heatmap", async (req, res) => {
+    const { category } = req.query;
+
+    // Treat "All Categories" or missing as no filter
+    const categoryFilter =
+        category && category !== "All Categories" ? category : null;
+
+    try {
+        // Pull every location that has at least one non-expired note.
+        // idx_notes_location_expires drives the WHERE expires_at > NOW() scan.
+        const result = await pool.query(
+            `SELECT
+                l.location_id,
+                l.lat,
+                l.lng,
+                COUNT(n.note_id)::int          AS note_count,
+                ROUND(AVG(CASE n.vibe_level
+                    WHEN 'dead'     THEN 1
+                    WHEN 'quiet'    THEN 2
+                    WHEN 'moderate' THEN 3
+                    WHEN 'busy'     THEN 4
+                    WHEN 'buzzing'  THEN 5
+                END)::NUMERIC, 2)              AS avg_vibe_score
+             FROM locations l
+             INNER JOIN notes n
+                ON  n.location_id = l.location_id
+                AND n.expires_at  > NOW()
+             WHERE ($1::text IS NULL OR $1 = ANY(l.category_tags))
+             GROUP BY l.location_id, l.lat, l.lng
+             HAVING COUNT(n.note_id) > 0`,
+            [categoryFilter]
+        );
+
+        // Intensity: cap at 10 notes per location = full heat (1.0).
+        const MAX_NOTES_FOR_FULL_INTENSITY = 10;
+
+        const points = result.rows.map((row) => ({
+            lat: parseFloat(row.lat),
+            lon: parseFloat(row.lng),
+            intensity: Math.min(
+                row.note_count / MAX_NOTES_FOR_FULL_INTENSITY,
+                1.0
+            ),
+            note_count: row.note_count,
+            avg_vibe_score: row.avg_vibe_score
+                ? parseFloat(row.avg_vibe_score)
+                : null,
+        }));
+
+        res.setHeader("Cache-Control", "public, max-age=60");
+        return res.json(points);
+    } catch (error) {
+        console.error("Heatmap error:", error);
+        return res.status(500).json({ error: "Internal server error." });
+    }
+});
+
 // ========================
 // VIBE SCORE 
 // ========================
