@@ -7,6 +7,7 @@ import {
 } from "./constants.js";
 import { addReaction, getReactionsByNote, removeReaction } from "../api/reactions.js";
 import { createReply, deleteReply, getRepliesByNote } from "../api/replies.js";
+import { createReport } from "../api/reports.js";
 
 function formatLocationTitle(location) {
     const name = location?.name?.trim();
@@ -88,6 +89,7 @@ export default function LocationView({
     const [loadingThreadNoteId, setLoadingThreadNoteId] = useState(null);
     const [noteThreads, setNoteThreads] = useState({});
     const [threadError, setThreadError] = useState("");
+    const [reportedKeys, setReportedKeys] = useState(new Set());
 
     const title = formatLocationTitle(selectedLocation);
 
@@ -151,7 +153,7 @@ export default function LocationView({
                     })
                 };
             });
-        }, 60 * 1000); // check every minute
+        }, 60 * 1000);
 
         return () => clearInterval(interval);
     }, [locationData?.notes]);
@@ -167,6 +169,7 @@ export default function LocationView({
         setLoadingThreadNoteId(null);
         setNoteThreads({});
         setThreadError("");
+        setReportedKeys(new Set());
     }, [selectedLocation?.db_id, selectedLocation?.id]);
 
     const canSubmit =
@@ -449,6 +452,19 @@ export default function LocationView({
         }
     }
 
+    async function handleReport(targetType, targetId) {
+        if (!user?.user_id) {
+            setThreadError("Sign in to report content.");
+            return;
+        }
+        try {
+            await createReport(targetType, targetId, "other");
+            setReportedKeys((prev) => new Set(prev).add(`${targetType}:${targetId}`));
+        } catch (err) {
+            setThreadError(err.message || "Unable to submit report.");
+        }
+    }
+
     return (
         <aside className="h-full overflow-y-auto bg-white">
             {/* Header */}
@@ -631,6 +647,7 @@ export default function LocationView({
                                                 (reaction) => reaction.userId === user?.user_id
                                             );
                                             const { thumbsUp, thumbsDown } = getReactionBuckets(threadReactions);
+                                            const noteReported = reportedKeys.has(`note:${note.id}`);
 
                                             return (
                                         <article
@@ -725,6 +742,18 @@ export default function LocationView({
                                                         >
                                                             👎 Thumbs down
                                                         </button>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleReport("note", note.id)}
+                                                            disabled={noteReported}
+                                                            className={`rounded-full border px-3 py-1 text-sm transition hover:cursor-pointer ${
+                                                                noteReported
+                                                                    ? "cursor-default border-gray-200 bg-gray-50 text-gray-400"
+                                                                    : "border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100"
+                                                            }`}
+                                                        >
+                                                            {noteReported ? "🚩 Reported" : "🚩 Report"}
+                                                        </button>
                                                     </>
                                                 ) : null}
 
@@ -818,35 +847,53 @@ export default function LocationView({
                                                             {(noteThreads[note.id]?.replies || []).length === 0 ? (
                                                                 <p className="text-sm text-gray-500">No replies yet.</p>
                                                             ) : (
-                                                                (noteThreads[note.id]?.replies || []).map((reply) => (
-                                                                    <div
-                                                                        key={reply.id}
-                                                                        className="rounded-xl border border-gray-200 bg-white px-4 py-3"
-                                                                    >
-                                                                        <div className="flex items-start justify-between gap-3">
-                                                                            <div>
-                                                                                <p className="text-sm font-semibold text-gray-900">
-                                                                                    {reply.username}
-                                                                                </p>
-                                                                                <p className="text-xs text-gray-500">
-                                                                                    {formatElapsedTime(reply.createdAt, currentTime)}
-                                                                                </p>
+                                                                (noteThreads[note.id]?.replies || []).map((reply) => {
+                                                                    const replyReported = reportedKeys.has(`reply:${reply.id}`);
+                                                                    return (
+                                                                        <div
+                                                                            key={reply.id}
+                                                                            className="rounded-xl border border-gray-200 bg-white px-4 py-3"
+                                                                        >
+                                                                            <div className="flex items-start justify-between gap-3">
+                                                                                <div>
+                                                                                    <p className="text-sm font-semibold text-gray-900">
+                                                                                        {reply.username}
+                                                                                    </p>
+                                                                                    <p className="text-xs text-gray-500">
+                                                                                        {formatElapsedTime(reply.createdAt, currentTime)}
+                                                                                    </p>
+                                                                                </div>
+                                                                                <div className="flex items-center gap-2 shrink-0">
+                                                                                    {reply.userId !== user?.user_id ? (
+                                                                                        <button
+                                                                                            type="button"
+                                                                                            onClick={() => handleReport("reply", reply.id)}
+                                                                                            disabled={replyReported}
+                                                                                            className={`text-xs font-medium transition hover:cursor-pointer ${
+                                                                                                replyReported
+                                                                                                    ? "cursor-default text-gray-400"
+                                                                                                    : "text-orange-600 hover:text-orange-700"
+                                                                                            }`}
+                                                                                        >
+                                                                                            {replyReported ? "🚩 Reported" : "🚩 Report"}
+                                                                                        </button>
+                                                                                    ) : (
+                                                                                        <button
+                                                                                            type="button"
+                                                                                            onClick={() => handleReplyDelete(note.id, reply.id)}
+                                                                                            className="text-xs font-medium text-red-600 transition hover:text-red-700"
+                                                                                        >
+                                                                                            Delete
+                                                                                        </button>
+                                                                                    )}
+                                                                                </div>
                                                                             </div>
-                                                                            {reply.userId === user?.user_id ? (
-                                                                                <button
-                                                                                    type="button"
-                                                                                    onClick={() => handleReplyDelete(note.id, reply.id)}
-                                                                                    className="text-xs font-medium text-red-600 transition hover:text-red-700"
-                                                                                >
-                                                                                    Delete
-                                                                                </button>
-                                                                            ) : null}
+                                                                            <p className="mt-2 text-sm text-gray-800">
+                                                                                {reply.text}
+                                                                            </p>
                                                                         </div>
-                                                                        <p className="mt-2 text-sm text-gray-800">
-                                                                            {reply.text}
-                                                                        </p>
-                                                                    </div>
-                                                                ))
+                                                                    );
+                                                                })
                                                             )}
                                                         </div>
                                                     </div>

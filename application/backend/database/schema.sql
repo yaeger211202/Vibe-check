@@ -119,6 +119,33 @@ CREATE TABLE reactions (
 );
 
 -- ========================
+-- REPORTS
+-- ========================
+CREATE TABLE reports (
+    report_id   SERIAL PRIMARY KEY,
+    reporter_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    target_type VARCHAR(20) NOT NULL
+        CHECK (target_type IN ('note', 'reply')),
+    target_id   INT NOT NULL,
+    reason      VARCHAR(50) NOT NULL
+        CHECK (reason IN (
+            'spam',
+            'harassment',
+            'misinformation',
+            'inappropriate_content',
+            'off_topic',
+            'other'
+        )),
+    details     TEXT NOT NULL DEFAULT '',
+    status      VARCHAR(20) NOT NULL DEFAULT 'pending'
+        CHECK (status IN ('pending', 'resolved', 'dismissed')),
+    created_at  TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at  TIMESTAMP,
+    -- One report per reporter per target; re-reporting upserts instead
+    UNIQUE (reporter_id, target_type, target_id)
+);
+
+-- ========================
 -- NOTIFICATIONS
 -- ========================
 
