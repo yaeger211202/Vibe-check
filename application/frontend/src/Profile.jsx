@@ -8,7 +8,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import Navbar from "./components/Navbar.jsx";
 import Footer from "./components/Footer.jsx";
 
-// constants 
+// ─── CONSTANTS ───────────────────────────────────────────────────────────────
+
 const VIBE_STYLES = {
     1: { label: "Dead", style: "bg-gray-100 text-gray-500" },
     2: { label: "Chill", style: "bg-yellow-100 text-yellow-700" },
@@ -22,9 +23,14 @@ const VIBE_STYLES = {
     buzzing: { label: "Buzzing", style: "bg-orange-100 text-orange-600" },
 };
 
+const REACTION_EMOJI = {
+    thumbs_up: "👍",
+    thumbs_down: "👎",
+};
+
 const API = "/api";
 
-// heleprs 
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
 
 function timeAgo(isoString) {
     const diff = Math.floor((Date.now() - new Date(isoString)) / 1000);
@@ -34,7 +40,6 @@ function timeAgo(isoString) {
     return `${Math.floor(diff / 86400)}d ago`;
 }
 
-// feedback banner
 function Banner({ msg, isError }) {
     if (!msg) return null;
     return (
@@ -44,18 +49,14 @@ function Banner({ msg, isError }) {
     );
 }
 
-// sub components 
+// ─── SUB-COMPONENTS ──────────────────────────────────────────────────────────
 
-/**
- * PostCard — single note card. Touch-target friendly on mobile.
- */
 function PostCard({ note }) {
     const vibeKey = note.vibe_level || note.vibe_score;
     const vibe = VIBE_STYLES[vibeKey] || VIBE_STYLES[3];
 
     return (
         <div className="bg-white rounded-xl shadow-sm p-4 sm:p-5 flex flex-col gap-3">
-            {/* Header: location + time */}
             <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
                     <p className="font-bold text-gray-900 text-sm truncate">
@@ -71,11 +72,7 @@ function PostCard({ note }) {
                         : note.created_at}
                 </span>
             </div>
-
-            {/* Note content */}
             <p className="text-sm text-gray-700 leading-relaxed">{note.content}</p>
-
-            {/* Footer: vibe pill + counts */}
             <div className="flex items-center justify-between">
                 <span className={`text-xs font-medium px-3 py-1 rounded-full ${vibe.style}`}>
                     {vibe.label}
@@ -88,7 +85,42 @@ function PostCard({ note }) {
     );
 }
 
-// setting forms 
+/** Card for a note the user has reacted to */
+function ReactedNoteCard({ item }) {
+    const vibeKey = item.vibe_level;
+    const vibe = VIBE_STYLES[vibeKey] || VIBE_STYLES.moderate;
+    const emoji = REACTION_EMOJI[item.reaction_type] || "👍";
+
+    return (
+        <div className="bg-white rounded-xl shadow-sm p-4 sm:p-5 flex flex-col gap-3">
+            <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                    <p className="font-bold text-gray-900 text-sm truncate">
+                        {item.location_name || `Location #${item.location_id}`}
+                    </p>
+                    <p className="text-xs text-gray-400 truncate">
+                        by {item.note_author} · {timeAgo(item.note_created_at)}
+                    </p>
+                </div>
+                {/* badge showing what reaction type the user gave */}
+                <span className="shrink-0 text-base" title={item.reaction_type}>
+                    {emoji}
+                </span>
+            </div>
+            <p className="text-sm text-gray-700 leading-relaxed">{item.content}</p>
+            <div className="flex items-center justify-between">
+                <span className={`text-xs font-medium px-3 py-1 rounded-full ${vibe.style}`}>
+                    {vibe.label}
+                </span>
+                <span className="text-xs text-gray-400">
+                    👍 {item.reaction_count} · 💬 {item.reply_count}
+                </span>
+            </div>
+        </div>
+    );
+}
+
+// ─── SETTINGS FORMS ──────────────────────────────────────────────────────────
 
 function UsernameForm({ userId, currentUsername, onSuccess }) {
     const [username, setUsername] = useState(currentUsername || "");
@@ -267,7 +299,7 @@ function PictureForm({ userId, currentUrl, onSuccess }) {
 
 function VisibilityForm({ userId, currentSettings, onSuccess }) {
     const [visibility, setVisibility] = useState(currentSettings.visibility || "public");
-    const [notifications_enabled, setNotificationsEnabled] = useState(currentSettings.notifications_enabled ?? true);
+    const [notifications_enabled, setNotificationsEnabled] = useState(currentSettings.notifications_enabled ?? false);
     const [default_radius_km, setDefaultRadius] = useState(currentSettings.default_radius_km || 5.0);
     const [status, setStatus] = useState({ msg: "", isError: false });
     const [loading, setLoading] = useState(false);
@@ -303,7 +335,6 @@ function VisibilityForm({ userId, currentSettings, onSuccess }) {
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Visibility */}
             <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Profile visibility</label>
                 <select
@@ -312,11 +343,12 @@ function VisibilityForm({ userId, currentSettings, onSuccess }) {
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
                 >
                     <option value="public">Public — anyone can view</option>
-                    <option value="friends_only">Friends only</option>
                 </select>
+                <p className="text-xs text-gray-400 mt-1">
+                    Friends only visibility coming soon!
+                </p>
             </div>
 
-            {/* Default radius */}
             <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                     Default search radius: <span className="font-bold">{default_radius_km} km</span>
@@ -333,7 +365,6 @@ function VisibilityForm({ userId, currentSettings, onSuccess }) {
                 </div>
             </div>
 
-            {/* Notifications toggle */}
             <div className="flex items-center justify-between">
                 <p className="text-sm text-gray-700">Notifications</p>
                 <button
@@ -435,67 +466,95 @@ function DeleteAccountSection({ userId, onDeleted }) {
 
 // ─── MAIN COMPONENT ──────────────────────────────────────────────────────────
 
-/**
- * Profile
- *
- * Responsive layout:
- *   mobile  (<sm)  — stacked avatar/info, scrollable tab bar, 1-col post grid
- *   tablet  (sm+)  — side-by-side avatar/info, 2-col post grid
- *   desktop (lg+)  — wider content area, larger avatar
- */
 export default function Profile() {
-    const { userId: paramUserId } = useParams(); 
+    const { userId: paramUserId } = useParams();
     const [authUser, setAuthUser] = useState(null);
     const [profile, setProfile] = useState(null);
     const [posts, setPosts] = useState([]);
+    const [reactions, setReactions] = useState([]);  // notes this user has reacted to
     const [activeTab, setActiveTab] = useState("posts");
     const [loading, setLoading] = useState(true);
     const [pageError, setPageError] = useState(null);
     const navigate = useNavigate();
 
-    const isOwnProfile = !paramUserId || (authUser && parseInt(paramUserId) === authUser.user_id);
-
-    // Load auth user from localStorage
+    // verify JWT session 
     useEffect(() => {
         document.title = "Profile | Vibe Check";
-        const storedUser = localStorage.getItem("user");
-        if (!storedUser && !paramUserId) { navigate("/signin"); return; }
-        try {
-            if (storedUser) setAuthUser(JSON.parse(storedUser));
-        } catch {
-            localStorage.removeItem("user");
-            if (!paramUserId) navigate("/signin");
-        }
+
+        fetch(`${API}/me`, { credentials: "include" })
+            .then(res => {
+                if (!res.ok) {
+                    if (!paramUserId) navigate("/signin");
+                    else setAuthUser(null);
+                    return null;
+                }
+                return res.json();
+            })
+            .then(data => {
+                if (!data) return;
+                const sessionUser = data.user;
+                const cached = JSON.parse(localStorage.getItem("user") || "{}");
+                const merged = { ...cached, ...sessionUser };
+                localStorage.setItem("user", JSON.stringify(merged));
+                setAuthUser(merged);
+            })
+            .catch(() => {
+                const cached = localStorage.getItem("user");
+                if (cached) {
+                    try { setAuthUser(JSON.parse(cached)); } catch { /* ignore */ }
+                } else if (!paramUserId) {
+                    navigate("/signin");
+                }
+            });
     }, []);
 
-    // Fetch profile + posts
+    // load profile, posts, and reactions once session is confirmed
     useEffect(() => {
-        if (!authUser && !paramUserId) return;
-
         const targetId = paramUserId || authUser?.user_id;
         if (!targetId) return;
 
-        setLoading(true);
+        setProfile(null);
+        setPosts([]);
+        setReactions([]);
         setPageError(null);
+        setLoading(true);
 
-        Promise.all([
+        const isOwn = !paramUserId || (authUser && parseInt(paramUserId) === authUser.user_id);
+
+        const fetches = [
             fetch(`${API}/users/${targetId}/profile`, { credentials: "include" }),
             fetch(`${API}/notes/user/${targetId}`, { credentials: "include" }),
-        ])
-            .then(async ([profileRes, postsRes]) => {
+        ];
+
+        // Only fetch reaction history for own profile 
+        if (isOwn && authUser?.user_id) {
+            fetches.push(fetch(`${API}/reactions/user/${authUser.user_id}`, { credentials: "include" }));
+        }
+
+        Promise.all(fetches)
+            .then(async ([profileRes, postsRes, reactionsRes]) => {
                 if (!profileRes.ok) {
                     throw new Error(profileRes.status === 404 ? "User not found." : "Could not load profile.");
                 }
                 const profileData = await profileRes.json();
                 const postsData = postsRes.ok ? await postsRes.json() : { notes: [] };
+                const reactionsData = reactionsRes?.ok ? await reactionsRes.json() : { reactions: [] };
+
                 setProfile(profileData);
-                setPosts(postsData.notes || []);
+
+                const ownNotes = (postsData.notes || []).filter(
+                    n => String(n.user_id) === String(targetId)
+                );
+                setPosts(ownNotes);
+                setReactions(reactionsData.reactions || []);
             })
             .catch(err => setPageError(err.message))
             .finally(() => setLoading(false));
     }, [authUser, paramUserId]);
 
-    // render states
+    const isOwnProfile = !paramUserId || (authUser && parseInt(paramUserId) === authUser.user_id);
+
+    // ── RENDER STATES ────────────────────────────────────────────────────────
 
     if (loading) {
         return (
@@ -532,7 +591,6 @@ export default function Profile() {
         <div className="min-h-screen flex flex-col bg-white">
             <Navbar user={authUser} />
 
-            {/* ── Page wrapper: comfortable padding at every size ── */}
             <div className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8 w-full">
 
                 {/* ── PROFILE HEADER ────────────────────────────────────────
@@ -540,11 +598,7 @@ export default function Profile() {
                     sm+:     avatar left, text right (row), edit btn top-right
                 ──────────────────────────────────────────────────────────── */}
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
-
-                    {/* Avatar + name block */}
                     <div className="flex flex-col sm:flex-row items-center sm:items-start gap-3 sm:gap-5">
-
-                        {/* Avatar */}
                         {profile.profile_picture_url ? (
                             <img
                                 src={profile.profile_picture_url}
@@ -554,12 +608,11 @@ export default function Profile() {
                         ) : (
                             <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-purple-200 flex items-center justify-center shrink-0">
                                 <span className="text-purple-700 text-xl sm:text-2xl font-black select-none">
-                                    {(profile.username)?.[0]?.toUpperCase() || "?"}
+                                    {profile.username?.[0]?.toUpperCase() || "?"}
                                 </span>
                             </div>
                         )}
 
-                        {/* Name + handle + meta — centred on mobile, left-aligned on sm+ */}
                         <div className="text-center sm:text-left">
                             <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
                                 {profile.username}
@@ -571,9 +624,6 @@ export default function Profile() {
                         </div>
                     </div>
 
-                    {/* Edit profile button
-                        Mobile: full-width below the avatar block
-                        sm+:    auto-width pinned top-right */}
                     {isOwnProfile && (
                         <button
                             onClick={() => setActiveTab("settings")}
@@ -590,7 +640,7 @@ export default function Profile() {
                 <div className="flex border-t border-b border-gray-200 py-3 sm:py-4 mb-0">
                     {[
                         { value: profile.total_notes_posted, label: "Vibes posted" },
-                        { value: profile.total_reactions_received, label: "Reactions" },
+                        { value: profile.total_reactions_received, label: "Reactions received" },
                         { value: posts.length, label: "Active notes" },
                     ].map((stat, i) => (
                         <div
@@ -626,7 +676,7 @@ export default function Profile() {
                 {/* ── TAB CONTENT ───────────────────────────────────────── */}
                 <div className="bg-[#b2c8cc] min-h-96 p-4 sm:p-6 rounded-b-xl">
 
-                    {/* MY POSTS: 1-col mobile → 2-col sm+ */}
+                    {/* MY POSTS */}
                     {activeTab === "posts" && (
                         posts.length === 0 ? (
                             <div className="flex flex-col items-center justify-center py-16 text-gray-500">
@@ -642,27 +692,43 @@ export default function Profile() {
                         )
                     )}
 
-                    {/* BOOKMARKS placeholder */}
+                    {/* BOOKMARKS */}
                     {activeTab === "bookmarks" && (
                         <div className="flex flex-col items-center justify-center py-16 text-gray-500">
                             <p className="text-4xl mb-3">🔖</p>
-                            <p className="text-sm text-center">Bookmarks coming in a future milestone.</p>
+                            <p className="text-sm font-semibold text-gray-600 mb-1">Saved locations coming soon</p>
+                            <p className="text-xs text-center text-gray-400 max-w-xs">
+                                We're working on the ability to bookmark locations. Check back soon!
+                            </p>
                         </div>
                     )}
 
-                    {/* REACTIONS placeholder */}
+                    {/* REACTIONS */}
                     {activeTab === "reactions" && (
-                        <div className="flex flex-col items-center justify-center py-16 text-gray-500">
-                            <p className="text-4xl mb-3">👍</p>
-                            <p className="text-sm text-center">Reactions coming in a future milestone.</p>
-                        </div>
+                        !isOwnProfile ? (
+                            // Other users' reaction history is private
+                            <div className="flex flex-col items-center justify-center py-16 text-gray-500">
+                                <p className="text-4xl mb-3">🔒</p>
+                                <p className="text-sm text-center">Reaction history is private.</p>
+                            </div>
+                        ) : reactions.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center py-16 text-gray-500">
+                                <p className="text-4xl mb-3">👍</p>
+                                <p className="text-sm text-center">You haven't reacted to any notes yet.</p>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                                {reactions.map(item => (
+                                    <ReactedNoteCard key={item.reaction_id} item={item} />
+                                ))}
+                            </div>
+                        )
                     )}
 
-                    {/* SETTINGS: max-width card stack, full-width on mobile */}
+                    {/* SETTINGS */}
                     {activeTab === "settings" && isOwnProfile && (
                         <div className="space-y-4 w-full sm:max-w-xl">
 
-                            {/* Profile picture */}
                             <div className="bg-white rounded-xl shadow-sm p-4 sm:p-5">
                                 <h2 className="text-sm font-bold text-gray-800 mb-3">Profile Picture</h2>
                                 <PictureForm
@@ -672,7 +738,6 @@ export default function Profile() {
                                 />
                             </div>
 
-                            {/* Change username */}
                             <div className="bg-white rounded-xl shadow-sm p-4 sm:p-5">
                                 <h2 className="text-sm font-bold text-gray-800 mb-3">Change Username</h2>
                                 <UsernameForm
@@ -682,18 +747,14 @@ export default function Profile() {
                                 />
                             </div>
 
-                            {/* Change password */}
                             <div className="bg-white rounded-xl shadow-sm p-4 sm:p-5">
                                 <h2 className="text-sm font-bold text-gray-800 mb-3">Change Password</h2>
                                 <PasswordForm userId={profile.user_id} />
                             </div>
 
-                            {/* Account status card */}
                             <div className="bg-white rounded-xl shadow-sm p-4 sm:p-5">
                                 <h2 className="text-sm font-bold text-gray-800 mb-3">Account Status</h2>
                                 <div className="space-y-3">
-
-                                    {/* Email verification */}
                                     <div className="flex items-start sm:items-center justify-between gap-3">
                                         <div className="min-w-0">
                                             <p className="text-sm text-gray-700">Email Verification</p>
@@ -709,8 +770,6 @@ export default function Profile() {
                                             </span>
                                         )}
                                     </div>
-
-                                    {/* Account state */}
                                     <div className="flex items-center justify-between gap-3">
                                         <p className="text-sm text-gray-700">Account State</p>
                                         <span className={`shrink-0 text-xs font-semibold px-3 py-1 rounded-full border
@@ -723,7 +782,6 @@ export default function Profile() {
                                 </div>
                             </div>
 
-                            {/* Profile details card */}
                             <div className="bg-white rounded-xl shadow-sm p-4 sm:p-5">
                                 <h2 className="text-sm font-bold text-gray-800 mb-3">Privacy &amp; Preferences</h2>
                                 <VisibilityForm
@@ -737,7 +795,6 @@ export default function Profile() {
                                 />
                             </div>
 
-                            {/* Delete account */}
                             <DeleteAccountSection
                                 userId={profile.user_id}
                                 onDeleted={() => navigate("/signin")}

@@ -3,31 +3,32 @@ import Heatmap from "./Heatmap.jsx";
 import LocationView from "./LocationView.jsx";
 
 export default function DesktopMapLayout({
-                                             userLocation,
-                                             userLocationError,
-                                             searchQuery,
-                                             setSearchQuery,
-                                             results,
-                                             selectedLocation,
-                                             handleSelectLocation,
-                                             loading,
-                                             hasSearched,
-                                             radius,
-                                             setRadius,
-                                             vibeLevel,
-                                             setVibeLevel,
-                                             category,
-                                             setCategory,
-                                             mockHeatmapData,
-                                             handleSearch,
-                                             handleCloseLocation,
-                                             locationData,
-                                             setLocationData,
-                                             user,
-                                             locationError,
-                                             onSaveNote,
-                                             onDeleteNote,
-                                         }) {
+    userLocation,
+    userLocationError,
+    searchQuery,
+    setSearchQuery,
+    results,
+    selectedLocation,
+    handleSelectLocation,
+    loading,
+    hasSearched,
+    radius,
+    setRadius,
+    vibeLevel,
+    setVibeLevel,
+    category,
+    setCategory,
+    heatmapData,
+    heatmapLoading,
+    handleSearch,
+    handleCloseLocation,
+    locationData,
+    setLocationData,
+    user,
+    locationError,
+    onSaveNote,
+    onDeleteNote,
+}) {
     return (
         <main className="flex flex-1 min-h-0">
             <aside className="w-[420px] flex flex-col border-r border-gray-200 bg-gray-50 min-h-0">
@@ -54,7 +55,8 @@ export default function DesktopMapLayout({
                 <div className="flex-1 min-h-0">
                     <Heatmap
                         selectedLocation={selectedLocation}
-                        heatmapData={mockHeatmapData}
+                        heatmapData={heatmapData}
+                        heatmapLoading={heatmapLoading}
                         userLocation={userLocation}
                         userLocationError={userLocationError}
                     />

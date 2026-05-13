@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import loginImage from "../assets/signup/background.png";
+import { useI18n } from "../localization/I18nProvider.jsx";
 
 export default function Signin() {
     const navigate = useNavigate();
+    const { t, tm } = useI18n();
 
     const [formData, setFormData] = useState({
         email: "",
@@ -14,15 +16,19 @@ export default function Signin() {
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        const storedUser = localStorage.getItem("user");
-
-        if (storedUser) {
-            navigate("/map");
-        }
-    }, []);
-
-    useEffect(() => {
         document.title = "Sign In | Vibe Check";
+
+        fetch("/api/me", { credentials: "include" })
+            .then(res => {
+                if (res.ok) {
+                    // Valid session cookie exists aka already logged in, go to map
+                    navigate("/map");
+                }
+                // 401 means no valid session so you stay on signin page, do nothing
+            })
+            .catch(() => {
+                // Network error we do the same stay on signin page, do nothing
+            });
     }, []);
 
     function handleChange(event) {
@@ -41,7 +47,7 @@ export default function Signin() {
         const password = formData.password;
 
         if (!email || !password) {
-            setError("Please enter your email and password.");
+            setError(t("signin.validation.missing"));
             return;
         }
 
@@ -51,26 +57,22 @@ export default function Signin() {
             const response = await fetch("/api/login", {
                 method: "POST",
                 credentials: "include",
-                headers: {
-                    "Content-Type": "application/json",
-                },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, password }),
             });
 
             const data = await response.json();
 
             if (!response.ok) {
-                setError(data.error || "Log in failed.");
+                setError(data.error || t("signin.validation.failed"));
                 return;
             }
 
             localStorage.setItem("user", JSON.stringify(data.user));
             navigate("/map");
-        }
-        catch {
+        } catch {
             setError("Unable to connect to the server.");
-        }
-        finally {
+        } finally {
             setLoading(false);
         }
     }
@@ -87,20 +89,16 @@ export default function Signin() {
                 <div className="relative z-10 flex min-h-screen w-full flex-col justify-between p-12 xl:p-16">
                     <div>
                         <Link to="/" className="text-2xl font-black tracking-tight">
-                            Vibe Check
+                            {t("app.brand")}
                         </Link>
                     </div>
 
                     <div className="max-w-xl">
                         <h1 className="text-4xl xl:text-5xl font-bold leading-tight">
-                            Welcome back
+                            {t("signin.heroTitle")}
                         </h1>
                         <div className="mt-10 space-y-4">
-                            {[
-                                "Check live vibes before you head out",
-                                "View and add notes for nearby places",
-                                "Stay updated on the spots that matter to you",
-                            ].map((item) => (
+                            {tm("signin.heroItems").map((item) => (
                                 <div
                                     key={item}
                                     className="rounded-xl border border-white/15 bg-white/10 px-5 py-4 backdrop-blur-sm"
@@ -119,25 +117,25 @@ export default function Signin() {
                 <div className="w-full max-w-md">
                     <div className="mb-6 flex items-center justify-between text-sm text-gray-700">
                         <Link to="/" className="font-black text-2xl tracking-tight lg:hidden text-gray-900">
-                            Vibe Check
+                            {t("app.brand")}
                         </Link>
                         <div className="ml-auto">
-                            Need an account?{" "}
+                            {t("signin.needAccount")}{" "}
                             <Link to="/signup" className="font-semibold text-blue-600 hover:underline">
-                                Sign up
+                                {t("signin.signUp")}
                             </Link>
                         </div>
                     </div>
 
                     <div className="bg-white rounded-2xl shadow-2xl p-8">
                         <div className="mb-8 text-center">
-                            <h2 className="text-3xl font-bold text-gray-900">Sign In</h2>
+                            <h2 className="text-3xl font-bold text-gray-900">{t("signin.heading")}</h2>
                         </div>
 
                         <form onSubmit={handleSubmit} className="space-y-5">
                             <div>
                                 <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
-                                    Email
+                                    {t("signin.email")}
                                 </label>
                                 <input
                                     id="email"
@@ -145,14 +143,14 @@ export default function Signin() {
                                     type="email"
                                     value={formData.email}
                                     onChange={handleChange}
-                                    placeholder="Email"
+                                    placeholder={t("signin.email")}
                                     className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400 text-base placeholder:text-sm"
                                 />
                             </div>
 
                             <div>
                                 <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
-                                    Password
+                                    {t("signin.password")}
                                 </label>
                                 <input
                                     id="password"
@@ -160,7 +158,7 @@ export default function Signin() {
                                     type="password"
                                     value={formData.password}
                                     onChange={handleChange}
-                                    placeholder="Password"
+                                    placeholder={t("signin.password")}
                                     className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400 text-base placeholder:text-sm"
                                 />
                             </div>
@@ -174,9 +172,9 @@ export default function Signin() {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full bg-green-500 text-white font-semibold px-6 py-3 rounded-xl shadow-sm hover:bg-green-600 transition disabled:opacity-60 disabled:cursor-not-allowed text-base"
+                                className="w-full bg-green-500 text-white font-semibold px-6 py-3 rounded-xl shadow-sm hover:bg-green-600 transition disabled:opacity-60 disabled:cursor-not-allowed"
                             >
-                                {loading ? "Logging In..." : "Log In"}
+                                {loading ? t("signin.loggingIn") : t("signin.logIn")}
                             </button>
                         </form>
                     </div>

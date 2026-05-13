@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import signupImage from "../assets/signup/background.png";
+import { useI18n } from "../localization/I18nProvider.jsx";
 
 export default function Signup() {
     const navigate = useNavigate();
+    const { t, tm } = useI18n();
 
     const [formData, setFormData] = useState({
         username: "",
@@ -17,8 +19,8 @@ export default function Signup() {
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        document.title = "Sign Up | Vibe Check";
-    }, []);
+        document.title = t("signup.title");
+    }, [t]);
 
     function handleChange(event) {
         const { name, value } = event.target;
@@ -39,22 +41,22 @@ export default function Signup() {
         const confirmPassword = formData.confirmPassword;
 
         if (!username || !email || !password || !confirmPassword) {
-            setError("Please fill out all fields.");
+            setError(t("signup.validation.fillAll"));
             return;
         }
 
         if (!/^[a-zA-Z0-9]+$/.test(username)) {
-            setError("Username must contain only letters and numbers.");
+            setError(t("signup.validation.username"));
             return;
         }
 
         if (password !== confirmPassword) {
-            setError("Passwords do not match.");
+            setError(t("signup.validation.passwordMatch"));
             return;
         }
 
         if (password.length < 8) {
-            setError("Password must be at least 8 characters long.");
+            setError(t("signup.validation.passwordLength"));
             return;
         }
 
@@ -72,11 +74,11 @@ export default function Signup() {
             const data = await response.json();
 
             if (!response.ok) {
-                setError(data.error || "Sign up failed.");
+                setError(data.error || t("signup.validation.failed"));
                 return;
             }
 
-            setSuccess("Account created successfully. Redirecting...");
+            setSuccess(t("signup.validation.success"));
             setFormData({
                 username: "",
                 email: "",
@@ -89,7 +91,7 @@ export default function Signup() {
             }, 1200);
         }
         catch {
-            setError("Unable to connect to the server.");
+            setError(t("signup.validation.connect"));
         }
         finally {
             setLoading(false);
@@ -108,21 +110,17 @@ export default function Signup() {
                 <div className="relative z-10 flex min-h-screen w-full flex-col justify-between p-12 xl:p-16">
                     <div>
                         <Link to="/" className="text-2xl font-black tracking-tight">
-                            Vibe Check
+                            {t("app.brand")}
                         </Link>
                     </div>
 
                     <div className="max-w-xl">
                         <h1 className="text-4xl xl:text-5xl font-bold leading-tight">
-                            Create your free account
+                            {t("signup.heroTitle")}
                         </h1>
 
                         <div className="mt-10 space-y-4">
-                            {[
-                                "Add live notes about what places feel like right now",
-                                "Get notifications for replies, reactions, and updates",
-                                "Find the right spot faster without guesswork",
-                            ].map((benefit) => (
+                            {tm("signup.heroItems").map((benefit) => (
                                 <div
                                     key={benefit}
                                     className="rounded-xl border border-white/15 bg-white/10 px-5 py-4 backdrop-blur-sm"
@@ -141,25 +139,25 @@ export default function Signup() {
                 <div className="w-full max-w-md">
                     <div className="mb-6 flex items-center justify-between text-sm text-gray-700">
                         <Link to="/" className="font-black text-2xl tracking-tight lg:hidden text-gray-900">
-                            Vibe Check
+                            {t("app.brand")}
                         </Link>
                         <div className="ml-auto">
-                            Already have an account?{" "}
+                            {t("signup.haveAccount")}{" "}
                             <Link to="/signin" className="font-semibold text-blue-600 hover:underline">
-                                Sign in
+                                {t("signup.signIn")}
                             </Link>
                         </div>
                     </div>
 
                     <div className="bg-white rounded-2xl shadow-2xl p-8">
                         <div className="mb-8 text-center">
-                            <h2 className="text-3xl font-bold text-gray-900">Sign Up</h2>
+                            <h2 className="text-3xl font-bold text-gray-900">{t("signup.heading")}</h2>
                         </div>
 
                         <form onSubmit={handleSubmit} className="space-y-5">
                             <div>
                                 <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
-                                    Email
+                                    {t("signup.email")}
                                 </label>
                                 <input
                                     id="email"
@@ -167,14 +165,14 @@ export default function Signup() {
                                     type="email"
                                     value={formData.email}
                                     onChange={handleChange}
-                                    placeholder="Email"
+                                    placeholder={t("signup.email")}
                                     className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400 text-base placeholder:text-sm"
                                 />
                             </div>
 
                             <div>
                                 <label htmlFor="username" className="block text-sm font-semibold text-gray-700 mb-2">
-                                    Username
+                                    {t("signup.username")}
                                 </label>
                                 <input
                                     id="username"
@@ -182,14 +180,14 @@ export default function Signup() {
                                     type="text"
                                     value={formData.username}
                                     onChange={handleChange}
-                                    placeholder="Username"
+                                    placeholder={t("signup.username")}
                                     className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400 text-base placeholder:text-sm"
                                 />
                             </div>
 
                             <div>
                                 <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
-                                    Password
+                                    {t("signup.password")}
                                 </label>
                                 <input
                                     id="password"
@@ -197,14 +195,14 @@ export default function Signup() {
                                     type="password"
                                     value={formData.password}
                                     onChange={handleChange}
-                                    placeholder="Password"
+                                    placeholder={t("signup.password")}
                                     className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400 text-base placeholder:text-sm"
                                 />
                             </div>
 
                             <div>
                                 <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-700 mb-2">
-                                    Confirm Password
+                                    {t("signup.confirmPassword")}
                                 </label>
                                 <input
                                     id="confirmPassword"
@@ -212,7 +210,7 @@ export default function Signup() {
                                     type="password"
                                     value={formData.confirmPassword}
                                     onChange={handleChange}
-                                    placeholder="Confirm Password"
+                                    placeholder={t("signup.confirmPassword")}
                                     className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400 text-base placeholder:text-sm"
                                 />
                             </div>
@@ -234,7 +232,7 @@ export default function Signup() {
                                 disabled={loading}
                                 className="w-full bg-green-500 text-white font-semibold px-6 py-3 rounded-xl shadow-sm hover:bg-green-600 transition disabled:opacity-60 disabled:cursor-not-allowed hover:underline cursor-pointer text-base"
                             >
-                                {loading ? "Creating Account..." : "Create Account"}
+                                {loading ? t("signup.creatingAccount") : t("signup.createAccount")}
                             </button>
                         </form>
                     </div>

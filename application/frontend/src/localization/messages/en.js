@@ -1,0 +1,123 @@
+const en = {
+    app: {
+        brand: "Vibe Check",
+    },
+    nav: {
+        profileAria: "Go to profile",
+        signOut: "Sign Out",
+        signIn: "Sign In",
+        signUp: "Sign Up",
+    },
+    footer: {
+        copyright: "© ARKHA",
+        team: "Meet Our Team",
+    },
+    landing: {
+        title: "Vibe Check",
+        tagline: "Real-time, location-based bulletin board.",
+        cta: "Let's Go!",
+        aboutTitle: "What Is Vibe Check?",
+        howItWorks: "How It Works",
+        withoutTitle: "Without Vibe Check",
+        withTitle: "With Vibe Check",
+        features: [
+            {
+                title: "Live Vibes",
+                text: "See what a place feels like right now, not what it felt like weeks ago.",
+            },
+            {
+                title: "Location-Locked Posts",
+                text: "Only nearby users contribute, keeping updates more relevant and grounded.",
+            },
+            {
+                title: "Expiring Notes",
+                text: "Posts disappear so everything stays current and relevant.",
+            },
+            {
+                title: "Live Heatmap",
+                text: "Quickly spot busy and quiet areas with real-time activity data.",
+            },
+        ],
+        steps: [
+            "Search or explore nearby places",
+            "Check live notes and vibe levels",
+            "Choose where to go with confidence",
+        ],
+        withoutItems: [
+            "Reviews are often outdated",
+            "Busy-time estimates rely on historical trends",
+            "You can arrive somewhere overcrowded, noisy, or closed",
+            "Time and effort get wasted on bad choices",
+        ],
+        withItems: [
+            "Live, crowd-sourced updates from nearby users",
+            "Real-time vibe levels for places around you",
+            "Fast decisions based on what is happening now",
+            "Less guesswork, less frustration",
+        ],
+    },
+    signin: {
+        title: "Sign In | Vibe Check",
+        heroTitle: "Welcome back",
+        heroItems: [
+            "Check live vibes before you head out",
+            "View and add notes for nearby places",
+            "Stay updated on the spots that matter to you",
+        ],
+        needAccount: "Need an account?",
+        signUp: "Sign up",
+        heading: "Sign In",
+        email: "Email",
+        password: "Password",
+        logIn: "Log In",
+        loggingIn: "Logging In...",
+        validation: {
+            missing: "Please enter your email and password.",
+            failed: "Log in failed.",
+            connect: "Unable to connect to the server.",
+        },
+    },
+    signup: {
+        title: "Sign Up | Vibe Check",
+        heroTitle: "Create your free account",
+        heroItems: [
+            "Add live notes about what places feel like right now",
+            "Get notifications for replies, reactions, and updates",
+            "Find the right spot faster without guesswork",
+        ],
+        haveAccount: "Already have an account?",
+        signIn: "Sign in",
+        heading: "Sign Up",
+        email: "Email",
+        username: "Username",
+        password: "Password",
+        confirmPassword: "Confirm Password",
+        createAccount: "Create Account",
+        creatingAccount: "Creating Account...",
+        validation: {
+            fillAll: "Please fill out all fields.",
+            username: "Username must contain only letters and numbers.",
+            passwordMatch: "Passwords do not match.",
+            passwordLength: "Password must be at least 8 characters long.",
+            failed: "Sign up failed.",
+            success: "Account created successfully. Redirecting...",
+            connect: "Unable to connect to the server.",
+        },
+    },
+    search: {
+        placeName: "Search Place Name",
+        placeholder: "Search for a place...",
+        button: "Search",
+        radiusLabel: "Search Radius: {radius} {unit}",
+        category: "Category",
+        vibeLevel: "Vibe Level",
+        activeFilters: "Active Filters:",
+        results: "Results",
+        searching: "Searching...",
+        emptyPrompt: "Use the filters above to search for places and discover vibes",
+        noResults: "No places found matching your criteria. Try adjusting the filters.",
+        away: "{distance} {unit} away",
+    },
+};
+
+export default en;
