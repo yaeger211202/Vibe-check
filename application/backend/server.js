@@ -15,12 +15,31 @@ import swaggerSpec from "./docs/openapi.js";
 
 
 const { Pool } = pkg;
+const isProduction = process.env.NODE_ENV === "production";
+const authCookieOptions = {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? "strict" : "lax",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+};
 
 dotenv.config();
 
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
+app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "http://localhost:5173");
+    res.header("Access-Control-Allow-Credentials", "true");
+    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+
+    if (req.method === "OPTIONS") {
+        return res.sendStatus(204);
+    }
+
+    next();
+});
 
 app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.get("/api/docs.json", (_req, res) => {
@@ -35,8 +54,96 @@ const pool = new Pool({
     port: process.env.DB_PORT,
 });
 
+function mapScoreToVibeLevel(score) {
+    if (score === null || score === undefined) return null;
+
+    const numericScore = Number.parseFloat(score);
+
+    if (Number.isNaN(numericScore)) return null;
+    if (numericScore < 1.5) return "dead";
+    if (numericScore < 2.5) return "quiet";
+    if (numericScore < 3.5) return "moderate";
+    if (numericScore < 4.5) return "busy";
+    return "buzzing";
+}
+
+function toRadians(value) {
+    return (value * Math.PI) / 180;
+}
+
+function calculateDistanceKm(fromLat, fromLon, toLat, toLon) {
+    const earthRadiusKm = 6371;
+    const latDelta = toRadians(toLat - fromLat);
+    const lonDelta = toRadians(toLon - fromLon);
+    const startLat = toRadians(fromLat);
+    const endLat = toRadians(toLat);
+
+    const a = Math.sin(latDelta / 2) ** 2
+        + Math.cos(startLat) * Math.cos(endLat) * Math.sin(lonDelta / 2) ** 2;
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    return earthRadiusKm * c;
+}
+
+function normalizeCategory(value) {
+    return value?.trim().toLowerCase() || "";
+}
+
+const categoryMatchers = {
+    Restaurant: ["restaurant", "fast_food", "food", "eatery"],
+    Libraries: ["library", "books", "study"],
+    Bar: ["bar", "pub", "biergarten"],
+    Cafe: ["cafe", "coffee", "tea"],
+    Park: ["park", "garden", "playground", "nature_reserve"],
+    Museum: ["museum", "gallery", "exhibition"],
+    Shopping: ["shop", "mall", "supermarket", "retail", "store", "marketplace"],
+    Entertainment: ["cinema", "theatre", "theater", "arts_centre", "stadium", "bowling", "arcade"],
+    Nightlife: ["nightclub", "bar", "pub", "biergarten"],
+};
+
+function deriveLocationCategories(place) {
+    const normalizedClass = normalizeCategory(place.class || place.category);
+    const normalizedType = normalizeCategory(place.type);
+    const normalizedName = normalizeCategory(place.display_name || place.name);
+
+    const matches = Object.entries(categoryMatchers)
+        .filter(([, matchTerms]) =>
+            matchTerms.some((term) =>
+                normalizedClass.includes(term)
+                || normalizedType.includes(term)
+                || normalizedName.includes(term)
+            )
+        )
+        .map(([categoryName]) => categoryName);
+
+    return matches.length > 0 ? matches : ["na"];
+}
+
+function matchesCategoryFilter(place, requestedCategory) {
+    if (!requestedCategory) return true;
+
+    const matchTerms = Object.entries(categoryMatchers).find(
+        ([categoryName]) => normalizeCategory(categoryName) === requestedCategory
+    )?.[1];
+
+    const normalizedClass = normalizeCategory(place.class || place.category);
+    const normalizedType = normalizeCategory(place.type);
+    const normalizedName = normalizeCategory(place.display_name || place.name);
+
+    if (!matchTerms) return true;
+
+    return matchTerms.some((term) =>
+        normalizedClass.includes(term)
+        || normalizedType.includes(term)
+        || normalizedName.includes(term)
+    );
+}
+
 app.get("/api/search/locations", async (req, res) => {
     const query = req.query.q?.trim();
+    const requestedVibeLevel = req.query.vibeLevel?.trim().toLowerCase();
+    const requestedCategory = normalizeCategory(req.query.category);
+    const requestedRadiusKm = Number.parseFloat(req.query.radius);
 
     if (!query) {
         return res.status(400).json({ error: "Missing search query." });
@@ -44,7 +151,7 @@ app.get("/api/search/locations", async (req, res) => {
 
     try {
         const response = await fetch(
-            `https://nominatim.openstreetmap.org/search?format=jsonv2&q=${encodeURIComponent(query)}&limit=5`,
+            `https://nominatim.openstreetmap.org/search?format=jsonv2&q=${encodeURIComponent(query)}&limit=25`,
             {
                 headers: {
                     "User-Agent": "VibeCheck/0.1 (contact: rsrinath@sfsu.edu)"
@@ -58,14 +165,87 @@ app.get("/api/search/locations", async (req, res) => {
 
         const data = await response.json();
 
-        const results = data.map((place) => ({
-            id: place.place_id,
-            name: place.display_name,
-            lat: parseFloat(place.lat),
-            lon: parseFloat(place.lon),
-            type: place.type,
-            category: place.class
-        }));
+        if (!Array.isArray(data) || data.length === 0) {
+            return res.json([]);
+        }
+
+        const searchCenter = {
+            lat: Number.parseFloat(data[0].lat),
+            lon: Number.parseFloat(data[0].lon),
+        };
+        const nominatimIds = data
+            .map((place) => Number.parseInt(place.place_id, 10))
+            .filter((placeId) => !Number.isNaN(placeId));
+
+        let savedLocationRows = [];
+
+        if (nominatimIds.length > 0) {
+            const savedLocationsResult = await pool.query(
+                `SELECT
+                    l.location_id,
+                    l.nominatim_id,
+                    l.name,
+                    l.lat,
+                    l.lng,
+                    l.address,
+                    l.category_tags,
+                    l.radius_meters,
+                    vs.avg_vibe_score
+                 FROM locations l
+                 LEFT JOIN location_vibe_scores vs ON vs.location_id = l.location_id
+                 WHERE l.nominatim_id = ANY($1::bigint[])`,
+                [nominatimIds]
+            );
+
+            savedLocationRows = savedLocationsResult.rows;
+        }
+
+        const savedLocationsByNominatimId = new Map(
+            savedLocationRows.map((row) => [
+                String(row.nominatim_id),
+                {
+                    dbId: row.location_id,
+                    vibeLevel: mapScoreToVibeLevel(row.avg_vibe_score),
+                    avgVibeScore: row.avg_vibe_score === null ? null : Number.parseFloat(row.avg_vibe_score),
+                },
+            ])
+        );
+
+        const results = data
+            .map((place) => {
+                const savedLocation = savedLocationsByNominatimId.get(String(place.place_id));
+                const lat = Number.parseFloat(place.lat);
+                const lon = Number.parseFloat(place.lon);
+                const distanceKm = calculateDistanceKm(searchCenter.lat, searchCenter.lon, lat, lon);
+                const categoryTags = deriveLocationCategories(place);
+
+                return {
+                    id: place.place_id,
+                    name: place.display_name,
+                    lat,
+                    lon,
+                    type: place.type,
+                    category: place.class,
+                    categoryTags,
+                    db_id: savedLocation?.dbId ?? null,
+                    vibeLevel: savedLocation?.vibeLevel ?? null,
+                    avgVibeScore: savedLocation?.avgVibeScore ?? null,
+                    distance: distanceKm.toFixed(1),
+                    distanceKm,
+                };
+            })
+            .filter((place) => {
+                const matchesVibe = !requestedVibeLevel
+                    || requestedVibeLevel === "all"
+                    || place.vibeLevel === requestedVibeLevel;
+                const matchesCategory = matchesCategoryFilter(place, requestedCategory);
+                const matchesRadius = Number.isNaN(requestedRadiusKm)
+                    || requestedRadiusKm <= 0
+                    || place.distanceKm <= requestedRadiusKm;
+
+                return matchesVibe && matchesCategory && matchesRadius;
+            })
+            .map(({ distanceKm, ...place }) => place);
 
         return res.json(results);
     }
@@ -110,12 +290,7 @@ app.post("/api/login", async (req, res) => {
             { expiresIn: '7d' }
         );
 
-        res.cookie('token', token, {
-            httpOnly: true,   
-            secure: true, // toggle to false when testing locally    
-            sameSite: 'strict',
-            maxAge: 7 * 24 * 60 * 60 * 1000 
-        });
+        res.cookie('token', token, authCookieOptions);
 
         return res.status(200).json({
             message: "Login successful.",
@@ -174,7 +349,7 @@ app.post("/api/signup", async (req, res) => {
 
 
 app.post("/api/logout", requireAuth, async (req, res) => {
-    res.clearCookie('token');
+    res.clearCookie('token', authCookieOptions);
     return res.status(200).json({ message: "Logged out successfully." });
   });
 

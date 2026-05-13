@@ -6,7 +6,7 @@ export function createLocationsRoutes(pool) {
 
     // Upsert
     router.post("/upsert", async (req, res) => {
-        const { nominatim_id, name, lat, lng } = req.body;
+        const { nominatim_id, name, lat, lng, category_tags } = req.body;
 
         if (!nominatim_id || !name || lat === undefined || lng === undefined) {
             return res.status(400).json({ error: "nominatim_id, name, lat, and lng are required." });
@@ -14,11 +14,17 @@ export function createLocationsRoutes(pool) {
 
         try {
             const result = await pool.query(
-                `INSERT INTO locations (nominatim_id, name, lat, lng)
-                VALUES ($1, $2, $3, $4)
-                ON CONFLICT (nominatim_id) DO UPDATE SET name = EXCLUDED.name
-                RETURNING location_id, nominatim_id, name, lat, lng`,
-                [nominatim_id, name, lat, lng]
+                `INSERT INTO locations (nominatim_id, name, lat, lng, category_tags)
+                VALUES ($1, $2, $3, $4, $5)
+                ON CONFLICT (nominatim_id) DO UPDATE
+                SET name = EXCLUDED.name,
+                    category_tags = CASE
+                        WHEN EXCLUDED.category_tags IS NOT NULL AND cardinality(EXCLUDED.category_tags) > 0
+                        THEN EXCLUDED.category_tags
+                        ELSE locations.category_tags
+                    END
+                RETURNING location_id, nominatim_id, name, lat, lng, category_tags`,
+                [nominatim_id, name, lat, lng, category_tags?.length ? category_tags : null]
             );
 
             return res.status(200).json({
@@ -194,4 +200,3 @@ export function createLocationsRoutes(pool) {
 }
 
 export default router;
-

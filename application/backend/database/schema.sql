@@ -204,6 +204,9 @@ CREATE INDEX idx_reactions_note ON reactions(note_id);
 CREATE INDEX idx_replies_note ON replies(note_id);
 CREATE INDEX idx_notifications_user_read ON notifications(user_id, is_read);
 
+-- Schema compatibility for existing databases that still have note categories
+ALTER TABLE notes DROP COLUMN IF EXISTS category_tag;
+
 -- ========================
 -- CONSTRAINTS
 -- ========================
