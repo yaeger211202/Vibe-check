@@ -91,7 +91,7 @@ export default function Navbar({ user }) {
                             <div className="relative">
                                 <button
                                     onClick={toggleNotifications}
-                                    className="relative w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center border border-gray-200 hover:bg-gray-200 transition"
+                                    className="relative w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center border border-gray-200 hover:bg-gray-200 transition cursor-pointer"
                                     aria-label="Notifications"
                                 >
                                     <span className="text-lg">🔔</span>
@@ -119,7 +119,7 @@ export default function Navbar({ user }) {
                                                     <button
                                                         key={notification.notification_id}
                                                         onClick={() => markNotificationRead(notification.notification_id)}
-                                                        className={`w-full text-left px-4 py-3 border-b border-gray-100 hover:bg-gray-50 transition ${
+                                                        className={`w-full text-left px-4 py-3 border-b border-gray-100 hover:bg-gray-50 transition cursor-pointer ${
                                                             notification.is_read ? "bg-white" : "bg-blue-50"
                                                         }`}
                                                     >
