@@ -2,11 +2,14 @@ import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 
 import Footer from "./components/Footer.jsx";
+import { useI18n } from "./localization/I18nProvider.jsx";
 
 export default function Landing() {
+    const { t, tm } = useI18n();
+
     useEffect(() => {
-        document.title = "Vibe Check";
-    }, []);
+        document.title = t("landing.title");
+    }, [t]);
 
     const [user, setUser] = useState(null);
 
@@ -29,10 +32,10 @@ export default function Landing() {
                         <div className="flex justify-center md:justify-end">
                             <div className="text-center md:text-left">
                                 <h1 className="text-4xl sm:text-6xl md:text-8xl font-black tracking-tight text-black leading-none">
-                                    Vibe Check
+                                    {t("landing.title")}
                                 </h1>
                                 <p className="mt-4 text-base sm:text-lg md:text-xl text-gray-600 max-w-md">
-                                    Real-time, location-based bulletin board.
+                                    {t("landing.tagline")}
                                 </p>
                             </div>
                         </div>
@@ -43,7 +46,7 @@ export default function Landing() {
                                     to="/map"
                                     className="block w-full text-center bg-green-500 text-white font-semibold px-6 py-4 rounded-xl shadow-sm hover:bg-green-600 hover:underline transition text-base"
                                 >
-                                    Let's Go!
+                                    {t("landing.cta")}
                                 </Link>
 
                                 <div className="flex gap-4">
@@ -83,27 +86,10 @@ export default function Landing() {
 
             <section id="more-info" className="px-6 pb-12">
                 <div className="bg-white shadow-2xl rounded-2xl p-6 md:p-10 w-full max-w-6xl mx-auto">
-                    <h2 className="text-2xl font-bold text-center mb-6">What Is Vibe Check?</h2>
+                    <h2 className="text-2xl font-bold text-center mb-6">{t("landing.aboutTitle")}</h2>
 
                     <div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-6 mb-10">
-                        {[
-                            {
-                                title: "Live Vibes",
-                                text: "See what a place feels like right now, not what it felt like weeks ago.",
-                            },
-                            {
-                                title: "Location-Locked Posts",
-                                text: "Only nearby users contribute, keeping updates more relevant and grounded.",
-                            },
-                            {
-                                title: "Expiring Notes",
-                                text: "Posts disappear so everything stays current and relevant.",
-                            },
-                            {
-                                title: "Live Heatmap",
-                                text: "Quickly spot busy and quiet areas with real-time activity data.",
-                            },
-                        ].map((f) => (
+                        {tm("landing.features").map((f) => (
                             <div
                                 key={f.title}
                                 className="border border-gray-200 bg-gray-100 rounded-xl p-6 shadow-sm hover:shadow-md transition"
@@ -115,13 +101,9 @@ export default function Landing() {
                     </div>
 
                     <div className="bg-gray-100 p-6 rounded-xl border border-gray-200 shadow-sm">
-                        <h3 className="font-semibold mb-4 text-center text-lg">How It Works</h3>
+                        <h3 className="font-semibold mb-4 text-center text-lg">{t("landing.howItWorks")}</h3>
                         <div className="grid md:grid-cols-3 gap-6 text-center">
-                            {[
-                                "Search or explore nearby places",
-                                "Check live notes and vibe levels",
-                                "Choose where to go with confidence",
-                            ].map((step, i) => (
+                            {tm("landing.steps").map((step, i) => (
                                 <div key={i} className="p-4">
                                     <div className="font-bold text-lg mb-2">{i + 1}</div>
                                     <p className="text-gray-600">{step}</p>
@@ -133,22 +115,20 @@ export default function Landing() {
                     <div className="mt-10">
                         <div className="grid md:grid-cols-2 gap-6">
                             <div className="border border-gray-200 bg-gray-100 rounded-xl p-6 shadow-sm">
-                                <h3 className="font-semibold mb-3 text-lg">Without Vibe Check</h3>
+                                <h3 className="font-semibold mb-3 text-lg">{t("landing.withoutTitle")}</h3>
                                 <ul className="space-y-2 text-gray-600 list-disc list-inside">
-                                    <li>Reviews are often outdated</li>
-                                    <li>Busy-time estimates rely on historical trends</li>
-                                    <li>You can arrive somewhere overcrowded, noisy, or closed</li>
-                                    <li>Time and effort get wasted on bad choices</li>
+                                    {tm("landing.withoutItems").map((item) => (
+                                        <li key={item}>{item}</li>
+                                    ))}
                                 </ul>
                             </div>
 
                             <div className="border border-gray-200 bg-gray-100 rounded-xl p-6 shadow-sm">
-                                <h3 className="font-semibold mb-3 text-lg">With Vibe Check</h3>
+                                <h3 className="font-semibold mb-3 text-lg">{t("landing.withTitle")}</h3>
                                 <ul className="space-y-2 text-gray-600 list-disc list-inside">
-                                    <li>Live, crowd-sourced updates from nearby users</li>
-                                    <li>Real-time vibe levels for places around you</li>
-                                    <li>Fast decisions based on what is happening now</li>
-                                    <li>Less guesswork, less frustration</li>
+                                    {tm("landing.withItems").map((item) => (
+                                        <li key={item}>{item}</li>
+                                    ))}
                                 </ul>
                             </div>
                         </div>
