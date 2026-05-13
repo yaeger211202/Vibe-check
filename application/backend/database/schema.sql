@@ -109,10 +109,11 @@ CREATE TABLE replies (
 -- REACTIONS
 -- ========================
 CREATE TABLE reactions (
-    reaction_id SERIAL PRIMARY KEY,
-    note_id     INT NOT NULL REFERENCES notes(note_id) ON DELETE CASCADE,
-    user_id     INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-    created_at  TIMESTAMP NOT NULL DEFAULT NOW(),
+    reaction_id   SERIAL PRIMARY KEY,
+    note_id       INT NOT NULL REFERENCES notes(note_id) ON DELETE CASCADE,
+    user_id       INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    reaction_type VARCHAR(20) NOT NULL CHECK (reaction_type IN ('thumbs_up', 'thumbs_down')),
+    created_at    TIMESTAMP NOT NULL DEFAULT NOW(),
     UNIQUE (user_id, note_id)
 );
 
@@ -203,6 +204,9 @@ CREATE INDEX idx_notes_expires_at ON notes(expires_at) WHERE expires_at IS NOT N
 CREATE INDEX idx_reactions_note ON reactions(note_id);
 CREATE INDEX idx_replies_note ON replies(note_id);
 CREATE INDEX idx_notifications_user_read ON notifications(user_id, is_read);
+
+-- Schema compatibility for existing databases that still have note categories
+ALTER TABLE notes DROP COLUMN IF EXISTS category_tag;
 
 -- ========================
 -- CONSTRAINTS

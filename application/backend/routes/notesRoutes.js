@@ -1,11 +1,10 @@
 import express from 'express';
-import { requireAuth, requireVerified } from '../middleware/auth.js'; // FIX: path should match your folder structure
+import { requireAuth, requireVerified } from '../middleware/auth.js';
 
 const router = express.Router();
 
 export function createNotesRoutes(pool) {
     // CREATE - Add a new note to a location
-    // FIX: added requireAuth and requireVerified (FR 1.3, FR 1.5)
     router.post("/", requireAuth, requireVerified, async (req, res) => {
         const { user_id, location_id, content, vibe_level, is_anonymous } = req.body;
 
@@ -94,6 +93,7 @@ export function createNotesRoutes(pool) {
             return res.status(500).json({ error: "Internal server error." });
         }
     });
+
     router.get("/:note_id", async (req, res) => {
         const { note_id } = req.params;
 
