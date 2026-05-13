@@ -59,7 +59,7 @@ CREATE TABLE locations (
     lat             DECIMAL(10,7) NOT NULL,
     lng             DECIMAL(10,7) NOT NULL,
     category_tags   TEXT[],
-    radius_meters   DECIMAL(10,2) DEFAULT 100.0,
+    radius_meters   DECIMAL(10,2) DEFAULT 1609.34,
     geom             GEOGRAPHY(POINT, 4326)
 );
 

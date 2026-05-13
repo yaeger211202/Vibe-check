@@ -3,11 +3,34 @@ import { requireAuth } from "../middleware/auth.js";
 
 const router = express.Router();
 
+function distanceMeters(lat1, lon1, lat2, lon2) {
+    const R = 6371000;
+    const toRad = deg => deg * Math.PI / 180;
+
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+
+    const a =
+        Math.sin(dLat / 2) ** 2 +
+        Math.cos(toRad(lat1)) *
+        Math.cos(toRad(lat2)) *
+        Math.sin(dLon / 2) ** 2;
+
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
 // Middleware to pass pool to routes
 export function createNotesRoutes(pool, checkAndNotifyTrendingLocation) {
     // CREATE - Add a new note to a location
     router.post("/", requireAuth, async (req, res) => {
-        const { location_id, content, vibe_level, is_anonymous } = req.body;
+        const {
+            location_id,
+            content,
+            vibe_level,
+            is_anonymous,
+            user_lat,
+            user_lon
+        } = req.body;
         const user_id = req.user.user_id;
 
         // Validation
@@ -30,13 +53,39 @@ export function createNotesRoutes(pool, checkAndNotifyTrendingLocation) {
                 return res.status(404).json({ error: "User not found." });
             }
 
-            // Check if location exists
-            const locationCheck = await pool.query(
-                "SELECT location_id FROM locations WHERE location_id = $1",
-                [location_id]
+            const locationResult = await pool.query(
+                `SELECT location_id, lat, lng, radius_meters FROM locations WHERE location_id = $1`, [location_id]
             );
-            if (locationCheck.rows.length === 0) {
+
+            if (locationResult.rows.length === 0) {
                 return res.status(404).json({ error: "Location not found." });
+            }
+
+            const location = locationResult.rows[0];
+
+            if (user_lat == null || user_lon == null) {
+                return res.status(400).json({
+                    error: "User location is required."
+                });
+            }
+
+            const distance = distanceMeters(
+                Number(user_lat),
+                Number(user_lon),
+                Number(location.lat),
+                Number(location.lng)
+            );
+
+            const postRadiusMeters = Number(location.radius_meters || 1609);
+
+            if (distance > postRadiusMeters) {
+                const postRadiusMiles = (postRadiusMeters / 1609.34).toFixed(1);
+
+                return res.status(403).json({
+                    error: `You are too far away to post here. Move within ${postRadiusMiles} mile${postRadiusMiles === "1.0" ? "" : "s"} of this location and try again.`,
+                    distance: Math.round(distance),
+                    radius: postRadiusMeters
+                });
             }
 
             // Insert the note

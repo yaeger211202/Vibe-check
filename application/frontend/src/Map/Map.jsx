@@ -293,12 +293,18 @@ export default function Map() {
             return savedNote;
         }
 
+        if (!userLocation) {
+            throw new Error("Location permission is required to post a note.");
+        }
+
         const data = await createNote({
             location_id: selectedLocation.db_id,
             category_tag: payload.category || "na",
             content: payload.text,
             vibe_level: payload.vibe,
             is_anonymous: payload.anonymous,
+            user_lat: userLocation.lat,
+            user_lon: userLocation.lon,
         });
 
         savedNote = mapApiNote({
