@@ -18,6 +18,7 @@ DROP TABLE IF EXISTS locations CASCADE;
 DROP TABLE IF EXISTS user_profiles CASCADE;
 DROP TABLE IF EXISTS blocks CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
+DROP TYPE IF EXISTS vibe_level_enum CASCADE;
 
 -- ========================
 -- USERS
