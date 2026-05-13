@@ -4,7 +4,7 @@ import { requireAuth } from "../middleware/auth.js";
 const router = express.Router();
 
 // Middleware to pass pool to routes
-export function createNotesRoutes(pool) {
+export function createNotesRoutes(pool, checkAndNotifyTrendingLocation) {
     // CREATE - Add a new note to a location
     router.post("/", requireAuth, async (req, res) => {
         const { location_id, content, vibe_level, is_anonymous } = req.body;
@@ -46,6 +46,8 @@ export function createNotesRoutes(pool) {
                  RETURNING note_id, user_id, location_id, content, vibe_level, is_anonymous, created_at, expires_at`,
                 [user_id, location_id, content.trim(), vibe_level, is_anonymous || false]
             );
+
+            await checkAndNotifyTrendingLocation(location_id);
 
             return res.status(201).json({
                 message: "Note created successfully.",
