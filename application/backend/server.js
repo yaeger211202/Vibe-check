@@ -17,16 +17,16 @@ import { createReportRoutes } from './routes/reportRoutes.js';
 import swaggerSpec from "./docs/openapi.js";
 
 
+dotenv.config();
+
 const { Pool } = pkg;
-const isProduction = process.env.NODE_ENV === "production";
+
 const authCookieOptions = {
     httpOnly: true,
-    secure: isProduction,
-    sameSite: isProduction ? "strict" : "lax",
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
     maxAge: 7 * 24 * 60 * 60 * 1000,
 };
-
-dotenv.config();
 
 const app = express();
 app.use(express.json());

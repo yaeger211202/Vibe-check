@@ -68,6 +68,23 @@ export default function Navbar({ user }) {
         setShowNotifications((prev) => !prev);
     };
 
+    const handleSignOut = async () => {
+        try {
+            await fetch("/api/logout", {
+                method: "POST",
+                credentials: "include",
+            });
+        }
+        catch (err) {
+            console.error("Sign out error:", err);
+        }
+        finally {
+            localStorage.removeItem("user");
+            navigate("/signin");
+            window.location.reload();
+        }
+    };
+
     useEffect(() => {
         if (!isLoggedIn) return;
 
@@ -159,11 +176,7 @@ export default function Navbar({ user }) {
                             </Link>
 
                             <button
-                                onClick={() => {
-                                    localStorage.removeItem("user");
-                                    navigate("/");
-                                    window.location.reload();
-                                }}
+                                onClick={handleSignOut}
                                 className="bg-gray-100 text-black py-2 px-4 rounded-lg hover:bg-gray-200 transition"
                             >
                                 Sign Out
