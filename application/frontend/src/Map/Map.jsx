@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import Navbar from "../components/Navbar.jsx";
 import DesktopMapLayout from "./DesktopMapLayout.jsx";
@@ -70,8 +70,9 @@ export default function Map() {
     const [mobileTab, setMobileTab] = useState("map");
     const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
 
-    const [locationData, setLocationData] = useState(null);
-    const [locationError, setLocationError] = useState("");
+    const [heatmapData, setHeatmapData] = useState([]);
+    const [heatmapLoading, setHeatmapLoading] = useState(false);
+    const debounceTimerRef = useRef(null);
 
     const mockHeatmapData = [
         // SFSU / Stonestown / Parkmerced
@@ -150,26 +151,53 @@ export default function Map() {
         { lat: 37.7683, lon: -122.3877, intensity: 0.60 },
     ];
 
+    const fetchHeatmap = useCallback(async (selectedCategory) => {
+        try {
+            setHeatmapLoading(true);
+            const params = new URLSearchParams();
+            if (selectedCategory && selectedCategory !== DEFAULT_CATEGORY) {
+                params.set("category", selectedCategory);
+            }
+
+            const res = await fetch(`/api/heatmap?${params.toString()}`);
+            if (!res.ok) {
+                console.error("Heatmap fetch failed:", res.status);
+                return;
+            }
+            const data = await res.json();
+            setHeatmapData(data);
+        } catch (err) {
+            console.error("Heatmap fetch error:", err);
+        } finally {
+            setHeatmapLoading(false);
+        }
+    }, []);
+
+    // Initial load
+    useEffect(() => {
+        fetchHeatmap(category);
+    }, []); 
+
+    // Re-fetch when category filter changes 
+    useEffect(() => {
+        clearTimeout(debounceTimerRef.current);
+        debounceTimerRef.current = setTimeout(() => {
+            fetchHeatmap(category);
+        }, 400);
+        return () => clearTimeout(debounceTimerRef.current);
+    }, [category, fetchHeatmap]);
+
     useEffect(() => {
         const storedUser = localStorage.getItem("user");
         if (!storedUser) return;
-
-        try {
-            setUser(JSON.parse(storedUser));
-        } catch {
-            localStorage.removeItem("user");
-        }
+        try { setUser(JSON.parse(storedUser)); }
+        catch { localStorage.removeItem("user"); }
     }, []);
 
-    useEffect(() => {
-        document.title = "Vibe Check";
-    }, []);
+    useEffect(() => { document.title = "Vibe Check"; }, []);
 
     useEffect(() => {
-        function handleResize() {
-            setIsMobile(window.innerWidth < 768);
-        }
-
+        function handleResize() { setIsMobile(window.innerWidth < 768); }
         window.addEventListener("resize", handleResize);
         return () => window.removeEventListener("resize", handleResize);
     }, []);
@@ -180,225 +208,57 @@ export default function Map() {
             setHasSearched(false);
             return;
         }
-
         try {
             setLoading(true);
             setHasSearched(true);
-
             const params = new URLSearchParams({
                 q: searchQuery.trim(),
                 radius: radius.toString(),
                 vibeLevel,
                 category: category === DEFAULT_CATEGORY ? "" : category,
             });
-
-            const data = await searchLocations(params);
-            setLocationError("");
+            const response = await fetch(`/api/search/locations?${params.toString()}`);
+            const data = await response.json();
+            if (!response.ok) { setResults([]); return; }
             setResults(data);
-        }
-        catch (error) {
+        } catch (error) {
             console.error("Search error:", error);
-            setLocationError(error.message || "Search failed.");
             setResults([]);
-        }
-        finally {
+        } finally {
             setLoading(false);
         }
     }
 
-    async function loadLocationData(placeWithDbId) {
-        const [notesData, vibeData, locationDetails] = await Promise.all([
-            getNotesByLocation(placeWithDbId.db_id),
-            getLocationVibe(placeWithDbId.db_id).catch(() => null),
-            getLocationDetails(placeWithDbId.db_id).catch(() => null),
-        ]);
-
-        const currentVibe = vibeData?.vibe_label?.toLowerCase() || "unknown";
-        const vibeScorePercent = mapVibeScoreToPercent(vibeData?.avg_vibe_score);
-
-        const nextLocationData = {
-            locationId: placeWithDbId.db_id,
-            categoryTags: Array.isArray(locationDetails?.category_tags) && locationDetails.category_tags.length > 0
-                ? locationDetails.category_tags
-                : [NOTE_DEFAULT_CATEGORY],
-            currentVibe,
-            vibeScorePercent,
-            notes: notesData.notes.map((note) => mapApiNote(note, placeWithDbId)),
-        };
-
-        setLocationData((prev) => {
-            if (getLocationIdentity(selectedLocation) !== placeWithDbId.db_id) {
-                return prev;
-            }
-
-            return nextLocationData;
-        });
-
-        return nextLocationData;
-    }
-
-    async function handleSelectLocation(place) {
-        try {
-            setLocationError("");
-            const data = await upsertLocation(place);
-            const nextLocation = {
-                ...place,
-                db_id: data.location.location_id,
-                categoryTags: Array.isArray(data.location.category_tags) && data.location.category_tags.length > 0
-                    ? data.location.category_tags
-                    : (place.categoryTags?.length ? place.categoryTags : [NOTE_DEFAULT_CATEGORY]),
-            };
-            setSelectedLocation(nextLocation);
-            await loadLocationData(nextLocation);
-        } catch (err) {
-            console.error("Failed to load location", err);
-            setLocationError(err.message || "Failed to load location.");
-            setLocationData(null);
-            setSelectedLocation(place);
-        }
+    function handleSelectLocation(place) {
+        setSelectedLocation(place);
         setMobileTab("location");
     }
 
     function handleCloseLocation() {
         setSelectedLocation(null);
-        setLocationData(null);
-        setLocationError("");
         setMobileTab("map");
     }
 
-    async function handleSaveNote(payload) {
-        if (!user?.user_id) {
-            throw new Error("Sign in to post or edit notes.");
-        }
-
-        if (!selectedLocation?.db_id) {
-            throw new Error("Select a saved location first.");
-        }
-
-        let savedNote;
-
-        if (payload.noteId) {
-            const data = await updateNote(payload.noteId, {
-                content: payload.text,
-                vibe_level: payload.vibe,
-            });
-            savedNote = mapApiNote({
-                ...data.note,
-                username: payload.anonymous ? "Anonymous" : user.username,
-                reaction_count: 0,
-                reply_count: 0,
-            }, selectedLocation);
-
-            setLocationData((prev) => ({
-                ...prev,
-                locationId: selectedLocation.db_id,
-                notes: (prev?.notes || []).map((note) =>
-                    note.id === payload.noteId
-                        ? {
-                            ...note,
-                            ...savedNote,
-                            createdAtText: note.createdAtText,
-                        }
-                        : note
-                ),
-            }));
-            try {
-                await loadLocationData(selectedLocation);
-            } catch (error) {
-                console.error("Failed to refresh location data after update", error);
-            }
-
-            return savedNote;
-        }
-
-        const data = await createNote({
-            location_id: selectedLocation.db_id,
-            content: payload.text,
-            vibe_level: payload.vibe,
-            is_anonymous: payload.anonymous,
-        });
-
-        savedNote = mapApiNote({
-            ...data.note,
-            username: payload.anonymous ? "Anonymous" : user.username,
-            reaction_count: 0,
-            reply_count: 0,
-        }, selectedLocation);
-        setLocationData((prev) => ({
-            ...(prev || {}),
-            locationId: selectedLocation.db_id,
-            currentVibe: prev?.currentVibe || "unknown",
-            vibeScorePercent: prev?.vibeScorePercent || 0,
-            notes: [savedNote, ...(prev?.notes || [])],
-        }));
-
-        try {
-            await loadLocationData(selectedLocation);
-        } catch (error) {
-            console.error("Failed to refresh location data after create", error);
-        }
-
-        return savedNote;
-    }
-
-    async function handleDeleteNote(noteId) {
-        if (!user?.user_id) {
-            throw new Error("Sign in to delete notes.");
-        }
-
-        if (!selectedLocation?.db_id) {
-            throw new Error("Select a saved location first.");
-        }
-
-        await deleteNote(noteId);
-
-        setLocationData((prev) => {
-            if (!prev) return prev;
-            return {
-                ...prev,
-                notes: (prev.notes || []).filter((note) => note.id !== noteId),
-            };
-        });
-
-        try {
-            await loadLocationData(selectedLocation);
-        } catch (error) {
-            console.error("Failed to refresh location data after delete", error);
-        }
-    }
-
     const sharedProps = {
-        searchQuery,
-        setSearchQuery,
-        results,
-        selectedLocation,
-        loading,
-        hasSearched,
-        radius,
-        setRadius,
-        vibeLevel,
-        setVibeLevel,
-        category,
-        setCategory,
-        mockHeatmapData,
+        searchQuery, setSearchQuery,
+        results, selectedLocation,
+        loading, hasSearched,
+        radius, setRadius,
+        vibeLevel, setVibeLevel,
+        category, setCategory,
+        heatmapData,
+        heatmapLoading,       // spinner
         handleSearch,
         handleSelectLocation,
         handleCloseLocation,
         setSelectedLocation,
-        mobileTab,
-        setMobileTab,
-        locationData,
-        setLocationData,
-        user,
-        locationError,
-        onSaveNote: handleSaveNote,
-        onDeleteNote: handleDeleteNote,
+        mobileTab, setMobileTab,
+        getMockLocationData,
     };
 
     return (
         <div className="flex h-dvh flex-col">
             <Navbar user={user} />
-
             {isMobile ? (
                 <MobileMapLayout {...sharedProps} />
             ) : (
@@ -406,4 +266,19 @@ export default function Map() {
             )}
         </div>
     );
+}
+
+function getMockLocationData() {
+    return {
+        currentVibe: "moderate",
+        vibeScorePercent: 58,
+        notes: [
+            { id: 1, username: "@amulya", createdAtText: "8 min ago", distanceText: "0.1 mi away", vibe: "busy", text: "Every seat is taken. Group study sessions going on everywhere.", reactionCount: 8, commentCount: 0 },
+            { id: 2, username: "@harry", createdAtText: "1h ago", distanceText: "0.2 mi away", vibe: "quiet", text: "Upstairs is super quiet right now", reactionCount: 0, commentCount: 2 },
+            { id: 3, username: "@rahul", createdAtText: "2h ago", distanceText: "0.3 mi away", vibe: "moderate", text: "Good amount of space available", reactionCount: 1, commentCount: 4 },
+            { id: 4, username: "@aljhay", createdAtText: "2h ago", distanceText: "0.1 mi away", vibe: "busy", text: "Some free space, but noisy groups around!", reactionCount: 5, commentCount: 3 },
+            { id: 5, username: "@kaitlyn", createdAtText: "3h ago", distanceText: "0.2 mi away", vibe: "buzzing", text: "I wouldn't come here right now if you want some quiet.", reactionCount: 7, commentCount: 3 },
+            { id: 6, username: "@ortiz", createdAtText: "1h ago", distanceText: "0.2 mi away", vibe: "dead", text: "Very chill, I'm like the only person here", reactionCount: 1, commentCount: 0 },
+        ],
+    };
 }
