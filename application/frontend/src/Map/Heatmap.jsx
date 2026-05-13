@@ -15,11 +15,12 @@ L.Icon.Default.mergeOptions({
     shadowUrl: markerShadow,
 });
 
-export default function Heatmap({ selectedLocation, heatmapData = [] }) {
+export default function Heatmap({ selectedLocation, heatmapData = [], userLocation, userLocationError, }) {
     const mapRef = useRef(null);
     const markerRef = useRef(null);
     const heatLayerRef = useRef(null);
     const mapContainerRef = useRef(null);
+    const userMarkerRef = useRef(null);
 
     useEffect(() => {
         if (!mapContainerRef.current) return;
@@ -81,6 +82,39 @@ export default function Heatmap({ selectedLocation, heatmapData = [] }) {
             minOpacity: 0.25,
         }).addTo(mapRef.current);
     }, [heatmapData]);
+
+    useEffect(() => {
+        if (!mapRef.current) return;
+
+        if (!userLocation) {
+            if (userMarkerRef.current) {
+                userMarkerRef.current.remove();
+                userMarkerRef.current = null;
+            }
+            return;
+        }
+
+        const lat = Number(userLocation.lat);
+        const lon = Number(userLocation.lon);
+
+        if (!Number.isFinite(lat) || !Number.isFinite(lon)) return;
+
+        if (userMarkerRef.current) {
+            userMarkerRef.current.remove();
+        }
+
+        userMarkerRef.current = L.circleMarker([lat, lon], {
+            radius: 8,
+            color: "#2563eb",
+            fillColor: "#3b82f6",
+            fillOpacity: 0.9,
+            weight: 3,
+        })
+            .addTo(mapRef.current)
+            .bindPopup("Your current location");
+
+        mapRef.current.flyTo([lat, lon], 14);
+    }, [userLocation]);
 
     useEffect(() => {
         if (!mapRef.current) return;

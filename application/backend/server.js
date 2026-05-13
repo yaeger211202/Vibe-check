@@ -72,8 +72,8 @@ function toRadians(value) {
     return (value * Math.PI) / 180;
 }
 
-function calculateDistanceMiles(fromLat, fromLon, toLat, toLon) {
-    const earthRadiusMiles = 3958.8;
+function calculateDistanceKm(fromLat, fromLon, toLat, toLon) {
+    const earthRadiusKm = 6371;
     const latDelta = toRadians(toLat - fromLat);
     const lonDelta = toRadians(toLon - fromLon);
     const startLat = toRadians(fromLat);
@@ -83,7 +83,7 @@ function calculateDistanceMiles(fromLat, fromLon, toLat, toLon) {
         + Math.cos(startLat) * Math.cos(endLat) * Math.sin(lonDelta / 2) ** 2;
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
-    return earthRadiusMiles * c;
+    return earthRadiusKm * c;
 }
 
 function normalizeCategory(value) {
@@ -144,7 +144,7 @@ app.get("/api/search/locations", async (req, res) => {
     const query = req.query.q?.trim();
     const requestedVibeLevel = req.query.vibeLevel?.trim().toLowerCase();
     const requestedCategory = normalizeCategory(req.query.category);
-    const requestedRadiusMiles = Number.parseFloat(req.query.radius);
+    const requestedRadiusKm = Number.parseFloat(req.query.radius);
 
     if (!query) {
         return res.status(400).json({ error: "Missing search query." });
@@ -217,7 +217,7 @@ app.get("/api/search/locations", async (req, res) => {
                 const savedLocation = savedLocationsByNominatimId.get(String(place.place_id));
                 const lat = Number.parseFloat(place.lat);
                 const lon = Number.parseFloat(place.lon);
-                const distanceMiles = calculateDistanceMiles(searchCenter.lat, searchCenter.lon, lat, lon);
+                const distanceKm = calculateDistanceKm(searchCenter.lat, searchCenter.lon, lat, lon);
                 const categoryTags = deriveLocationCategories(place);
 
                 return {
@@ -231,8 +231,8 @@ app.get("/api/search/locations", async (req, res) => {
                     db_id: savedLocation?.dbId ?? null,
                     vibeLevel: savedLocation?.vibeLevel ?? null,
                     avgVibeScore: savedLocation?.avgVibeScore ?? null,
-                    distance: distanceMiles.toFixed(1),
-                    distanceMiles,
+                    distance: distanceKm.toFixed(1),
+                    distanceKm,
                 };
             })
             .filter((place) => {
@@ -240,13 +240,13 @@ app.get("/api/search/locations", async (req, res) => {
                     || requestedVibeLevel === "all"
                     || place.vibeLevel === requestedVibeLevel;
                 const matchesCategory = matchesCategoryFilter(place, requestedCategory);
-                const matchesRadius = Number.isNaN(requestedRadiusMiles)
-                    || requestedRadiusMiles <= 0
-                    || place.distanceMiles <= requestedRadiusMiles;
+                const matchesRadius = Number.isNaN(requestedRadiusKm)
+                    || requestedRadiusKm <= 0
+                    || place.distanceKm <= requestedRadiusKm;
 
                 return matchesVibe && matchesCategory && matchesRadius;
             })
-            .map(({ distanceMiles, ...place }) => place);
+            .map(({ distanceKm, ...place }) => place);
 
         return res.json(results);
     }

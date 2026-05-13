@@ -3,7 +3,9 @@ import Heatmap from "./Heatmap.jsx";
 import LocationView from "./LocationView.jsx";
 
 export default function MobileMapLayout({
-                                             searchQuery,
+                                            userLocation,
+                                            userLocationError,
+                                            searchQuery,
                                             setSearchQuery,
                                             results,
                                             selectedLocation,
@@ -21,13 +23,12 @@ export default function MobileMapLayout({
                                             handleCloseLocation,
                                             mobileTab,
                                             setMobileTab,
-                                            locationData,       
-                                            setLocationData,     
+                                            locationData,
+                                            setLocationData,
                                             user,
                                             locationError,
                                             onSaveNote,
                                             onDeleteNote,
-                                            
                                         }) {
 
     return (
@@ -58,6 +59,8 @@ export default function MobileMapLayout({
                         <Heatmap
                             selectedLocation={selectedLocation}
                             heatmapData={mockHeatmapData}
+                            userLocation={userLocation}
+                            userLocationError={userLocationError}
                         />
                     </div>
                 )}
