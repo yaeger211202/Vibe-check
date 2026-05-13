@@ -1,127 +1,75 @@
 /**
  * Profile.jsx
  *
- * User profile page for Vibe Check — fully responsive (mobile-first).
  */
 
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import Navbar from "./components/Navbar.jsx";
 import Footer from "./components/Footer.jsx";
 
-// ─── MOCK DATA ───────────────────────────────────────────────────────────────
-
-const MOCK_USER_PROFILE = {
-    full_name: "John Doe",
-    location: "San Francisco, CA",
-    profile_picture_url: null,
-    created_at: "2024-03-01T08:00:00Z",
-    account_status: "active",
-    email_verified: true,
-    visibility: "public",
-    default_radius_km: 1.0,
-    notifications_enabled: true,
-    friend_notifications_enabled: true,
-    preferred_categories: ["Study Spot", "Coffee", "Restaurant"],
-    total_notes_posted: 42,
-    total_reactions_received: 128,
-    total_bookmarks: 7,
-};
-
+// constants 
 const VIBE_STYLES = {
-    1: { label: "Dead",     style: "bg-gray-100 text-gray-500" },
-    2: { label: "Chill",    style: "bg-yellow-100 text-yellow-700" },
+    1: { label: "Dead", style: "bg-gray-100 text-gray-500" },
+    2: { label: "Chill", style: "bg-yellow-100 text-yellow-700" },
     3: { label: "Moderate", style: "bg-blue-100 text-blue-600" },
-    4: { label: "Busy",     style: "bg-red-100 text-red-500" },
-    5: { label: "Buzzing",  style: "bg-orange-100 text-orange-600" },
+    4: { label: "Busy", style: "bg-red-100 text-red-500" },
+    5: { label: "Buzzing", style: "bg-orange-100 text-orange-600" },
+    dead: { label: "Dead", style: "bg-gray-100 text-gray-500" },
+    quiet: { label: "Chill", style: "bg-yellow-100 text-yellow-700" },
+    moderate: { label: "Moderate", style: "bg-blue-100 text-blue-600" },
+    busy: { label: "Busy", style: "bg-red-100 text-red-500" },
+    buzzing: { label: "Buzzing", style: "bg-orange-100 text-orange-600" },
 };
 
-const MOCK_POSTS = [
-    {
-        note_id: 1,
-        location: "Taqueria El Farolito",
-        neighborhood: "Mission, SF",
-        distance: "0.3 mi",
-        content: "Super packed but worth it. 30 min wait rn.",
-        vibe_score: 4,
-        created_at: "2h ago",
-        reaction_count: 14,
-        reply_count: 2,
-    },
-    {
-        note_id: 2,
-        location: "Dolores Park",
-        neighborhood: "Mission, SF",
-        distance: "0.6 mi",
-        content: "Perfect afternoon, not too crowded at all.",
-        vibe_score: 2,
-        created_at: "Just now",
-        reaction_count: 8,
-        reply_count: 1,
-    },
-    {
-        note_id: 3,
-        location: "Blue Bottle Coffee",
-        neighborhood: "Hayes Valley",
-        distance: "1.1 mi",
-        content: "Line out the door, slow service today.",
-        vibe_score: 4,
-        created_at: "3 hours ago",
-        reaction_count: 22,
-        reply_count: 4,
-    },
-    {
-        note_id: 4,
-        location: "Bi-Rite Creamery",
-        neighborhood: "Mission",
-        distance: "0.8 mi",
-        content: "Short wait, great vibe, go now!",
-        vibe_score: 3,
-        created_at: "4 hours ago",
-        reaction_count: 31,
-        reply_count: 6,
-    },
-    {
-        note_id: 5,
-        location: "Flour + Water",
-        neighborhood: "Mission",
-        distance: "0.4 mi",
-        content: "Surprisingly quiet tonight — no wait at all.",
-        vibe_score: 2,
-        created_at: "15 min ago",
-        reaction_count: 19,
-        reply_count: 3,
-    },
-    {
-        note_id: 6,
-        location: "Tartine Bakery",
-        neighborhood: "Mission",
-        distance: "0.9 mi",
-        content: "Crazy packed as usual. Worth it tho.",
-        vibe_score: 4,
-        created_at: "6 min ago",
-        reaction_count: 44,
-        reply_count: 8,
-    },
-];
+const API = "/api";
 
-// ─── SUB-COMPONENTS ──────────────────────────────────────────────────────────
+// heleprs 
+
+function timeAgo(isoString) {
+    const diff = Math.floor((Date.now() - new Date(isoString)) / 1000);
+    if (diff < 60) return "just now";
+    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+    return `${Math.floor(diff / 86400)}d ago`;
+}
+
+// feedback banner
+function Banner({ msg, isError }) {
+    if (!msg) return null;
+    return (
+        <p className={`text-sm px-3 py-2 rounded-lg ${isError ? "bg-red-50 text-red-600" : "bg-green-50 text-green-700"}`}>
+            {msg}
+        </p>
+    );
+}
+
+// sub components 
 
 /**
  * PostCard — single note card. Touch-target friendly on mobile.
  */
 function PostCard({ note }) {
-    const vibe = VIBE_STYLES[note.vibe_score] || VIBE_STYLES[3];
+    const vibeKey = note.vibe_level || note.vibe_score;
+    const vibe = VIBE_STYLES[vibeKey] || VIBE_STYLES[3];
 
     return (
         <div className="bg-white rounded-xl shadow-sm p-4 sm:p-5 flex flex-col gap-3">
             {/* Header: location + time */}
             <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
-                    <p className="font-bold text-gray-900 text-sm truncate">{note.location}</p>
-                    <p className="text-xs text-gray-400 truncate">{note.neighborhood} · {note.distance}</p>
+                    <p className="font-bold text-gray-900 text-sm truncate">
+                        {note.location_name || note.location || `Location #${note.location_id}`}
+                    </p>
+                    {note.neighborhood && (
+                        <p className="text-xs text-gray-400 truncate">{note.neighborhood} · {note.distance}</p>
+                    )}
                 </div>
-                <span className="text-xs text-gray-400 shrink-0">{note.created_at}</span>
+                <span className="text-xs text-gray-400 shrink-0">
+                    {note.created_at && !note.created_at.includes("ago") && !note.created_at.includes("now")
+                        ? timeAgo(note.created_at)
+                        : note.created_at}
+                </span>
             </div>
 
             {/* Note content */}
@@ -140,6 +88,351 @@ function PostCard({ note }) {
     );
 }
 
+// setting forms 
+
+function UsernameForm({ userId, currentUsername, onSuccess }) {
+    const [username, setUsername] = useState(currentUsername || "");
+    const [status, setStatus] = useState({ msg: "", isError: false });
+    const [loading, setLoading] = useState(false);
+
+    async function handleSubmit(e) {
+        e.preventDefault();
+        setLoading(true);
+        setStatus({ msg: "", isError: false });
+        try {
+            const res = await fetch(`${API}/users/${userId}/username`, {
+                method: "PUT",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username }),
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                setStatus({ msg: data.error, isError: true });
+            } else {
+                setStatus({ msg: "Username updated!", isError: false });
+                onSuccess(data.username);
+                const stored = JSON.parse(localStorage.getItem("user") || "{}");
+                localStorage.setItem("user", JSON.stringify({ ...stored, username: data.username }));
+            }
+        } catch {
+            setStatus({ msg: "Network error. Please try again.", isError: true });
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    return (
+        <form onSubmit={handleSubmit} className="space-y-3">
+            <label className="block text-sm font-medium text-gray-700">New username</label>
+            <input
+                type="text"
+                value={username}
+                onChange={e => setUsername(e.target.value)}
+                maxLength={50}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+                placeholder="e.g. vibemaster99"
+            />
+            <Banner msg={status.msg} isError={status.isError} />
+            <button
+                type="submit"
+                disabled={loading || !username.trim()}
+                className="px-4 py-2 bg-gray-900 text-white text-sm rounded-lg hover:bg-gray-700 disabled:opacity-50 transition"
+            >
+                {loading ? "Saving…" : "Save username"}
+            </button>
+        </form>
+    );
+}
+
+function PasswordForm({ userId }) {
+    const [form, setForm] = useState({ current_password: "", new_password: "", confirm: "" });
+    const [status, setStatus] = useState({ msg: "", isError: false });
+    const [loading, setLoading] = useState(false);
+
+    async function handleSubmit(e) {
+        e.preventDefault();
+        if (form.new_password !== form.confirm) {
+            setStatus({ msg: "New passwords do not match.", isError: true });
+            return;
+        }
+        setLoading(true);
+        setStatus({ msg: "", isError: false });
+        try {
+            const res = await fetch(`${API}/users/${userId}/password`, {
+                method: "PUT",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    current_password: form.current_password,
+                    new_password: form.new_password,
+                }),
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                setStatus({ msg: data.error, isError: true });
+            } else {
+                setStatus({ msg: "Password changed successfully.", isError: false });
+                setForm({ current_password: "", new_password: "", confirm: "" });
+            }
+        } catch {
+            setStatus({ msg: "Network error. Please try again.", isError: true });
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    return (
+        <form onSubmit={handleSubmit} className="space-y-3">
+            {[
+                { key: "current_password", label: "Current password", placeholder: "Enter current password" },
+                { key: "new_password", label: "New password", placeholder: "At least 8 characters" },
+                { key: "confirm", label: "Confirm new password", placeholder: "Repeat new password" },
+            ].map(({ key, label, placeholder }) => (
+                <div key={key}>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">{label}</label>
+                    <input
+                        type="password"
+                        value={form[key]}
+                        onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
+                        placeholder={placeholder}
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+                    />
+                </div>
+            ))}
+            <Banner msg={status.msg} isError={status.isError} />
+            <button
+                type="submit"
+                disabled={loading}
+                className="px-4 py-2 bg-gray-900 text-white text-sm rounded-lg hover:bg-gray-700 disabled:opacity-50 transition"
+            >
+                {loading ? "Saving…" : "Change password"}
+            </button>
+        </form>
+    );
+}
+
+function PictureForm({ userId, currentUrl, onSuccess }) {
+    const [url, setUrl] = useState(currentUrl || "");
+    const [status, setStatus] = useState({ msg: "", isError: false });
+    const [loading, setLoading] = useState(false);
+
+    async function handleSubmit(e) {
+        e.preventDefault();
+        setLoading(true);
+        setStatus({ msg: "", isError: false });
+        try {
+            const res = await fetch(`${API}/users/${userId}/picture`, {
+                method: "PUT",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ profile_picture_url: url || null }),
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                setStatus({ msg: data.error, isError: true });
+            } else {
+                setStatus({ msg: "Profile picture updated.", isError: false });
+                onSuccess(data.profile_picture_url);
+            }
+        } catch {
+            setStatus({ msg: "Network error. Please try again.", isError: true });
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    return (
+        <form onSubmit={handleSubmit} className="space-y-3">
+            <label className="block text-sm font-medium text-gray-700">Profile picture URL</label>
+            <input
+                type="url"
+                value={url}
+                onChange={e => setUrl(e.target.value)}
+                placeholder="https://example.com/photo.jpg"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+            />
+            <p className="text-xs text-gray-400">Leave blank to remove your profile picture.</p>
+            <Banner msg={status.msg} isError={status.isError} />
+            <button
+                type="submit"
+                disabled={loading}
+                className="px-4 py-2 bg-gray-900 text-white text-sm rounded-lg hover:bg-gray-700 disabled:opacity-50 transition"
+            >
+                {loading ? "Saving…" : "Save picture"}
+            </button>
+        </form>
+    );
+}
+
+function VisibilityForm({ userId, currentSettings, onSuccess }) {
+    const [visibility, setVisibility] = useState(currentSettings.visibility || "public");
+    const [notifications_enabled, setNotificationsEnabled] = useState(currentSettings.notifications_enabled ?? true);
+    const [default_radius_km, setDefaultRadius] = useState(currentSettings.default_radius_km || 5.0);
+    const [status, setStatus] = useState({ msg: "", isError: false });
+    const [loading, setLoading] = useState(false);
+
+    async function handleSubmit(e) {
+        e.preventDefault();
+        setLoading(true);
+        setStatus({ msg: "", isError: false });
+        try {
+            const res = await fetch(`${API}/users/${userId}/settings`, {
+                method: "PUT",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    visibility,
+                    notifications_enabled,
+                    default_radius_km: parseFloat(default_radius_km),
+                }),
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                setStatus({ msg: data.error, isError: true });
+            } else {
+                setStatus({ msg: "Settings saved.", isError: false });
+                onSuccess({ visibility, notifications_enabled, default_radius_km });
+            }
+        } catch {
+            setStatus({ msg: "Network error. Please try again.", isError: true });
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    return (
+        <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Visibility */}
+            <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Profile visibility</label>
+                <select
+                    value={visibility}
+                    onChange={e => setVisibility(e.target.value)}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+                >
+                    <option value="public">Public — anyone can view</option>
+                    <option value="friends_only">Friends only</option>
+                </select>
+            </div>
+
+            {/* Default radius */}
+            <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Default search radius: <span className="font-bold">{default_radius_km} km</span>
+                </label>
+                <input
+                    type="range"
+                    min="0.5" max="25" step="0.5"
+                    value={default_radius_km}
+                    onChange={e => setDefaultRadius(e.target.value)}
+                    className="w-full accent-purple-600"
+                />
+                <div className="flex justify-between text-xs text-gray-400 mt-0.5">
+                    <span>0.5 km</span><span>25 km</span>
+                </div>
+            </div>
+
+            {/* Notifications toggle */}
+            <div className="flex items-center justify-between">
+                <p className="text-sm text-gray-700">Notifications</p>
+                <button
+                    type="button"
+                    onClick={() => setNotificationsEnabled(v => !v)}
+                    className={`relative inline-flex h-6 w-11 rounded-full transition-colors ${notifications_enabled ? "bg-purple-600" : "bg-gray-300"}`}
+                >
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform mt-1 ${notifications_enabled ? "translate-x-6" : "translate-x-1"}`} />
+                </button>
+            </div>
+
+            <Banner msg={status.msg} isError={status.isError} />
+            <button
+                type="submit"
+                disabled={loading}
+                className="px-4 py-2 bg-gray-900 text-white text-sm rounded-lg hover:bg-gray-700 disabled:opacity-50 transition"
+            >
+                {loading ? "Saving…" : "Save settings"}
+            </button>
+        </form>
+    );
+}
+
+function DeleteAccountSection({ userId, onDeleted }) {
+    const [open, setOpen] = useState(false);
+    const [pw, setPw] = useState("");
+    const [status, setStatus] = useState({ msg: "", isError: false });
+    const [loading, setLoading] = useState(false);
+
+    async function handleDelete() {
+        if (!pw) { setStatus({ msg: "Password is required.", isError: true }); return; }
+        setLoading(true);
+        setStatus({ msg: "", isError: false });
+        try {
+            const res = await fetch(`${API}/users/${userId}`, {
+                method: "DELETE",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ password: pw }),
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                setStatus({ msg: data.error, isError: true });
+            } else {
+                localStorage.removeItem("user");
+                onDeleted();
+            }
+        } catch {
+            setStatus({ msg: "Network error. Please try again.", isError: true });
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    return (
+        <div className="border border-red-200 rounded-xl p-4 sm:p-5 bg-red-50">
+            <h3 className="text-sm font-bold text-red-700 mb-1">Delete account</h3>
+            <p className="text-xs text-red-500 mb-3">
+                This permanently removes your account. Your anonymous notes will remain but your identity will be detached. This cannot be undone.
+            </p>
+            {!open ? (
+                <button
+                    onClick={() => setOpen(true)}
+                    className="px-4 py-2 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 transition"
+                >
+                    Delete my account
+                </button>
+            ) : (
+                <div className="space-y-3">
+                    <label className="block text-xs font-medium text-red-700">Confirm your password</label>
+                    <input
+                        type="password"
+                        value={pw}
+                        onChange={e => setPw(e.target.value)}
+                        placeholder="Enter your password"
+                        className="w-full border border-red-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400"
+                    />
+                    <Banner msg={status.msg} isError={status.isError} />
+                    <div className="flex gap-2">
+                        <button
+                            onClick={handleDelete}
+                            disabled={loading}
+                            className="px-4 py-2 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 disabled:opacity-50 transition"
+                        >
+                            {loading ? "Deleting…" : "Yes, delete permanently"}
+                        </button>
+                        <button
+                            onClick={() => { setOpen(false); setPw(""); setStatus({ msg: "", isError: false }); }}
+                            className="px-4 py-2 text-gray-600 text-sm rounded-lg border border-gray-300 hover:bg-gray-50 transition"
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
+
 // ─── MAIN COMPONENT ──────────────────────────────────────────────────────────
 
 /**
@@ -151,35 +444,88 @@ function PostCard({ note }) {
  *   desktop (lg+)  — wider content area, larger avatar
  */
 export default function Profile() {
+    const { userId: paramUserId } = useParams(); 
     const [authUser, setAuthUser] = useState(null);
+    const [profile, setProfile] = useState(null);
+    const [posts, setPosts] = useState([]);
     const [activeTab, setActiveTab] = useState("posts");
+    const [loading, setLoading] = useState(true);
+    const [pageError, setPageError] = useState(null);
     const navigate = useNavigate();
 
+    const isOwnProfile = !paramUserId || (authUser && parseInt(paramUserId) === authUser.user_id);
+
+    // Load auth user from localStorage
     useEffect(() => {
         document.title = "Profile | Vibe Check";
         const storedUser = localStorage.getItem("user");
-        if (!storedUser) { navigate("/signin"); return; }
+        if (!storedUser && !paramUserId) { navigate("/signin"); return; }
         try {
-            setAuthUser(JSON.parse(storedUser));
+            if (storedUser) setAuthUser(JSON.parse(storedUser));
         } catch {
             localStorage.removeItem("user");
-            navigate("/signin");
+            if (!paramUserId) navigate("/signin");
         }
     }, []);
 
-    const user = authUser ? { ...MOCK_USER_PROFILE, ...authUser } : null;
-    if (!user) return null;
+    // Fetch profile + posts
+    useEffect(() => {
+        if (!authUser && !paramUserId) return;
 
-    const joinDate = new Date(user.created_at).toLocaleDateString("en-US", {
+        const targetId = paramUserId || authUser?.user_id;
+        if (!targetId) return;
+
+        setLoading(true);
+        setPageError(null);
+
+        Promise.all([
+            fetch(`${API}/users/${targetId}/profile`, { credentials: "include" }),
+            fetch(`${API}/notes/user/${targetId}`, { credentials: "include" }),
+        ])
+            .then(async ([profileRes, postsRes]) => {
+                if (!profileRes.ok) {
+                    throw new Error(profileRes.status === 404 ? "User not found." : "Could not load profile.");
+                }
+                const profileData = await profileRes.json();
+                const postsData = postsRes.ok ? await postsRes.json() : { notes: [] };
+                setProfile(profileData);
+                setPosts(postsData.notes || []);
+            })
+            .catch(err => setPageError(err.message))
+            .finally(() => setLoading(false));
+    }, [authUser, paramUserId]);
+
+    // render states
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-white">
+                <p className="text-gray-400 animate-pulse">Loading profile…</p>
+            </div>
+        );
+    }
+
+    if (pageError) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center bg-white gap-3">
+                <p className="text-red-500 font-medium">{pageError}</p>
+                <button onClick={() => navigate(-1)} className="text-sm text-gray-500 underline">Go back</button>
+            </div>
+        );
+    }
+
+    if (!profile) return null;
+
+    const joinDate = new Date(profile.created_at).toLocaleDateString("en-US", {
         year: "numeric",
         month: "long",
     });
 
     const TABS = [
-        { key: "posts",     label: "My Posts" },
+        { key: "posts", label: "My Posts" },
         { key: "bookmarks", label: "Bookmarks" },
         { key: "reactions", label: "Reactions" },
-        { key: "settings",  label: "Settings" },
+        { key: "settings", label: "Settings" },
     ];
 
     return (
@@ -187,7 +533,7 @@ export default function Profile() {
             <Navbar user={authUser} />
 
             {/* ── Page wrapper: comfortable padding at every size ── */}
-            <div className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+            <div className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8 w-full">
 
                 {/* ── PROFILE HEADER ────────────────────────────────────────
                     Mobile:  avatar centred above text (column)
@@ -199,17 +545,16 @@ export default function Profile() {
                     <div className="flex flex-col sm:flex-row items-center sm:items-start gap-3 sm:gap-5">
 
                         {/* Avatar */}
-                        {user.profile_picture_url ? (
+                        {profile.profile_picture_url ? (
                             <img
-                                src={user.profile_picture_url}
-                                alt={user.username}
+                                src={profile.profile_picture_url}
+                                alt={profile.username}
                                 className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover border-2 border-gray-200 shrink-0"
                             />
                         ) : (
                             <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-purple-200 flex items-center justify-center shrink-0">
                                 <span className="text-purple-700 text-xl sm:text-2xl font-black select-none">
-                                    {(user.full_name || user.username)[0].toUpperCase()}
-                                    {(user.full_name || "").split(" ")[1]?.[0]?.toUpperCase() || ""}
+                                    {(profile.username)?.[0]?.toUpperCase() || "?"}
                                 </span>
                             </div>
                         )}
@@ -217,11 +562,11 @@ export default function Profile() {
                         {/* Name + handle + meta — centred on mobile, left-aligned on sm+ */}
                         <div className="text-center sm:text-left">
                             <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
-                                {user.full_name || user.username}
+                                {profile.username}
                             </h1>
-                            <p className="text-gray-500 text-sm">@{user.username}</p>
+                            <p className="text-gray-500 text-sm">@{profile.username}</p>
                             <p className="text-gray-400 text-xs sm:text-sm mt-0.5">
-                                {user.location} · Joined {joinDate}
+                                Joined {joinDate}
                             </p>
                         </div>
                     </div>
@@ -229,9 +574,14 @@ export default function Profile() {
                     {/* Edit profile button
                         Mobile: full-width below the avatar block
                         sm+:    auto-width pinned top-right */}
-                    <button className="w-full sm:w-auto border border-gray-300 text-gray-700 text-sm font-medium px-4 py-2 rounded-lg hover:bg-gray-50 transition">
-                        Edit profile
-                    </button>
+                    {isOwnProfile && (
+                        <button
+                            onClick={() => setActiveTab("settings")}
+                            className="w-full sm:w-auto border border-gray-300 text-gray-700 text-sm font-medium px-4 py-2 rounded-lg hover:bg-gray-50 transition"
+                        >
+                            Edit profile
+                        </button>
+                    )}
                 </div>
 
                 {/* ── STATS STRIP ───────────────────────────────────────────
@@ -239,9 +589,9 @@ export default function Profile() {
                 ──────────────────────────────────────────────────────────── */}
                 <div className="flex border-t border-b border-gray-200 py-3 sm:py-4 mb-0">
                     {[
-                        { value: user.total_notes_posted,       label: "Vibes posted" },
-                        { value: user.total_reactions_received, label: "Reactions" },
-                        { value: user.total_bookmarks,          label: "Bookmarks" },
+                        { value: profile.total_notes_posted, label: "Vibes posted" },
+                        { value: profile.total_reactions_received, label: "Reactions" },
+                        { value: posts.length, label: "Active notes" },
                     ].map((stat, i) => (
                         <div
                             key={stat.label}
@@ -265,8 +615,8 @@ export default function Profile() {
                             onClick={() => setActiveTab(tab.key)}
                             className={`whitespace-nowrap px-4 sm:px-6 py-3 text-sm font-medium border-b-2 transition shrink-0
                                 ${activeTab === tab.key
-                                ? "border-gray-900 text-gray-900"
-                                : "border-transparent text-gray-400 hover:text-gray-600"}`}
+                                    ? "border-gray-900 text-gray-900"
+                                    : "border-transparent text-gray-400 hover:text-gray-600"}`}
                         >
                             {tab.label}
                         </button>
@@ -278,11 +628,18 @@ export default function Profile() {
 
                     {/* MY POSTS: 1-col mobile → 2-col sm+ */}
                     {activeTab === "posts" && (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                            {MOCK_POSTS.map(note => (
-                                <PostCard key={note.note_id} note={note} />
-                            ))}
-                        </div>
+                        posts.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center py-16 text-gray-500">
+                                <p className="text-4xl mb-3">📝</p>
+                                <p className="text-sm text-center">No active notes yet.</p>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                                {posts.map(note => (
+                                    <PostCard key={note.note_id} note={note} />
+                                ))}
+                            </div>
+                        )
                     )}
 
                     {/* BOOKMARKS placeholder */}
@@ -302,8 +659,34 @@ export default function Profile() {
                     )}
 
                     {/* SETTINGS: max-width card stack, full-width on mobile */}
-                    {activeTab === "settings" && (
+                    {activeTab === "settings" && isOwnProfile && (
                         <div className="space-y-4 w-full sm:max-w-xl">
+
+                            {/* Profile picture */}
+                            <div className="bg-white rounded-xl shadow-sm p-4 sm:p-5">
+                                <h2 className="text-sm font-bold text-gray-800 mb-3">Profile Picture</h2>
+                                <PictureForm
+                                    userId={profile.user_id}
+                                    currentUrl={profile.profile_picture_url}
+                                    onSuccess={url => setProfile(p => ({ ...p, profile_picture_url: url }))}
+                                />
+                            </div>
+
+                            {/* Change username */}
+                            <div className="bg-white rounded-xl shadow-sm p-4 sm:p-5">
+                                <h2 className="text-sm font-bold text-gray-800 mb-3">Change Username</h2>
+                                <UsernameForm
+                                    userId={profile.user_id}
+                                    currentUsername={profile.username}
+                                    onSuccess={name => setProfile(p => ({ ...p, username: name }))}
+                                />
+                            </div>
+
+                            {/* Change password */}
+                            <div className="bg-white rounded-xl shadow-sm p-4 sm:p-5">
+                                <h2 className="text-sm font-bold text-gray-800 mb-3">Change Password</h2>
+                                <PasswordForm userId={profile.user_id} />
+                            </div>
 
                             {/* Account status card */}
                             <div className="bg-white rounded-xl shadow-sm p-4 sm:p-5">
@@ -314,9 +697,9 @@ export default function Profile() {
                                     <div className="flex items-start sm:items-center justify-between gap-3">
                                         <div className="min-w-0">
                                             <p className="text-sm text-gray-700">Email Verification</p>
-                                            <p className="text-xs text-gray-400 truncate">{user.email}</p>
+                                            <p className="text-xs text-gray-400 truncate">{authUser?.email || ""}</p>
                                         </div>
-                                        {user.email_verified ? (
+                                        {profile.email_verified ? (
                                             <span className="shrink-0 bg-green-100 text-green-700 text-xs font-semibold px-3 py-1 rounded-full border border-green-200">
                                                 ✓ Verified
                                             </span>
@@ -331,10 +714,10 @@ export default function Profile() {
                                     <div className="flex items-center justify-between gap-3">
                                         <p className="text-sm text-gray-700">Account State</p>
                                         <span className={`shrink-0 text-xs font-semibold px-3 py-1 rounded-full border
-                                            ${user.account_status === "active"
-                                            ? "bg-blue-50 text-blue-600 border-blue-200"
-                                            : "bg-red-50 text-red-600 border-red-200"}`}>
-                                            {user.account_status}
+                                            ${profile.account_status === "active"
+                                                ? "bg-blue-50 text-blue-600 border-blue-200"
+                                                : "bg-red-50 text-red-600 border-red-200"}`}>
+                                            {profile.account_status}
                                         </span>
                                     </div>
                                 </div>
@@ -342,38 +725,23 @@ export default function Profile() {
 
                             {/* Profile details card */}
                             <div className="bg-white rounded-xl shadow-sm p-4 sm:p-5">
-                                <h2 className="text-sm font-bold text-gray-800 mb-3">Profile Details</h2>
-                                <div className="space-y-3">
-
-                                    <div className="flex items-center justify-between gap-3">
-                                        <p className="text-sm text-gray-700">Visibility</p>
-                                        <span className="text-sm text-gray-600 capitalize">
-                                            {user.visibility.replace("_", " ")}
-                                        </span>
-                                    </div>
-
-                                    <div className="flex items-center justify-between gap-3">
-                                        <p className="text-sm text-gray-700">Default Search Radius</p>
-                                        <span className="text-sm text-gray-600">
-                                            {user.default_radius_km} km
-                                        </span>
-                                    </div>
-
-                                    <div>
-                                        <p className="text-sm text-gray-700 mb-2">Preferred Categories</p>
-                                        <div className="flex flex-wrap gap-2">
-                                            {user.preferred_categories.map(cat => (
-                                                <span
-                                                    key={cat}
-                                                    className="bg-gray-100 text-gray-600 text-xs px-3 py-1 rounded-full border border-gray-200"
-                                                >
-                                                    {cat}
-                                                </span>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
+                                <h2 className="text-sm font-bold text-gray-800 mb-3">Privacy &amp; Preferences</h2>
+                                <VisibilityForm
+                                    userId={profile.user_id}
+                                    currentSettings={{
+                                        visibility: profile.visibility,
+                                        notifications_enabled: profile.notifications_enabled,
+                                        default_radius_km: profile.default_radius_km,
+                                    }}
+                                    onSuccess={s => setProfile(p => ({ ...p, ...s }))}
+                                />
                             </div>
+
+                            {/* Delete account */}
+                            <DeleteAccountSection
+                                userId={profile.user_id}
+                                onDeleted={() => navigate("/signin")}
+                            />
 
                         </div>
                     )}
