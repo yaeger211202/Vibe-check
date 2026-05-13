@@ -174,10 +174,14 @@ app.get("/api/search/locations", async (req, res) => {
             return res.json([]);
         }
 
+        const requestedLat = Number.parseFloat(req.query.lat);
+        const requestedLon = Number.parseFloat(req.query.lon);
+
         const searchCenter = {
-            lat: Number.parseFloat(data[0].lat),
-            lon: Number.parseFloat(data[0].lon),
+            lat: !Number.isNaN(requestedLat) ? requestedLat : Number.parseFloat(data[0].lat),
+            lon: !Number.isNaN(requestedLon) ? requestedLon : Number.parseFloat(data[0].lon),
         };
+
         const nominatimIds = data
             .map((place) => Number.parseInt(place.place_id, 10))
             .filter((placeId) => !Number.isNaN(placeId));
