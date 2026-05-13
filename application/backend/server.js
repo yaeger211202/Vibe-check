@@ -13,6 +13,7 @@ import { createReactionsRoutes } from './routes/reactionsRoutes.js';
 import { createRepliesRoutes } from './routes/repliesRoutes.js';
 import { createLocationsRoutes } from './routes/locationsRoutes.js';
 import { createUsersRoutes } from './routes/userRoutes.js';
+import { createReportRoutes } from './routes/reportRoutes.js';
 import swaggerSpec from "./docs/openapi.js";
 
 
@@ -445,6 +446,7 @@ app.use("/api/reactions", createReactionsRoutes(pool));
 app.use("/api/replies", createRepliesRoutes(pool));
 app.use("/api/locations", createLocationsRoutes(pool));
 app.use("/api/users", createUsersRoutes(pool));
+app.use("/api/reports", createReportRoutes(pool));
 
 app.get("/api/heatmap", async (req, res) => {
     const { category } = req.query;
