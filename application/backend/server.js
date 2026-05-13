@@ -397,7 +397,7 @@ app.get("/api/locations/:location_id/vibe", async (req, res) => {
 
         const data = result.rows[0];
 
-        if (parseInt(data.total_notes) < 3) {
+        if (parseInt(data.total_notes) < 1) {
             return res.json({
                 location_id: parseInt(location_id),
                 avg_vibe_score: null,
