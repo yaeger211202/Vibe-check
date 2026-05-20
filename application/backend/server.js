@@ -9,7 +9,7 @@ import { requireAuth } from './middleware/auth.js';
 
 import swaggerUi from "swagger-ui-express";
 import { createNotesRoutes } from './routes/notesRoutes.js';
-import { createReactionsRoutes } from './routes/reactionsRoutes.js';
+import { createReactionsRoutes } from './routes/reactionRoutes.js';
 import { createRepliesRoutes } from './routes/repliesRoutes.js';
 import { createLocationsRoutes } from './routes/locationsRoutes.js';
 import { createUsersRoutes } from './routes/userRoutes.js';
@@ -26,6 +26,12 @@ const authCookieOptions = {
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     maxAge: 7 * 24 * 60 * 60 * 1000,
+};
+
+const authCookieClearOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
 };
 
 const app = express();
@@ -428,7 +434,7 @@ app.post("/api/signup", async (req, res) => {
 
 
 app.post("/api/logout", requireAuth, async (req, res) => {
-    res.clearCookie('token', authCookieOptions);
+    res.clearCookie('token', authCookieClearOptions);
     return res.status(200).json({ message: "Logged out successfully." });
   });
 
