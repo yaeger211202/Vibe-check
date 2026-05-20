@@ -28,6 +28,12 @@ const authCookieOptions = {
     maxAge: 7 * 24 * 60 * 60 * 1000,
 };
 
+const authCookieClearOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+};
+
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
@@ -428,7 +434,7 @@ app.post("/api/signup", async (req, res) => {
 
 
 app.post("/api/logout", requireAuth, async (req, res) => {
-    res.clearCookie('token', authCookieOptions);
+    res.clearCookie('token', authCookieClearOptions);
     return res.status(200).json({ message: "Logged out successfully." });
   });
 
