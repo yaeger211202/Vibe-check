@@ -46,24 +46,51 @@ export function createNotesRoutes(pool, checkAndNotifyTrendingLocation) {
             return res.status(400).json({ error: "Note content must be 280 characters or less." });
         }
 
+        const client = await pool.connect();
+
         try {
+            await client.query("BEGIN");
+            await client.query("SELECT pg_advisory_xact_lock($1)", [Number(user_id)]);
+
             // Check if user exists
-            const userCheck = await pool.query("SELECT user_id FROM users WHERE user_id = $1", [user_id]);
+            const userCheck = await client.query("SELECT user_id FROM users WHERE user_id = $1", [user_id]);
             if (userCheck.rows.length === 0) {
+                await client.query("ROLLBACK");
                 return res.status(404).json({ error: "User not found." });
             }
 
-            const locationResult = await pool.query(
+            const activeNoteCheck = await client.query(
+                `SELECT note_id, location_id, expires_at
+                 FROM notes
+                 WHERE user_id = $1
+                   AND location_id = $2
+                   AND (expires_at IS NULL OR expires_at > NOW())
+                 ORDER BY created_at DESC
+                 LIMIT 1`,
+                [user_id, location_id]
+            );
+
+            if (activeNoteCheck.rows.length > 0) {
+                await client.query("ROLLBACK");
+                return res.status(409).json({
+                    error: "You already have an active note for this location. You can post another note here after your current one expires or is deleted.",
+                    active_note: activeNoteCheck.rows[0],
+                });
+            }
+
+            const locationResult = await client.query(
                 `SELECT location_id, lat, lng, radius_meters FROM locations WHERE location_id = $1`, [location_id]
             );
 
             if (locationResult.rows.length === 0) {
+                await client.query("ROLLBACK");
                 return res.status(404).json({ error: "Location not found." });
             }
 
             const location = locationResult.rows[0];
 
             if (user_lat == null || user_lon == null) {
+                await client.query("ROLLBACK");
                 return res.status(400).json({
                     error: "User location is required."
                 });
@@ -81,6 +108,7 @@ export function createNotesRoutes(pool, checkAndNotifyTrendingLocation) {
             if (distance > postRadiusMeters) {
                 const postRadiusMiles = (postRadiusMeters / 1609.34).toFixed(1);
 
+                await client.query("ROLLBACK");
                 return res.status(403).json({
                     error: `You are too far away to post here. Move within ${postRadiusMiles} mile${postRadiusMiles === "1.0" ? "" : "s"} of this location and try again.`,
                     distance: Math.round(distance),
@@ -89,12 +117,14 @@ export function createNotesRoutes(pool, checkAndNotifyTrendingLocation) {
             }
 
             // Insert the note
-            const result = await pool.query(
+            const result = await client.query(
                 `INSERT INTO notes (user_id, location_id, content, vibe_level, is_anonymous, expires_at)
                  VALUES ($1, $2, $3, $4, $5, NOW() + INTERVAL '24 hours')
                  RETURNING note_id, user_id, location_id, content, vibe_level, is_anonymous, created_at, expires_at`,
                 [user_id, location_id, content.trim(), vibe_level, is_anonymous || false]
             );
+
+            await client.query("COMMIT");
 
             await checkAndNotifyTrendingLocation(location_id);
 
@@ -104,8 +134,15 @@ export function createNotesRoutes(pool, checkAndNotifyTrendingLocation) {
             });
         }
         catch (error) {
+            try {
+                await client.query("ROLLBACK");
+            } catch (_rollbackError) {
+                // Ignore rollback errors after a failed create attempt.
+            }
             console.error("Note creation error:", error);
             return res.status(500).json({ error: "Internal server error." });
+        } finally {
+            client.release();
         }
     });
 
