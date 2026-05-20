@@ -1,11 +1,16 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.jsx'
-import 'leaflet/dist/leaflet.css';
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { BrowserRouter } from "react-router-dom";
+import App from "./App.jsx";
+import { I18nProvider } from "./localization/I18nProvider.jsx";
+import "./index.css";
 
-createRoot(document.getElementById('root')).render(
-    <StrictMode>
-        <App />
-    </StrictMode>,
-)
+ReactDOM.createRoot(document.getElementById("root")).render(
+    <React.StrictMode>
+        <I18nProvider>
+            <BrowserRouter>
+                <App />
+            </BrowserRouter>
+        </I18nProvider>
+    </React.StrictMode>
+);

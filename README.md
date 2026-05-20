@@ -87,8 +87,6 @@ This information is used throughout the semester for communication, grading, and
 | #3 |Rahul Srinath |rsrinath@sfsu.edu |warrantyvoidifremoved |warrantyvoidifremoved |Software Architect | Yes |
 | #4 |Amulya Sagi |asagi@sfsu.edu |amulyasagi-26 |amulya_21651 |Backend Lead| Yes |
 | #5 |Aljhay Soriano |asoriano6@sfsu.edu |asori0113 |n1ce_guy |Scrum Master | Yes |
-| #6 | | | | | | No |
-| #7 | | | | | | No |
 
 
 ## 
@@ -226,8 +224,6 @@ The work you produce should be something you can confidently discuss in intervie
 ## Copyright
 
 © 2026 **Team ARKHA**. All rights reserved.
-
-Each team must replace **Team ARKHA** with their approved team alias. Repositories that do not update this section will be considered incomplete.
 
 No part of this repository may be reproduced, distributed, or transmitted without prior written permission from the instructor or the owning team.
 
